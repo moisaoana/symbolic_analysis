@@ -1,0 +1,221 @@
+Trials,210,,,,,,,,,,,,,,
+Trial start markers,128,,,,,,,,,,,,,,
+Mask start markers,128,,,,,,,,,,,,,,
+Stimulus ON markers,128,,,,,,,,,,,,,,
+Stimulus OFF and response markers,1,2,3,,,,,,,,,,,,
+Verbal response markers,1,2,3,,,,,,,,,,,,
+Ready for next trial,1,2,3,,,,,,,,,,,,
+Info sets,16,,,,,,,,,,,,,,
+stimulus file relative path,,,,,,,,,,,,,,,
+i,s,f,i,s,i,i,s,i,i,i,i,i,i,i,
+Trial,Filename,G,Stimulus,CorrectResp,proc,ResponseID,Vbresponse,ResponseTimeuS,Accuracy,InclBehavioral,InclPupil,InclFixations,InclEEG,FTGood,GoodTrialsManual
+1,Stim_29_G_0.00.bmp,0,29,poseta / geanta (de dama),100,3,Nothing,3458161,3,1,1,1,1,1,1
+2,Stim_08_G_0.00.bmp,0,8,topor / secure,100,3,Nothing,4329665,3,1,1,1,1,1,1
+3,Stim_05_G_0.00.bmp,0,5,oala / cratita,100,3,Nothing,4487707,3,1,1,1,1,1,1
+4,Stim_06_G_0.00.bmp,0,6,elicopter,100,3,Nothing,5405879,3,1,1,1,1,0,1
+5,Stim_09_G_0.00.bmp,0,9,urs (polar),100,3,Nothing,4183475,3,1,1,1,1,1,1
+6,Stim_18_G_0.00.bmp,0,18,palarie,100,3,Nothing,4647032,3,1,1,1,1,1,1
+7,Stim_28_G_0.00.bmp,0,28,foarfece,100,3,Nothing,3427862,3,1,1,1,1,1,1
+8,Stim_02_G_0.00.bmp,0,2,banana,100,3,Nothing,3893642,3,1,1,1,1,1,0
+9,Stim_20_G_0.00.bmp,0,20,lampa / veioza,100,3,Nothing,3050863,3,1,1,1,1,1,1
+10,Stim_26_G_0.00.bmp,0,26,chitara (electrica),100,3,Nothing,2984167,3,1,1,1,1,1,1
+11,Stim_25_G_0.00.bmp,0,25,masina,100,3,Nothing,2343409,3,1,1,1,1,1,1
+12,Stim_10_G_0.00.bmp,0,10,vaca,100,3,Nothing,1985912,3,1,1,1,1,1,1
+13,Stim_21_G_0.00.bmp,0,21,furculita,100,3,Nothing,1467720,3,1,1,1,1,1,1
+14,Stim_17_G_0.00.bmp,0,17,cerb,100,3,Nothing,2302829,3,1,1,1,1,1,1
+15,Stim_19_G_0.00.bmp,0,19,pantaloni (scurti),100,3,Nothing,1529953,3,1,1,1,1,1,1
+16,Stim_03_G_0.00.bmp,0,3,scaun,100,3,Nothing,3680463,3,1,1,1,1,1,1
+17,Stim_13_G_0.00.bmp,0,13,peste,100,3,Nothing,1778151,3,1,1,1,1,1,1
+18,Stim_11_G_0.00.bmp,0,11,caine / catel,100,3,Nothing,1475127,3,1,1,1,1,1,1
+19,Stim_23_G_0.00.bmp,0,23,sticla,100,3,Nothing,1570087,3,1,1,1,1,1,1
+20,Stim_07_G_0.00.bmp,0,7,pistol,100,3,Nothing,2004736,3,1,1,1,1,1,1
+21,Stim_24_G_0.00.bmp,0,24,bicicleta,100,3,Nothing,1331962,3,1,1,1,1,1,1
+22,Stim_15_G_0.00.bmp,0,15,cal,100,3,Nothing,2010322,3,1,1,1,1,1,1
+23,Stim_12_G_0.00.bmp,0,12,elefant,100,3,Nothing,3365201,3,1,1,1,1,1,1
+24,Stim_16_G_0.00.bmp,0,16,iepure,100,3,Nothing,1850440,3,1,1,1,1,1,1
+25,Stim_22_G_0.00.bmp,0,22,pahar / cupa,100,3,Nothing,2328997,3,1,1,1,1,1,1
+26,Stim_04_G_0.00.bmp,0,4,masa,100,3,Nothing,2029460,3,1,1,1,1,1,1
+27,Stim_30_G_0.00.bmp,0,30,umbrela,100,3,Nothing,3251336,3,1,1,1,1,1,1
+28,Stim_01_G_0.00.bmp,0,1,fluture,100,3,Nothing,2919627,3,1,1,1,1,1,1
+29,Stim_14_G_0.00.bmp,0,14,girafa,100,3,Nothing,2446545,3,1,1,1,1,1,1
+30,Stim_27_G_0.00.bmp,0,27,pian,100,3,Nothing,2622741,3,1,1,1,1,1,1
+31,Stim_20_G_0.05.bmp,0.05,20,lampa / veioza,100,3,Nothing,3667432,3,1,1,1,1,1,1
+32,Stim_29_G_0.05.bmp,0.05,29,poseta / geanta (de dama),100,3,Nothing,3528242,3,1,1,1,1,1,1
+33,Stim_11_G_0.05.bmp,0.05,11,caine / catel,100,3,Nothing,2314373,3,1,1,1,1,1,1
+34,Stim_01_G_0.05.bmp,0.05,1,fluture,100,3,Nothing,3330102,3,1,1,1,1,1,1
+35,Stim_26_G_0.05.bmp,0.05,26,chitara (electrica),100,3,Nothing,2083807,3,1,1,1,1,1,1
+36,Stim_19_G_0.05.bmp,0.05,19,pantaloni (scurti),100,3,Nothing,2111985,3,1,1,1,1,1,1
+37,Stim_09_G_0.05.bmp,0.05,9,urs (polar),100,3,Nothing,1961465,3,1,1,1,1,1,1
+38,Stim_13_G_0.05.bmp,0.05,13,peste,100,3,Nothing,2748245,3,1,1,1,1,1,1
+39,Stim_04_G_0.05.bmp,0.05,4,masa,100,3,Nothing,1405656,3,1,1,1,1,1,1
+40,Stim_24_G_0.05.bmp,0.05,24,bicicleta,100,3,Nothing,2093815,3,1,1,1,1,1,1
+41,Stim_27_G_0.05.bmp,0.05,27,pian,100,3,Nothing,1780661,3,1,1,1,1,1,1
+42,Stim_06_G_0.05.bmp,0.05,6,elicopter,100,3,Nothing,2033805,3,1,1,1,1,1,1
+43,Stim_12_G_0.05.bmp,0.05,12,elefant,100,3,Nothing,2301987,3,1,1,1,1,1,1
+44,Stim_18_G_0.05.bmp,0.05,18,palarie,100,3,Nothing,2024440,3,1,1,1,1,1,1
+45,Stim_15_G_0.05.bmp,0.05,15,cal,100,3,Nothing,2169126,3,1,1,1,1,1,1
+46,Stim_10_G_0.05.bmp,0.05,10,vaca,100,3,Nothing,1841278,3,1,1,1,0,1,1
+47,Stim_22_G_0.05.bmp,0.05,22,pahar / cupa,100,3,Nothing,1654490,3,1,1,1,1,1,1
+48,Stim_21_G_0.05.bmp,0.05,21,furculita,100,3,Nothing,3144054,3,1,1,1,1,1,1
+49,Stim_17_G_0.05.bmp,0.05,17,cerb,100,3,Nothing,2424658,3,1,1,1,1,1,1
+50,Stim_08_G_0.05.bmp,0.05,8,topor / secure,100,3,Nothing,2575866,3,1,1,1,1,1,1
+51,Stim_30_G_0.05.bmp,0.05,30,umbrela,100,3,Nothing,2291348,3,1,1,1,1,1,1
+52,Stim_02_G_0.05.bmp,0.05,2,banana,100,3,Nothing,2314359,3,1,1,1,1,1,1
+53,Stim_03_G_0.05.bmp,0.05,3,scaun,100,3,Nothing,1343011,3,1,1,1,1,1,1
+54,Stim_23_G_0.05.bmp,0.05,23,sticla,100,3,Nothing,2015370,3,1,1,1,1,1,1
+55,Stim_05_G_0.05.bmp,0.05,5,oala / cratita,100,3,Nothing,2194609,3,1,1,1,1,1,1
+56,Stim_16_G_0.05.bmp,0.05,16,iepure,100,3,Nothing,1519461,3,1,1,1,1,1,1
+57,Stim_25_G_0.05.bmp,0.05,25,masina,100,3,Nothing,1485869,3,1,1,1,1,1,1
+58,Stim_14_G_0.05.bmp,0.05,14,girafa,100,3,Nothing,2610180,3,1,1,1,1,1,1
+59,Stim_07_G_0.05.bmp,0.05,7,pistol,100,3,Nothing,1440057,3,1,1,1,1,1,1
+60,Stim_28_G_0.05.bmp,0.05,28,foarfece,100,3,Nothing,2116210,3,1,1,1,1,1,1
+61,Stim_16_G_0.10.bmp,0.1,16,iepure,100,3,Nothing,2560945,3,1,1,1,1,1,1
+62,Stim_25_G_0.10.bmp,0.1,25,masina,100,2,Something,4295682,2,1,1,1,1,1,1
+63,Stim_01_G_0.10.bmp,0.1,1,fluture,100,3,Nothing,2626065,3,1,1,1,1,1,1
+64,Stim_10_G_0.10.bmp,0.1,10,vaca,100,3,Nothing,4784017,3,1,1,1,1,1,1
+65,Stim_07_G_0.10.bmp,0.1,7,pistol,100,3,Nothing,4353298,3,1,1,1,1,1,1
+66,Stim_17_G_0.10.bmp,0.1,17,cerb,100,3,Nothing,3576799,3,1,1,1,1,1,1
+67,Stim_30_G_0.10.bmp,0.1,30,umbrela,100,3,Nothing,4118679,3,1,1,1,1,1,1
+68,Stim_11_G_0.10.bmp,0.1,11,caine / catel,100,3,Nothing,3348102,3,1,1,1,1,1,1
+69,Stim_23_G_0.10.bmp,0.1,23,sticla,100,3,Nothing,3334455,3,1,1,1,1,0,1
+70,Stim_08_G_0.10.bmp,0.1,8,topor / secure,100,2,Something,6365128,2,1,1,1,1,1,1
+71,Stim_02_G_0.10.bmp,0.1,2,banana,100,3,Nothing,4909256,3,1,1,1,1,1,1
+72,Stim_14_G_0.10.bmp,0.1,14,girafa,100,3,Nothing,4330475,3,1,1,1,1,1,1
+73,Stim_22_G_0.10.bmp,0.1,22,pahar / cupa,100,3,Nothing,3226741,3,1,1,1,1,1,1
+74,Stim_21_G_0.10.bmp,0.1,21,furculita,100,3,Nothing,6215290,3,1,1,1,1,1,1
+75,Stim_20_G_0.10.bmp,0.1,20,lampa / veioza,100,3,Nothing,2997091,3,1,1,1,1,1,1
+76,Stim_15_G_0.10.bmp,0.1,15,cal,100,3,Nothing,5364886,3,1,1,1,1,1,1
+77,Stim_26_G_0.10.bmp,0.1,26,chitara (electrica),100,2,Something,3960340,2,1,1,1,1,0,1
+78,Stim_06_G_0.10.bmp,0.1,6,elicopter,100,3,Nothing,3644369,3,1,1,1,1,1,1
+79,Stim_28_G_0.10.bmp,0.1,28,foarfece,100,3,Nothing,3321360,3,1,1,1,1,1,1
+80,Stim_19_G_0.10.bmp,0.1,19,pantaloni (scurti),100,3,Nothing,3757315,3,1,1,1,1,1,1
+81,Stim_03_G_0.10.bmp,0.1,3,scaun,100,3,Nothing,3616449,3,1,1,1,1,1,1
+82,Stim_24_G_0.10.bmp,0.1,24,bicicleta,100,3,Nothing,2731533,3,1,1,1,1,1,1
+83,Stim_29_G_0.10.bmp,0.1,29,poseta / geanta (de dama),100,3,Nothing,3068918,3,1,1,1,1,1,1
+84,Stim_18_G_0.10.bmp,0.1,18,palarie,100,3,Nothing,3234136,3,1,1,1,1,1,1
+85,Stim_27_G_0.10.bmp,0.1,27,pian,100,3,Nothing,4182655,3,1,1,1,1,1,1
+86,Stim_05_G_0.10.bmp,0.1,5,oala / cratita,100,3,Nothing,4039487,3,1,1,1,1,1,1
+87,Stim_09_G_0.10.bmp,0.1,9,urs (polar),100,3,Nothing,3058316,3,1,1,1,1,1,1
+88,Stim_04_G_0.10.bmp,0.1,4,masa,100,3,Nothing,3676717,3,1,1,1,1,1,1
+89,Stim_12_G_0.10.bmp,0.1,12,elefant,100,3,Nothing,2530062,3,1,1,1,1,1,1
+90,Stim_13_G_0.10.bmp,0.1,13,peste,100,3,Nothing,2765980,3,1,1,1,1,1,1
+91,Stim_21_G_0.15.bmp,0.15,21,furculita,100,2,Something,4317106,2,1,1,1,1,1,1
+92,Stim_11_G_0.15.bmp,0.15,11,caine / catel,100,2,Something,3901950,2,1,1,1,1,1,1
+93,Stim_14_G_0.15.bmp,0.15,14,girafa,100,2,Something,5064767,2,1,1,1,1,1,1
+94,Stim_09_G_0.15.bmp,0.15,9,urs (polar),100,2,Something,4262828,2,1,1,1,1,1,1
+95,Stim_10_G_0.15.bmp,0.15,10,vaca,100,2,Something,5598148,2,1,1,1,1,1,1
+96,Stim_23_G_0.15.bmp,0.15,23,sticla,100,3,Nothing,3649872,3,1,1,1,1,1,1
+97,Stim_19_G_0.15.bmp,0.15,19,pantaloni (scurti),100,2,Something,3359175,2,1,1,1,1,1,1
+98,Stim_08_G_0.15.bmp,0.15,8,topor / secure,100,2,Something,3244249,2,1,1,1,1,1,1
+99,Stim_15_G_0.15.bmp,0.15,15,cal,100,2,Something,5372608,2,1,1,1,1,1,1
+100,Stim_06_G_0.15.bmp,0.15,6,elicopter,100,2,Something,9248183,2,1,1,1,1,1,1
+101,Stim_18_G_0.15.bmp,0.15,18,palarie,100,2,Something,4107285,2,1,1,1,1,1,1
+102,Stim_07_G_0.15.bmp,0.15,7,pistol,100,2,Something,1869406,2,1,1,1,1,1,1
+103,Stim_25_G_0.15.bmp,0.15,25,masina,100,2,Something,4372469,2,1,1,1,1,1,1
+104,Stim_16_G_0.15.bmp,0.15,16,iepure,100,2,Something,2689213,2,1,1,1,1,1,1
+105,Stim_27_G_0.15.bmp,0.15,27,pian,100,3,Nothing,13534447,3,1,1,1,1,1,1
+106,Stim_13_G_0.15.bmp,0.15,13,peste,100,2,Something,2661799,2,1,1,1,1,1,1
+107,Stim_29_G_0.15.bmp,0.15,29,poseta / geanta (de dama),100,2,Something,5895762,2,1,1,1,1,1,1
+108,Stim_12_G_0.15.bmp,0.15,12,elefant,100,3,Nothing,5735902,3,1,1,1,1,1,1
+109,Stim_30_G_0.15.bmp,0.15,30,umbrela,100,2,Something,2386824,2,1,1,1,1,1,1
+110,Stim_04_G_0.15.bmp,0.15,4,masa,100,2,Something,4171281,2,1,1,1,1,1,1
+111,Stim_02_G_0.15.bmp,0.15,2,banana,100,2,Something,3869060,2,1,1,1,1,1,1
+112,Stim_22_G_0.15.bmp,0.15,22,pahar / cupa,100,3,Nothing,5493765,3,1,1,1,1,1,1
+113,Stim_03_G_0.15.bmp,0.15,3,scaun,100,2,Something,1845002,2,1,1,1,1,1,1
+114,Stim_26_G_0.15.bmp,0.15,26,chitara (electrica),100,2,Something,1846010,2,1,1,1,1,1,1
+115,Stim_20_G_0.15.bmp,0.15,20,lampa / veioza,100,3,Nothing,2216976,3,1,1,1,1,1,1
+116,Stim_24_G_0.15.bmp,0.15,24,bicicleta,100,3,Nothing,4697519,3,1,1,1,0,1,1
+117,Stim_28_G_0.15.bmp,0.15,28,foarfece,100,3,Nothing,4531654,3,1,1,1,1,1,1
+118,Stim_17_G_0.15.bmp,0.15,17,cerb,100,1,cerb,2772019,1,1,1,1,1,1,1
+119,Stim_01_G_0.15.bmp,0.15,1,fluture,100,2,Something,2844112,2,1,1,1,1,1,1
+120,Stim_05_G_0.15.bmp,0.15,5,oala / cratita,100,2,Something,5850308,2,1,1,1,0,1,0
+121,Stim_23_G_0.20.bmp,0.2,23,sticla,100,3,Nothing,4981911,3,1,1,1,1,1,1
+122,Stim_01_G_0.20.bmp,0.2,1,fluture,100,1,fluture,2224295,1,1,1,1,1,1,1
+123,Stim_13_G_0.20.bmp,0.2,13,peste,100,1,peste,1056050,1,1,1,1,1,1,1
+124,Stim_09_G_0.20.bmp,0.2,9,urs (polar),100,2,Something,7424558,2,1,1,1,1,1,1
+125,Stim_04_G_0.20.bmp,0.2,4,masa,100,1,masa,1661177,1,1,1,1,1,1,1
+126,Stim_30_G_0.20.bmp,0.2,30,umbrela,100,1,umbrela,1542114,1,1,1,1,1,1,1
+127,Stim_18_G_0.20.bmp,0.2,18,palarie,100,1,palarie,1538730,1,1,1,1,1,1,1
+128,Stim_21_G_0.20.bmp,0.2,21,furculita,100,1,furculita,3748337,1,1,1,1,1,1,1
+129,Stim_11_G_0.20.bmp,0.2,11,caine / catel,100,1,caine / catel,2228030,1,1,1,1,1,1,1
+130,Stim_10_G_0.20.bmp,0.2,10,vaca,100,1,vaca,2142273,1,1,1,1,1,1,1
+131,Stim_03_G_0.20.bmp,0.2,3,scaun,100,1,scaun,1493948,1,1,1,1,1,1,1
+132,Stim_17_G_0.20.bmp,0.2,17,cerb,100,1,cerb,1831694,1,1,1,1,1,1,1
+133,Stim_07_G_0.20.bmp,0.2,7,pistol,100,1,stalp,1433883,0,1,1,1,1,1,1
+134,Stim_06_G_0.20.bmp,0.2,6,elicopter,100,1,elicopter,1934282,1,1,1,1,1,1,1
+135,Stim_19_G_0.20.bmp,0.2,19,pantaloni (scurti),100,2,Something,2377331,2,1,1,1,1,1,1
+136,Stim_14_G_0.20.bmp,0.2,14,girafa,100,2,Something,1908041,2,1,1,1,1,1,1
+137,Stim_20_G_0.20.bmp,0.2,20,lampa / veioza,100,2,Something,2107953,2,1,1,1,1,1,1
+138,Stim_22_G_0.20.bmp,0.2,22,pahar / cupa,100,2,Something,2190898,2,1,1,1,1,1,1
+139,Stim_26_G_0.20.bmp,0.2,26,chitara (electrica),100,1,chitara (electrica),1879938,1,1,1,1,1,1,1
+140,Stim_15_G_0.20.bmp,0.2,15,cal,100,2,Something,2614014,2,1,1,1,1,1,1
+141,Stim_24_G_0.20.bmp,0.2,24,bicicleta,100,2,Something,7400603,2,1,1,1,1,1,1
+142,Stim_16_G_0.20.bmp,0.2,16,iepure,100,1,iepure,2119049,1,1,1,1,1,1,1
+143,Stim_28_G_0.20.bmp,0.2,28,foarfece,100,2,Something,8578326,2,1,1,1,1,1,0
+144,Stim_08_G_0.20.bmp,0.2,8,topor / secure,100,1,topor / secure,2095525,1,1,1,1,1,1,1
+145,Stim_29_G_0.20.bmp,0.2,29,poseta / geanta (de dama),100,2,Something,3879010,2,1,1,1,1,1,1
+146,Stim_25_G_0.20.bmp,0.2,25,masina,100,2,Something,7089402,2,1,1,1,1,1,1
+147,Stim_05_G_0.20.bmp,0.2,5,oala / cratita,100,2,Something,6607664,2,1,1,1,1,1,1
+148,Stim_27_G_0.20.bmp,0.2,27,pian,100,2,Something,3846055,2,1,1,1,1,1,1
+149,Stim_12_G_0.20.bmp,0.2,12,elefant,100,2,Something,3626193,2,1,1,1,1,1,1
+150,Stim_02_G_0.20.bmp,0.2,2,banana,100,2,Something,2725124,2,1,1,1,1,1,1
+151,Stim_30_G_0.25.bmp,0.25,30,umbrela,100,2,Something,1489574,2,1,1,1,1,1,1
+152,Stim_16_G_0.25.bmp,0.25,16,iepure,100,2,Something,1005888,2,1,1,1,1,1,1
+153,Stim_21_G_0.25.bmp,0.25,21,furculita,100,1,furculita,2100432,1,1,1,1,1,1,1
+154,Stim_01_G_0.25.bmp,0.25,1,fluture,100,1,fluture,1293109,1,1,1,1,1,1,1
+155,Stim_18_G_0.25.bmp,0.25,18,palarie,100,1,palarie,1072964,1,1,1,1,1,1,1
+156,Stim_02_G_0.25.bmp,0.25,2,banana,100,1,banana,1398128,1,1,1,1,1,1,1
+157,Stim_20_G_0.25.bmp,0.25,20,lampa / veioza,100,2,Something,3503336,2,1,1,1,1,1,1
+158,Stim_29_G_0.25.bmp,0.25,29,poseta / geanta (de dama),100,2,Something,1997578,2,1,1,1,1,1,1
+159,Stim_14_G_0.25.bmp,0.25,14,girafa,100,1,girafa,1624793,1,1,1,1,1,1,1
+160,Stim_05_G_0.25.bmp,0.25,5,oala / cratita,100,1,oala / cratita,3045911,1,1,1,1,1,1,1
+161,Stim_03_G_0.25.bmp,0.25,3,scaun,100,1,scaun,1540084,1,1,1,1,1,1,1
+162,Stim_13_G_0.25.bmp,0.25,13,peste,100,1,peste,1439033,1,1,1,1,1,1,1
+163,Stim_24_G_0.25.bmp,0.25,24,bicicleta,100,2,Something,4154241,2,1,1,1,1,1,1
+164,Stim_17_G_0.25.bmp,0.25,17,cerb,100,1,cerb,1324727,1,1,1,1,1,1,1
+165,Stim_22_G_0.25.bmp,0.25,22,pahar / cupa,100,2,Something,1722304,2,1,1,1,1,1,1
+166,Stim_28_G_0.25.bmp,0.25,28,foarfece,100,2,Something,2166195,2,1,1,1,0,1,1
+167,Stim_26_G_0.25.bmp,0.25,26,chitara (electrica),100,1,chitara (electrica),1521426,1,1,1,1,1,1,1
+168,Stim_11_G_0.25.bmp,0.25,11,caine / catel,100,1,caine / catel,1317098,1,1,1,1,1,1,1
+169,Stim_25_G_0.25.bmp,0.25,25,masina,100,1,masina,1824966,1,1,1,1,1,1,1
+170,Stim_09_G_0.25.bmp,0.25,9,urs (polar),100,2,Something,2456997,2,1,1,1,1,1,1
+171,Stim_08_G_0.25.bmp,0.25,8,topor / secure,100,1,topor / secure,1750098,1,1,1,1,1,1,1
+172,Stim_06_G_0.25.bmp,0.25,6,elicopter,100,1,elicopter,1360218,1,1,1,1,1,1,1
+173,Stim_10_G_0.25.bmp,0.25,10,vaca,100,1,vaca,1626498,1,1,1,1,1,1,1
+174,Stim_07_G_0.25.bmp,0.25,7,pistol,100,1,pistol,1010154,1,1,1,1,1,1,1
+175,Stim_12_G_0.25.bmp,0.25,12,elefant,100,2,Something,2388135,2,1,1,1,1,1,1
+176,Stim_04_G_0.25.bmp,0.25,4,masa,100,1,masa,2158775,1,1,1,1,1,1,1
+177,Stim_19_G_0.25.bmp,0.25,19,pantaloni (scurti),100,1,pantaloni (scurti),1563458,1,1,1,1,1,1,1
+178,Stim_27_G_0.25.bmp,0.25,27,pian,100,2,Something,1411584,2,1,1,1,1,1,1
+179,Stim_23_G_0.25.bmp,0.25,23,sticla,100,2,Something,1883504,2,1,1,1,1,1,1
+180,Stim_15_G_0.25.bmp,0.25,15,cal,100,1,cal,2119108,1,1,1,1,1,1,1
+181,Stim_22_G_0.30.bmp,0.3,22,pahar / cupa,100,2,Something,1490354,2,1,1,1,1,1,1
+182,Stim_09_G_0.30.bmp,0.3,9,urs (polar),100,2,Something,1889305,2,1,1,1,1,1,1
+183,Stim_20_G_0.30.bmp,0.3,20,lampa / veioza,100,2,Something,2060846,2,1,1,1,1,1,1
+184,Stim_15_G_0.30.bmp,0.3,15,cal,100,1,cal,1089354,1,1,1,1,1,1,1
+185,Stim_19_G_0.30.bmp,0.3,19,pantaloni (scurti),100,1,pantaloni (scurti),1116213,1,1,1,1,1,1,1
+186,Stim_29_G_0.30.bmp,0.3,29,poseta / geanta (de dama),100,1,poseta / geanta (de dama),1281742,1,1,1,1,1,1,0
+187,Stim_01_G_0.30.bmp,0.3,1,fluture,100,1,fluture,1417814,1,1,1,1,1,1,1
+188,Stim_13_G_0.30.bmp,0.3,13,peste,100,1,peste,1337532,1,1,1,1,1,1,1
+189,Stim_16_G_0.30.bmp,0.3,16,iepure,100,1,iepure,1461855,1,1,1,1,1,1,1
+190,Stim_17_G_0.30.bmp,0.3,17,cerb,100,1,cerb,1414355,1,1,1,1,1,1,1
+191,Stim_08_G_0.30.bmp,0.3,8,topor / secure,100,1,topor / secure,1104809,1,1,1,1,1,1,1
+192,Stim_11_G_0.30.bmp,0.3,11,caine / catel,100,1,caine / catel,1073300,1,1,1,1,1,1,1
+193,Stim_06_G_0.30.bmp,0.3,6,elicopter,100,1,elicopter,1080240,1,1,1,1,1,1,1
+194,Stim_02_G_0.30.bmp,0.3,2,banana,100,1,banana,1307102,1,1,1,1,1,1,1
+195,Stim_18_G_0.30.bmp,0.3,18,palarie,100,1,palarie,1192776,1,1,1,1,1,1,1
+196,Stim_26_G_0.30.bmp,0.3,26,chitara (electrica),100,1,chitara (electrica),1158102,1,1,1,1,1,1,1
+197,Stim_24_G_0.30.bmp,0.3,24,bicicleta,100,1,bicicleta,2252864,1,1,1,1,1,1,1
+198,Stim_03_G_0.30.bmp,0.3,3,scaun,100,1,scaun,1072274,1,1,1,1,1,1,1
+199,Stim_28_G_0.30.bmp,0.3,28,foarfece,100,1,foarfece,1011402,1,1,1,1,1,1,1
+200,Stim_05_G_0.30.bmp,0.3,5,oala / cratita,100,1,oala / cratita,1662897,1,1,1,1,1,1,1
+201,Stim_07_G_0.30.bmp,0.3,7,pistol,100,1,pistol,958788,1,1,1,1,1,1,1
+202,Stim_12_G_0.30.bmp,0.3,12,elefant,100,1,elefant,1730229,1,1,1,1,1,1,1
+203,Stim_27_G_0.30.bmp,0.3,27,pian,100,1,pian,1485483,1,1,1,1,1,1,1
+204,Stim_25_G_0.30.bmp,0.3,25,masina,100,1,masina,1408400,1,1,1,1,1,1,1
+205,Stim_23_G_0.30.bmp,0.3,23,sticla,100,1,sticla,1571033,1,1,1,1,1,1,1
+206,Stim_21_G_0.30.bmp,0.3,21,furculita,100,1,furculita,1433860,1,1,1,1,1,1,1
+207,Stim_10_G_0.30.bmp,0.3,10,vaca,100,1,vaca,1790735,1,1,1,1,1,1,1
+208,Stim_04_G_0.30.bmp,0.3,4,masa,100,1,masa,1720137,1,1,1,1,1,1,1
+209,Stim_14_G_0.30.bmp,0.3,14,girafa,100,1,girafa,1192084,1,1,1,1,1,1,1
+210,Stim_30_G_0.30.bmp,0.3,30,umbrela,100,1,umbrela,992735,1,1,1,1,1,1,1
