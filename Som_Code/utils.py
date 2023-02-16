@@ -20,3 +20,11 @@ class Utils:
             samples_with_symbols.append(
                 (sample, Utils.all_symbols[cluster]))
         return samples_with_symbols
+
+    @staticmethod
+    def get_colors_array(samples, som):
+        colors_array = []
+        for s in samples:
+            bmu = som.find_BMU(s)
+            colors_array.append([float(bmu[0]) / float(som.getX()), float(bmu[1])/ float(som.getY()), float(bmu[2]) / float(som.getZ())])
+        return colors_array

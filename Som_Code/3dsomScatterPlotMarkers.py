@@ -45,7 +45,7 @@ print(size)
 
 #som = Minisom3D.MiniSom3D(size, size, size, number_features, sigma=3.0, learning_rate=0.5)
 som = MySom3D(size, size, size, number_features, sigma=3.0, learning_rate=0.5)
-som.train(data, 1000)
+som.train(data, 100)
 
 distanceMap = som.distance_map().T
 
@@ -100,6 +100,7 @@ markers_and_colors = Utils.assign_markers_and_colors(no_clusters)
 
 for cnt, xx in enumerate(data):
     w = som.find_BMU(xx)
+    print('W ', w)
     cluster = 0
     for bmu in bmu_array:
         if w == bmu[0]:
@@ -136,4 +137,13 @@ for cnt, sample in enumerate(data):
     bmu_array.append((w, sample_tuple[1]))
 print('No of clusters', no_clusters)
 """
+
+colors_sequence = Utils.get_colors_array(data, som)
+print(colors_sequence)
+plt.imshow([colors_sequence],aspect='auto')
+plt.axis('off')
+plt.show()
+
+
+
 
