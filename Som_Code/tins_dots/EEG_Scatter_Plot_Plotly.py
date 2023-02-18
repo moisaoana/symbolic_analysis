@@ -5,6 +5,8 @@ from mpl_toolkits.mplot3d import Axes3D
 from EEG_DataProcessor import EEG_DataProcessor
 from RawEEGSignalParser import RawEEGSignalParser
 from Som_Code.som_implementation_3D import MySom3D
+import plotly.graph_objs as go
+
 
 from Som_Code.utils import Utils
 
@@ -31,30 +33,49 @@ som.train(eegDataProcessor.processed_data, no_iterations)
 
 distance_map = som.distance_map().T
 
-Nx, Ny, Nz = size, size, size
-X, Y, Z = np.arange(Nx), np.arange(Ny), -np.arange(Nz)
-
-fig = plt.figure(figsize=(size, size))
-ax = Axes3D(fig)
-
-# Add x, y gridlines
-ax.grid(b=True, color='red',
-        linestyle='-.', linewidth=0.3,
-        alpha=0.2)
-
-kw = {
-    'cmap': 'Blues'
-}
+colors = []
+X_coord = []
+Y_coord = []
+Z_coord = []
 
 for i in range(0, size):
     for j in range(0, size):
         for k in range(0, size):
-            ax.scatter3D(X[i], Y[j], Z[k], c=str(distance_map[i][j][k]), s=100, cmap=plt.get_cmap('jet'))
+            X_coord.append(i)
+            Y_coord.append(j)
+            Z_coord.append(k)
+            colors.append(distance_map[i][j][k])
 
-# Show Figure
+trace = go.Scatter3d(
+    x=X_coord,
+    y=Y_coord,
+    z=Z_coord,
+    mode='markers',
+    marker=dict(
+        size=10,
+        color=colors,
+        opacity=0.8,
+        symbol='circle',
+        colorscale='Viridis',
+        showscale=True
+    ),
+    text=colors
+)
 
+layout = go.Layout(
+    scene=dict(
+        xaxis=dict(title='X'),
+        yaxis=dict(title='Y'),
+        zaxis=dict(title='Z'),
+    )
+)
 
-plt.show()
+# Create a figure with the trace and layout, and show the plot
+fig1 = go.Figure(data=[trace], layout=layout)
+fig1.update_layout(
+    title='Distance map'
+)
+fig1.show()
 
 print("HERE")
 threshold = som.find_threshold(eegDataProcessor.processed_data)
@@ -63,17 +84,21 @@ no_clusters, bmu_array, samples_with_clusters_array = som.find_clusters_with_min
                                                                                       0.3, threshold)
 print('No clusters ', no_clusters)
 samples_with_symbols_array = Utils.assign_symbols(samples_with_clusters_array)
-
-fig = plt.figure(figsize=(size, size))
-ax = Axes3D(fig)
-ax.grid(b=True, color='red',
-        linestyle='-.', linewidth=0.3,
-        alpha=0.2)
+print(samples_with_symbols_array)
 
 markers_and_colors = Utils.assign_markers_and_colors(no_clusters)
+print(no_clusters)
+print("-------------------------------------")
+
+BMU_X = []
+BMU_Y = []
+BMU_Z = []
+M = []
+C = []
 
 for cnt, xx in enumerate(eegDataProcessor.processed_data):
     w = som.find_BMU(xx)
+    # print('W ', w)
     cluster = 0
     for bmu in bmu_array:
         if w == bmu[0]:
@@ -85,7 +110,39 @@ for cnt, xx in enumerate(eegDataProcessor.processed_data):
         if x[0] == cluster:
             marker = x[1]
             color = x[2]
-    ax.scatter3D(w[0], w[1], w[2], color=color, marker=marker)
+    BMU_X.append(w[0])
+    BMU_Y.append(w[1])
+    BMU_Z.append(w[2])
+    M.append(marker)
+    C.append(color)
 
-# Show Figure
-plt.show()
+print(M)
+
+trace = go.Scatter3d(
+    x=BMU_X,
+    y=BMU_Y,
+    z=BMU_Z,
+    mode='markers',
+    marker=dict(
+        size=5,
+        color=C,
+        opacity=0.8,
+        symbol=M
+    )
+)
+
+layout = go.Layout(
+    scene=dict(
+        xaxis=dict(title='X'),
+        yaxis=dict(title='Y'),
+        zaxis=dict(title='Z'),
+    )
+)
+
+# Create a figure with the trace and layout, and show the plot
+fig = go.Figure(data=[trace], layout=layout)
+fig.update_layout(
+    title='Clusters given by som'
+)
+
+fig.show()

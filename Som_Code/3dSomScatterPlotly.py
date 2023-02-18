@@ -1,10 +1,11 @@
-
 import numpy as np  # linear algebra
 import pandas as pd  # data processing, CSV file I/O (e.g. pd.read_csv)
 import math
 import plotly.graph_objs as go
 
 from matplotlib import pyplot as plt
+
+import Minisom3D
 
 from mpl_toolkits.mplot3d import Axes3D
 
@@ -46,27 +47,46 @@ som.train(data, 1000)
 
 distanceMap = som.distance_map().T
 
-Nx, Ny, Nz = size, size, size
-X, Y, Z = np.arange(Nx), np.arange(Ny), -np.arange(Nz)
-
-fig = plt.figure(figsize=(size, size))
-ax = Axes3D(fig)
-
-# Add x, y gridlines
-ax.grid(b=True, color='red',
-        linestyle='-.', linewidth=0.3,
-        alpha=0.2)
-
-kw = {
-    'cmap': 'Blues'
-}
+colors = []
+X_coord = []
+Y_coord = []
+Z_coord = []
 
 for i in range(0, size):
     for j in range(0, size):
         for k in range(0, size):
-            ax.scatter3D(X[i], Y[j], Z[k], c=str(distanceMap[i][j][k]), s=100, cmap=plt.get_cmap('jet'))
+            X_coord.append(i)
+            Y_coord.append(j)
+            Z_coord.append(k)
+            colors.append(distanceMap[i][j][k])
 
-# Show Figure
+trace = go.Scatter3d(
+    x=X_coord,
+    y=Y_coord,
+    z=Z_coord,
+    mode='markers',
+    marker=dict(
+        size=10,
+        color=colors,
+        opacity=0.8,
+        symbol='circle',
+        colorscale='Viridis',
+        showscale=True
+    ),
+    text=colors
+)
 
+layout = go.Layout(
+    scene=dict(
+        xaxis=dict(title='X'),
+        yaxis=dict(title='Y'),
+        zaxis=dict(title='Z'),
+    )
+)
 
-plt.show()
+# Create a figure with the trace and layout, and show the plot
+fig1 = go.Figure(data=[trace], layout=layout)
+fig1.update_layout(
+    title='Distance map'
+)
+fig1.show()

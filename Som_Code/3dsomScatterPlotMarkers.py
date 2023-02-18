@@ -59,13 +59,11 @@ colors = ['r', 'g']
 Nx, Ny, Nz = size, size, size
 X, Y, Z = np.arange(Nx), np.arange(Ny), -np.arange(Nz)
 
-fig = plt.figure(figsize=(size, size))
-ax = Axes3D(fig)
+fig = plt.figure()
+ax = fig.add_subplot(111, projection='3d')
 
-# Add x, y gridlines
-ax.grid(b=True, color='red',
-        linestyle='-.', linewidth=0.3,
-        alpha=0.2)
+# plot the data
+ax.plot_surface(X, Y, Z)
 
 for cnt, xx in enumerate(data):
     w = som.find_BMU(xx)
@@ -77,7 +75,7 @@ for cnt, xx in enumerate(data):
 plt.show()
 
 threshold = som.find_threshold(data)
-no_clusters, bmu_array, samples_with_clusters_array = som.find_clusters_with_min_dist(data, 5)
+no_clusters, bmu_array, samples_with_clusters_array = som.find_clusters_with_min_dist(data, 5, threshold)
 samples_with_symbols_array = Utils.assign_symbols(samples_with_clusters_array)
 print(samples_with_symbols_array)
 

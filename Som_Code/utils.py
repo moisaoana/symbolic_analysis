@@ -1,7 +1,8 @@
 class Utils:
-    all_markers = ['o', '*', '.', ',', 'x', 'X', '+', 'P', 's', 'D', 'd', 'p', 'H', 'h', 'v', '^', '<', '>', '1',
-                   '2', '3', '4', '|', '_']
-    all_colors = ['b', 'c', 'g', 'k', 'm', 'r', 'w', 'y']
+    all_markers = ['circle', 'square', 'cross', 'diamond',
+                   'diamond-open', 'circle-open', 'square-open', 'x']
+    all_colors = ['blue', 'fuchsia', 'gold', 'green', 'violet', 'purple', 'red', 'royalblue', 'navy',
+                  'mediumspringgreen']
 
     all_symbols = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P']
 
@@ -26,5 +27,18 @@ class Utils:
         colors_array = []
         for s in samples:
             bmu = som.find_BMU(s)
-            colors_array.append([float(bmu[0]) / float(som.getX()), float(bmu[1])/ float(som.getY()), float(bmu[2]) / float(som.getZ())])
+            colors_array.append([float(bmu[0]) / float(som.getX()), float(bmu[1]) / float(som.getY()),
+                                 float(bmu[2]) / float(som.getZ())])
+        return colors_array
+
+    @staticmethod
+    def get_rgb_colors_array(samples, som):
+        colors_array = []
+        for s in samples:
+            bmu = som.find_BMU(s)
+            color_r = (float(bmu[0]) / float(som.getX())) * 255
+            color_g = (float(bmu[1]) / float(som.getY())) * 255
+            color_b = (float(bmu[2]) / float(som.getZ())) * 255
+            rgb_string = 'rgb(' + str(color_r)+','+str(color_g) + ',' + str(color_b) + ')'
+            colors_array.append(rgb_string)
         return colors_array
