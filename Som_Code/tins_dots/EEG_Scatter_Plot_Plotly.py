@@ -95,6 +95,7 @@ BMU_Y = []
 BMU_Z = []
 M = []
 C = []
+BMU = []
 
 for cnt, xx in enumerate(eegDataProcessor.processed_data):
     w = som.find_BMU(xx)
@@ -110,11 +111,17 @@ for cnt, xx in enumerate(eegDataProcessor.processed_data):
         if x[0] == cluster:
             marker = x[1]
             color = x[2]
-    BMU_X.append(w[0])
-    BMU_Y.append(w[1])
-    BMU_Z.append(w[2])
-    M.append(marker)
-    C.append(color)
+    notInBMU = True
+    for x in BMU:
+        if w == x:
+            notInBMU = False
+    if notInBMU:
+        BMU.append(w)
+        BMU_X.append(w[0])
+        BMU_Y.append(w[1])
+        BMU_Z.append(w[2])
+        M.append(marker)
+        C.append(color)
 
 print(M)
 
