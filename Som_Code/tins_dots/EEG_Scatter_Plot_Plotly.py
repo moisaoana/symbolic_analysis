@@ -7,7 +7,7 @@ from RawEEGSignalParser import RawEEGSignalParser
 from Som_Code.som_implementation_3D import MySom3D
 import plotly.graph_objs as go
 
-
+from Som_Code.tins_dots.Plots_Generator import PlotsGenerator
 from Som_Code.utils import Utils
 
 DATASET_PATH = "./data/Dots_30_001/"
@@ -27,6 +27,8 @@ no_features = 128
 no_iterations = 1
 
 print(eegDataProcessor.processed_data.shape)
+
+print(len(eegDataProcessor.trials))
 
 som = MySom3D(size, size, size, no_features, sigma=0.3, learning_rate=0.5)
 som.train(eegDataProcessor.processed_data, no_iterations)
@@ -76,6 +78,9 @@ fig1.update_layout(
     title='Distance map'
 )
 fig1.show()
+
+
+PlotsGenerator.generateColorSeguenceForAllTrials(len(eegDataProcessor.trials), eegDataProcessor.trials, som)
 
 print("HERE")
 threshold = som.find_threshold(eegDataProcessor.processed_data)

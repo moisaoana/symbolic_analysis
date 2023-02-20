@@ -5,6 +5,8 @@ import pandas as pd  # data processing, CSV file I/O (e.g. pd.read_csv)
 from mpl_toolkits import mplot3d
 import math
 import plotly.graph_objs as go
+from plotly.subplots import make_subplots
+
 
 import Minisom3D
 
@@ -196,3 +198,23 @@ fig2.update_layout(
 
 # Show the plot
 fig2.show()
+
+fig3 = make_subplots(rows=2, cols=1)
+
+for shape in fig2.layout.shapes:
+    fig3.add_shape(shape, row=1, col=1)
+
+for shape in fig2.layout.shapes:
+    fig3.add_shape(shape, row=2, col=1)
+
+
+# Update the layout for the first subplot
+fig3.update_xaxes(title_text="X Axis Title", range=[0, len(colors_sequence)], row=1, col=1)
+fig3.update_yaxes(title_text="Trial 1", range=[0, 3], row=1, col=1)
+
+# Update the layout for the second subplot
+fig3.update_xaxes(title_text="X Axis Title", range=[0, len(colors_sequence)], row=2, col=1)
+fig3.update_yaxes(title_text="Trial 2", range=[0, 3], row=2, col=1)
+fig3.update_layout(title='Color sequences for each trial')
+
+fig3.show()
