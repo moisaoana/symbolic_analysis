@@ -1,4 +1,4 @@
-import matplotlib
+
 from mpl_toolkits.mplot3d import Axes3D
 import numpy as np  # linear algebra
 import pandas as pd  # data processing, CSV file I/O (e.g. pd.read_csv)
@@ -6,7 +6,14 @@ from mpl_toolkits import mplot3d
 import math
 import plotly.graph_objs as go
 from plotly.subplots import make_subplots
-
+import plotly.io as pio
+from matplotlib import pyplot as plt
+from PIL import Image
+import io
+import matplotlib
+from reportlab.lib.pagesizes import A4
+from reportlab.lib.utils import ImageReader
+from reportlab.pdfgen import canvas
 
 import Minisom3D
 
@@ -20,6 +27,7 @@ from som_implementation_3D import MySom3D
 from utils import Utils
 
 warnings.filterwarnings('ignore')
+matplotlib.use('Qt5Agg')
 
 ### Read and Analyse Data
 samples = pd.read_csv('./breast_cancer_data.csv')  # returns data frame
@@ -198,7 +206,7 @@ fig2.update_layout(
 
 # Show the plot
 fig2.show()
-
+"""
 fig3 = make_subplots(rows=2, cols=1)
 
 for shape in fig2.layout.shapes:
@@ -218,3 +226,76 @@ fig3.update_yaxes(title_text="Trial 2", range=[0, 3], row=2, col=1)
 fig3.update_layout(title='Color sequences for each trial')
 
 fig3.show()
+"""
+
+"""
+fig3 = plt.figure(figsize=(10, 10))
+rows = 10
+columns = 1
+image_bytes = pio.to_image(fig2, format='png')
+image = Image.open(io.BytesIO(image_bytes))
+fig3.add_subplot(rows, columns, 1)
+plt.imshow(image)
+plt.axis('off')
+plt.title("Trial 1")
+
+fig3.add_subplot(rows, columns, 2)
+plt.imshow(image)
+plt.axis('off')
+plt.title("Trial 2")
+
+fig3.add_subplot(rows, columns, 3)
+plt.imshow(image)
+plt.axis('off')
+plt.title("Trial 3")
+
+fig3.add_subplot(rows, columns, 4)
+plt.imshow(image)
+plt.axis('off')
+plt.title("Trial 4")
+
+fig3.add_subplot(rows, columns, 5)
+plt.imshow(image)
+plt.axis('off')
+plt.title("Trial 5")
+
+fig3.add_subplot(rows, columns, 6)
+plt.imshow(image)
+plt.axis('off')
+plt.title("Trial 6")
+
+fig3.add_subplot(rows, columns, 7)
+plt.imshow(image)
+plt.axis('off')
+plt.title("Trial 7")
+
+fig3.add_subplot(rows, columns, 8)
+plt.imshow(image)
+plt.axis('off')
+plt.title("Trial 8")
+
+
+fig3.add_subplot(rows, columns, 9)
+plt.imshow(image)
+plt.axis('off')
+plt.title("Trial 9")
+
+
+fig3.add_subplot(rows, columns, 10)
+plt.imshow(image)
+plt.axis('off')
+plt.title("Trial 10")
+
+
+
+
+fig3.show()
+"""
+c = canvas.Canvas("trials.pdf", pagesize=A4)
+y = 1
+image_bytes = pio.to_image(fig2, format='png')
+image = Image.open(io.BytesIO(image_bytes))
+c.drawImage(ImageReader(image), 50, y, width=500, preserveAspectRatio=True)
+y -= image.height
+c.drawImage(ImageReader(image), 50, y, width=500, preserveAspectRatio=True)
+c.save()

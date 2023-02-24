@@ -34,7 +34,8 @@ class Utils:
     @staticmethod
     def get_rgb_colors_array(samples, som):
         colors_array = []
-        for s in samples:
+        for cnt,s in enumerate(samples):
+            print(cnt)
             bmu = som.find_BMU(s)
             color_r = (float(bmu[0]) / float(som.getX())) * 255
             color_g = (float(bmu[1]) / float(som.getY())) * 255

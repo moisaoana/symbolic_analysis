@@ -29,6 +29,9 @@ no_iterations = 1
 print(eegDataProcessor.processed_data.shape)
 
 print(len(eegDataProcessor.trials))
+#for cnt, trial in enumerate(eegDataProcessor.trials):
+#    print("Trial " + str(cnt))
+ #   print('size '+str(len(trial.trial_data)))
 
 som = MySom3D(size, size, size, no_features, sigma=0.3, learning_rate=0.5)
 som.train(eegDataProcessor.processed_data, no_iterations)
@@ -80,7 +83,9 @@ fig1.update_layout(
 fig1.show()
 
 
-PlotsGenerator.generateColorSeguenceForAllTrials(len(eegDataProcessor.trials), eegDataProcessor.trials, som)
+#PlotsGenerator.generateColorSeguenceForAllTrials(len(eegDataProcessor.trials), eegDataProcessor.trials, som)
+
+PlotsGenerator.generateColorSeguenceForAllTrialsInPDF(len(eegDataProcessor.trials), eegDataProcessor.trials, som)
 
 print("HERE")
 threshold = som.find_threshold(eegDataProcessor.processed_data)
