@@ -27,14 +27,13 @@ class Utils:
         colors_array = []
         for s in samples:
             bmu = som.find_BMU(s)
-            colors_array.append([float(bmu[0]) / float(som.getX()), float(bmu[1]) / float(som.getY()),
-                                 float(bmu[2]) / float(som.getZ())])
+            colors_array.append([float(bmu[0]) / float(som.getX()), float(bmu[1]) / float(som.getY()),float(bmu[2]) / float(som.getZ())])
         return colors_array
 
     @staticmethod
     def get_rgb_colors_array(samples, som):
         colors_array = []
-        for cnt,s in enumerate(samples):
+        for cnt, s in enumerate(samples):
             print(cnt)
             bmu = som.find_BMU(s)
             color_r = (float(bmu[0]) / float(som.getX())) * 255

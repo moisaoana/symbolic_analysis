@@ -2,13 +2,14 @@ import numpy as np
 from matplotlib import pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 
+import Minisom3D
 from EEG_DataProcessor import EEG_DataProcessor
 from RawEEGSignalParser import RawEEGSignalParser
-from Som_Code.som_implementation_3D import MySom3D
+from som_implementation_3D import MySom3D
 import plotly.graph_objs as go
 
-from Som_Code.tins_dots.Plots_Generator import PlotsGenerator
-from Som_Code.utils import Utils
+from tins_dots.Plots_Generator import PlotsGenerator
+from utils import Utils
 
 DATASET_PATH = "./data/Dots_30_001/"
 parser = RawEEGSignalParser(DATASET_PATH)
@@ -85,7 +86,14 @@ fig1.show()
 
 #PlotsGenerator.generateColorSeguenceForAllTrials(len(eegDataProcessor.trials), eegDataProcessor.trials, som)
 
-PlotsGenerator.generateColorSeguenceForAllTrialsInPDF(len(eegDataProcessor.trials), eegDataProcessor.trials, som)
+#PlotsGenerator.generateColorSeguenceForAllTrialsInPDF(len(eegDataProcessor.trials), eegDataProcessor.trials, som)
+
+figure_data_array = PlotsGenerator.getTrialSequencesArray(eegDataProcessor.trials, som)
+#fig, axs = PlotsGenerator.generateGridWithColorSequences(figure_data_array[0:7], n_rows=len(figure_data_array[0:7]), n_cols=1)
+#plt.show()
+PlotsGenerator.groupByStimulusVisibility(figure_data_array)
+PlotsGenerator.groupByResponse(figure_data_array)
+PlotsGenerator.groupByStimulus(figure_data_array)
 
 print("HERE")
 threshold = som.find_threshold(eegDataProcessor.processed_data)
