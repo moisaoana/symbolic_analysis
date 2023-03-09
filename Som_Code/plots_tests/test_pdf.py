@@ -7,7 +7,7 @@ from reportlab.lib.utils import ImageReader
 PAGE_WIDTH, PAGE_HEIGHT = A4
 
 # Create a new canvas
-c = canvas.Canvas("images.pdf", pagesize=A4)
+c = canvas.Canvas("../images.pdf", pagesize=A4)
 
 # Define the top and bottom margins
 TOP_MARGIN = 0

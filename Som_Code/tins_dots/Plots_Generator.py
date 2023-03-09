@@ -1,28 +1,30 @@
 import io
-
+import matplotlib
 import numpy as np
 import plotly.graph_objs as go
+from mpl_toolkits.mplot3d import Axes3D
 from plotly.subplots import make_subplots
 import plotly.io as pio
 from matplotlib import pyplot as plt
 from reportlab.lib.pagesizes import A4
+from mayavi import mlab
 
-from utils import Utils
 from PIL import Image
 
 from reportlab.lib.units import inch
 from reportlab.pdfgen import canvas
 from reportlab.lib.utils import ImageReader
 
+from Som_Code.utils import Utils
+
+matplotlib.use('Qt5Agg')
 
 class PlotsGenerator:
 
     @staticmethod
     def generateColorSequenceForTrial(no_trial, trial_data, som):
         colors_sequence = Utils.get_rgb_colors_array(trial_data, som)
-
         fig = go.Figure()
-
         # Add a rectangle trace for each segment of the barcode
         for i in range(len(colors_sequence)):
             print('Cs ', i)
@@ -322,3 +324,192 @@ class PlotsGenerator:
             axs[row_idx, col_idx].imshow(color_indices.reshape(1, -1), cmap=ax.images[0].cmap, aspect='auto')
         plt.subplots_adjust(hspace=0, wspace=0)
         return fig, axs
+
+    @staticmethod
+    def generateScatterPlotForDistanceMapMatplotlib(size, distance_map):
+        Nx, Ny, Nz = size, size, size
+        X, Y, Z = np.arange(Nx), np.arange(Ny), -np.arange(Nz)
+
+        fig = plt.figure(figsize=(size, size))
+        ax = Axes3D(fig)
+
+        # Add x, y gridlines
+        ax.grid(b=True, color='red',
+                linestyle='-.', linewidth=0.3,
+                alpha=0.2)
+        kw = {
+            'cmap': 'Blues'
+        }
+        for i in range(0, size):
+            for j in range(0, size):
+                for k in range(0, size):
+                    ax.scatter3D(X[i], Y[j], Z[k], c=str(distance_map[i][j][k]), s=100, cmap=plt.get_cmap('jet'))
+
+        # Show Figure
+        plt.show()
+
+
+    @staticmethod
+    def generateScatterPlotForClustersMatplotlib(som, eegDataProcessor, size):
+        threshold = som.find_threshold(eegDataProcessor.processed_data)
+        print('Max dist ', threshold)
+        no_clusters, bmu_array, samples_with_clusters_array = som.find_clusters_with_min_dist(
+            eegDataProcessor.processed_data,
+            0.3, threshold)
+        print('No clusters ', no_clusters)
+
+        fig = plt.figure(figsize=(size, size))
+        ax = Axes3D(fig)
+        ax.grid(b=True, color='red',
+                linestyle='-.', linewidth=0.3,
+                alpha=0.2)
+        markers_and_colors = Utils.assign_markers_and_colors(no_clusters)
+        for cnt, xx in enumerate(eegDataProcessor.processed_data):
+            w = som.find_BMU(xx)
+            cluster = 0
+            for bmu in bmu_array:
+                if w == bmu[0]:
+                    cluster = bmu[1]
+                    break
+            marker = '_'
+            color = 'y'
+            for x in markers_and_colors:
+                if x[0] == cluster:
+                    marker = x[1]
+                    color = x[2]
+            ax.scatter3D(w[0], w[1], w[2], color=color, marker=marker)
+        # Show Figure
+        plt.show()
+
+    @staticmethod
+    def generateScatterPlotForDistanceMapPlotly(size, distance_map):
+        colors = []
+        X_coord = []
+        Y_coord = []
+        Z_coord = []
+
+        for i in range(0, size):
+            for j in range(0, size):
+                for k in range(0, size):
+                    X_coord.append(i)
+                    Y_coord.append(j)
+                    Z_coord.append(k)
+                    colors.append(distance_map[i][j][k])
+
+        trace = go.Scatter3d(
+            x=X_coord,
+            y=Y_coord,
+            z=Z_coord,
+            mode='markers',
+            marker=dict(
+                size=10,
+                color=colors,
+                opacity=0.8,
+                symbol='circle',
+                colorscale='Viridis',
+                showscale=True
+            ),
+            text=colors
+        )
+
+        layout = go.Layout(
+            scene=dict(
+                xaxis=dict(title='X'),
+                yaxis=dict(title='Y'),
+                zaxis=dict(title='Z'),
+            )
+        )
+
+        # Create a figure with the trace and layout, and show the plot
+        fig1 = go.Figure(data=[trace], layout=layout)
+        fig1.update_layout(
+            title='Distance map'
+        )
+        fig1.show()
+
+    @staticmethod
+    def generateScatterPlotForClustersPlotly(som, eegDataProcessor):
+        threshold = som.find_threshold(eegDataProcessor.processed_data)
+        print('Max dist ', threshold)
+        no_clusters, bmu_array, samples_with_clusters_array = som.find_clusters_with_min_dist(
+            eegDataProcessor.processed_data,
+            0.3, threshold)
+        print('No clusters ', no_clusters)
+        samples_with_symbols_array = Utils.assign_symbols(samples_with_clusters_array)
+        print(samples_with_symbols_array)
+
+        markers_and_colors = Utils.assign_markers_and_colors(no_clusters)
+        print(no_clusters)
+        print("-------------------------------------")
+
+        BMU_X = []
+        BMU_Y = []
+        BMU_Z = []
+        M = []
+        C = []
+        BMU = []
+
+        for cnt, xx in enumerate(eegDataProcessor.processed_data):
+            w = som.find_BMU(xx)
+            # print('W ', w)
+            cluster = 0
+            for bmu in bmu_array:
+                if w == bmu[0]:
+                    cluster = bmu[1]
+                    break
+            marker = '_'
+            color = 'y'
+            for x in markers_and_colors:
+                if x[0] == cluster:
+                    marker = x[1]
+                    color = x[2]
+            notInBMU = True
+            for x in BMU:
+                if w == x:
+                    notInBMU = False
+            if notInBMU:
+                BMU.append(w)
+                BMU_X.append(w[0])
+                BMU_Y.append(w[1])
+                BMU_Z.append(w[2])
+                M.append(marker)
+                C.append(color)
+
+        print(M)
+
+        trace = go.Scatter3d(
+            x=BMU_X,
+            y=BMU_Y,
+            z=BMU_Z,
+            mode='markers',
+            marker=dict(
+                size=5,
+                color=C,
+                opacity=0.8,
+                symbol=M
+            )
+        )
+
+        layout = go.Layout(
+            scene=dict(
+                xaxis=dict(title='X'),
+                yaxis=dict(title='Y'),
+                zaxis=dict(title='Z'),
+            )
+        )
+
+        # Create a figure with the trace and layout, and show the plot
+        fig = go.Figure(data=[trace], layout=layout)
+        fig.update_layout(
+            title='Clusters given by som'
+        )
+        fig.show()
+
+    @staticmethod
+    def generateSlicerPlotMayavi(distance_map):
+        volume_slice_x = mlab.volume_slice(distance_map, plane_orientation='x_axes')
+        volume_slice_y = mlab.volume_slice(distance_map, plane_orientation='y_axes')
+        volume_slice_z = mlab.volume_slice(distance_map, plane_orientation='z_axes')
+        outline = mlab.outline(volume_slice_x)
+        colorbar = mlab.colorbar(object=volume_slice_x, title='Data values')
+        mlab.show()
