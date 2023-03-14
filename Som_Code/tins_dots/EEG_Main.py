@@ -43,12 +43,17 @@ PlotsGenerator.generateScatterPlotForDistanceMapPlotly(size, distance_map)
 
 #PlotsGenerator.generateColorSeguenceForAllTrialsInPDF(len(eegDataProcessor.trials), eegDataProcessor.trials, som)
 
-figure_data_array = PlotsGenerator.getTrialSequencesArray(eegDataProcessor.trials, som)
+#figure_data_array = PlotsGenerator.getTrialSequencesArray(eegDataProcessor.trials, som)
 
+#PlotsGenerator.groupByStimulusVisibility(figure_data_array)
+#PlotsGenerator.groupByResponse(figure_data_array)
+#PlotsGenerator.groupByStimulus(figure_data_array)
+
+samples_with_clusters_array, markers_and_colors = PlotsGenerator.generateScatterPlotForClustersPlotly(som, eegDataProcessor)
+
+figure_data_array = PlotsGenerator.getTrialSequencesArrayUsingClusters(eegDataProcessor.trials, markers_and_colors,samples_with_clusters_array)
 PlotsGenerator.groupByStimulusVisibility(figure_data_array)
 PlotsGenerator.groupByResponse(figure_data_array)
 PlotsGenerator.groupByStimulus(figure_data_array)
-
-PlotsGenerator.generateScatterPlotForClustersPlotly(som, eegDataProcessor)
 
 PlotsGenerator.generateSlicerPlotMayavi(distance_map)

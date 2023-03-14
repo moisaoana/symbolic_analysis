@@ -21,23 +21,18 @@ class EEG_DataProcessor:
 
     def split_event_codes(self):
         groups = []
-
         group = []
         for id, event_code in enumerate(self.event_codes):
-            if event_code == 128:
+            if event_code == 129:
                 group = []
                 group.append(id)
-            elif len(group) == 1 and event_code == 129:
+            elif len(group) == 1 and (event_code == 1 or event_code == 2 or event_code == 3):
                 group.append(id)
-            elif len(group) == 2 and (event_code == 1 or event_code == 2 or event_code == 3):
-                group.append(id)
-            elif len(group) == 3 and event_code == 131:
+            elif len(group) == 2 and event_code == 131:
                 group.append(id)
                 groups.append(group)
                 group = []
-
-        self.groups = np.array(groups)
-
+                self.groups = np.array(groups)
         return self.groups
 
     def split_event_timestamps_by_codes(self):
