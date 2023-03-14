@@ -24,7 +24,7 @@ eegDataProcessor.create_trials(save=False)
 eegDataProcessor.link_trials(save=False)
 
 size = 4
-no_features = 128
+no_features = 32
 no_iterations = 1
 
 print(eegDataProcessor.processed_data.shape)
@@ -88,17 +88,17 @@ fig1.show()
 
 #PlotsGenerator.generateColorSeguenceForAllTrialsInPDF(len(eegDataProcessor.trials), eegDataProcessor.trials, som)
 
-figure_data_array = PlotsGenerator.getTrialSequencesArray(eegDataProcessor.trials, som)
+#figure_data_array = PlotsGenerator.getTrialSequencesArray(eegDataProcessor.trials, som)
 #fig, axs = PlotsGenerator.generateGridWithColorSequences(figure_data_array[0:7], n_rows=len(figure_data_array[0:7]), n_cols=1)
 #plt.show()
-PlotsGenerator.groupByStimulusVisibility(figure_data_array)
-PlotsGenerator.groupByResponse(figure_data_array)
-PlotsGenerator.groupByStimulus(figure_data_array)
+#PlotsGenerator.groupByStimulusVisibility(figure_data_array)
+#PlotsGenerator.groupByResponse(figure_data_array)
+#PlotsGenerator.groupByStimulus(figure_data_array)
 
 print("HERE")
 threshold = som.find_threshold(eegDataProcessor.processed_data)
 print('Max dist ', threshold)
-no_clusters, bmu_array, samples_with_clusters_array = som.find_clusters_with_min_dist(eegDataProcessor.processed_data,
+no_clusters, bmu_array, samples_with_clusters_array, samples_nparray, clusters_nparray = som.find_clusters_with_min_dist(eegDataProcessor.processed_data,
                                                                                       0.3, threshold)
 print('No clusters ', no_clusters)
 samples_with_symbols_array = Utils.assign_symbols(samples_with_clusters_array)
@@ -171,3 +171,10 @@ fig.update_layout(
 )
 
 fig.show()
+
+print(markers_and_colors)
+figure_data_array = PlotsGenerator.getTrialSequencesArrayUsingClustersV2(eegDataProcessor.trials, markers_and_colors,samples_with_clusters_array)
+PlotsGenerator.groupByStimulusVisibility(figure_data_array)
+PlotsGenerator.groupByResponse(figure_data_array)
+PlotsGenerator.groupByStimulus(figure_data_array)
+

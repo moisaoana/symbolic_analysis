@@ -84,7 +84,7 @@ class RawEEGSignalParser(TinsParser):
 
     def load_all_channels(self):
         data_all_channels = []
-        for chn_id in range(self.NR_CHANNELS):
+        for chn_id in range(32):
             print(chn_id)
             data_channel = self.FileReader.read_signal(self.DATASET_PATH + self.FILENAMES[chn_id])
             data_all_channels.append(data_channel)

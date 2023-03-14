@@ -139,6 +139,63 @@ class PlotsGenerator:
             barcodes_array.append(figure_data_tuple)
         return barcodes_array
 
+    @staticmethod
+    def getTrialSequencesArrayUsingClusters(all_trials_data,markers_and_clusters, samples_nparray, clusters_nparray):
+        barcodes_array = []
+        all_color_arrays = []
+        max_length_color_array = 0
+        for cnt, trial in enumerate(all_trials_data):
+            print("Trial " + str(cnt))
+            colors_array = Utils.get_colors_array_with_clusters(trial.trial_data,markers_and_clusters, samples_nparray, clusters_nparray)
+            all_color_arrays.append(colors_array)
+            if len(colors_array) > max_length_color_array:
+                max_length_color_array = len(colors_array)
+        print("Max is ", max_length_color_array)
+        for cnt, colors_array in enumerate(all_color_arrays):
+            if len(colors_array) != max_length_color_array:
+                for i in range(0, max_length_color_array - len(colors_array)):
+                    colors_array.append([1, 1, 1])
+            figure_data_tuple = PlotsGenerator.generateColorSequenceForTrialMatplotlib(colors_array)
+            barcodes_array.append(figure_data_tuple)
+        return barcodes_array
+
+
+    @staticmethod
+    def getTrialSequencesArrayUsingClustersV2(all_trials_data, markers_and_clusters, samples_with_clusters):
+        barcodes_array = []
+        all_color_arrays = []
+        max_length_color_array = 0
+        index = 0
+        for cnt, trial in enumerate(all_trials_data):
+            print("Trial " + str(cnt))
+            indexes_array = []
+            for i, sample in enumerate(trial.trial_data):
+                print("Sample " + str(i+index))
+                indexes_array.append(i+index)
+                PlotsGenerator.validate(sample, samples_with_clusters[i+index][0])
+                if i == len(trial.trial_data)-1:
+                    index = i+index+1
+            colors_array = Utils.get_colors_array_with_clustersV2(indexes_array, markers_and_clusters, samples_with_clusters)
+            all_color_arrays.append(colors_array)
+            if len(colors_array) > max_length_color_array:
+                max_length_color_array = len(colors_array)
+        print("Max is ", max_length_color_array)
+        for cnt, colors_array in enumerate(all_color_arrays):
+            if len(colors_array) != max_length_color_array:
+                for i in range(0, max_length_color_array - len(colors_array)):
+                    colors_array.append([1, 1, 1])
+            figure_data_tuple = PlotsGenerator.generateColorSequenceForTrialMatplotlib(colors_array)
+            barcodes_array.append(figure_data_tuple)
+        return barcodes_array
+
+    @staticmethod
+    def validate(a1, a2):
+        for cnt,el1 in enumerate(a1):
+            if el1 != a2[cnt]:
+                print("False")
+                break
+        print("True")
+
     # visibilities: 0.00, 0.05, 0.10, 0.15, 0.20, 0.25, 0.30
     @staticmethod
     def groupByStimulusVisibility(figure_array):

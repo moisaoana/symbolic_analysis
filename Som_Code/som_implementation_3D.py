@@ -139,7 +139,9 @@ class MySom3D(object):
     def find_clusters_with_min_dist(self, samples_data, threshold, max_distance):
         bmu_array = []
         no_clusters = 0
-        sample_array = []
+        samples_and_clusters_array = []
+        samples_array = []
+        clusters_array = []
         for cnt, sample in enumerate(samples_data):
             print('Sample ',cnt)
             w = self.find_BMU(sample)
@@ -156,11 +158,13 @@ class MySom3D(object):
             sample_tuple = (sample, min_cluster)
             if sample_tuple[1] == no_clusters:
                 no_clusters += 1
-            sample_array.append(sample_tuple)
+            samples_and_clusters_array.append(sample_tuple)
+            samples_array.append(sample_tuple[0])
+            clusters_array.append(sample_tuple[1])
             if (w, sample_tuple[1]) not in bmu_array:
                 bmu_array.append((w, sample_tuple[1]))
         print('No of clusters', no_clusters)
-        return no_clusters, bmu_array, sample_array
+        return no_clusters, bmu_array, samples_and_clusters_array, np.array(samples_array), np.array(clusters_array)
 
     def find_threshold(self, samples_data):
         bmu_array = []
