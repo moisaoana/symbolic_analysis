@@ -15,9 +15,9 @@ from reportlab.lib.units import inch
 from reportlab.pdfgen import canvas
 from reportlab.lib.utils import ImageReader
 
-from Som_Code.utils import Utils
+from utils import Utils
 
-matplotlib.use('Qt5Agg')
+#matplotlib.use('Qt5Agg')
 
 class PlotsGenerator:
 
@@ -122,7 +122,7 @@ class PlotsGenerator:
         return fig, ax, color_indices
 
     @staticmethod
-    def getTrialSequencesArray(all_trials_data, som):
+    def getTrialSequencesArrayUsingBMULeftAlignment(all_trials_data, som):
         barcodes_array = []
         all_color_arrays = []
         max_length_color_array = 0
@@ -141,27 +141,67 @@ class PlotsGenerator:
             barcodes_array.append(figure_data_tuple)
         return barcodes_array
 
+    @staticmethod
+    def getTrialSequencesArrayUsingBMURightAlignment(all_trials_data, som):
+        barcodes_array = []
+        all_color_arrays = []
+        max_length_color_array = 0
+        for cnt, trial in enumerate(all_trials_data):
+            print("Trial " + str(cnt))
+            colors_array = Utils.get_colors_array(trial.trial_data, som)
+            all_color_arrays.append(colors_array)
+            if len(colors_array) > max_length_color_array:
+                max_length_color_array = len(colors_array)
+        print("Max is ", max_length_color_array)
+        for cnt, colors_array in enumerate(all_color_arrays):
+            if len(colors_array) != max_length_color_array:
+                for i in range(0, max_length_color_array - len(colors_array)):
+                    colors_array.insert(0, [1, 1, 1])
+            figure_data_tuple = PlotsGenerator.generateColorSequenceForTrialMatplotlib(colors_array)
+            barcodes_array.append(figure_data_tuple)
+        return barcodes_array
+
     # visibilities: 0.00, 0.05, 0.10, 0.15, 0.20, 0.25, 0.30
     @staticmethod
-    def groupByStimulusVisibility(figure_array):
-        PlotsGenerator.generateGridWithColorSequences(figure_array[0:30], n_rows=30, n_cols=1)
+    def groupByStimulusVisibility(figure_array, path):
+        fig, ax = PlotsGenerator.generateGridWithColorSequences(figure_array[0:30], n_rows=30, n_cols=1)
         plt.suptitle("Stimulus visibility: 0.00")
-        PlotsGenerator.generateGridWithColorSequences(figure_array[30:60], n_rows=30, n_cols=1)
+        fig.set_size_inches(6, 4)
+        plt.savefig(path+"v0.0.png", dpi=300)
+
+        fig, ax = PlotsGenerator.generateGridWithColorSequences(figure_array[30:60], n_rows=30, n_cols=1)
         plt.suptitle("Stimulus visibility: 0.05")
-        PlotsGenerator.generateGridWithColorSequences(figure_array[60:90], n_rows=30, n_cols=1)
+        fig.set_size_inches(6, 4)
+        plt.savefig(path+"v0.05.png", dpi=300)
+
+        fig, ax = PlotsGenerator.generateGridWithColorSequences(figure_array[60:90], n_rows=30, n_cols=1)
         plt.suptitle("Stimulus visibility: 0.1")
-        PlotsGenerator.generateGridWithColorSequences(figure_array[90:120], n_rows=30, n_cols=1)
+        fig.set_size_inches(6, 4)
+        plt.savefig(path+"v0.1.png", dpi=300)
+
+        fig, ax = PlotsGenerator.generateGridWithColorSequences(figure_array[90:120], n_rows=30, n_cols=1)
         plt.suptitle("Stimulus visibility: 0.15")
-        PlotsGenerator.generateGridWithColorSequences(figure_array[120:150], n_rows=30, n_cols=1)
+        fig.set_size_inches(6, 4)
+        plt.savefig(path+"v0.15.png", dpi=300)
+
+        fig, ax = PlotsGenerator.generateGridWithColorSequences(figure_array[120:150], n_rows=30, n_cols=1)
         plt.suptitle("Stimulus visibility: 0.2")
-        PlotsGenerator.generateGridWithColorSequences(figure_array[150:180], n_rows=30, n_cols=1)
+        fig.set_size_inches(6, 4)
+        plt.savefig(path+"v0.2.png", dpi=300)
+
+        fig, ax = PlotsGenerator.generateGridWithColorSequences(figure_array[150:180], n_rows=30, n_cols=1)
         plt.suptitle("Stimulus visibility: 0.25")
-        PlotsGenerator.generateGridWithColorSequences(figure_array[180:210], n_rows=30, n_cols=1)
+        fig.set_size_inches(6, 4)
+        plt.savefig(path+"v0.25.png", dpi=300)
+
+        fig, ax = PlotsGenerator.generateGridWithColorSequences(figure_array[180:210], n_rows=30, n_cols=1)
         plt.suptitle("Stimulus visibility: 0.3")
+        fig.set_size_inches(6, 4)
+        plt.savefig(path+"v0.3.png", dpi=300)
         plt.show()
 
     @staticmethod
-    def groupByResponse(figure_array):
+    def groupByResponse(figure_array, path):
         nothing_figures = [*figure_array[0:61], *figure_array[62:69], *figure_array[70:76], *figure_array[77:90],
                            *figure_array[95:96], *figure_array[104:105], *figure_array[107:108], *figure_array[111:117],
                            *figure_array[120:121]]
@@ -176,16 +216,24 @@ class PlotsGenerator:
                               *figure_array[158:162], *figure_array[163:164], *figure_array[166:169], *figure_array[170:174],
                               *figure_array[175:177], *figure_array[179:180], *figure_array[183:210], *figure_array[132:133]]
 
-        PlotsGenerator.generateGridWithColorSequences(nothing_figures, n_rows=len(nothing_figures), n_cols=1)
+        fig, ax = PlotsGenerator.generateGridWithColorSequences(nothing_figures, n_rows=len(nothing_figures), n_cols=1)
         plt.suptitle("Response: nothing")
-        PlotsGenerator.generateGridWithColorSequences(something_figures, n_rows=len(something_figures), n_cols=1)
+        fig.set_size_inches(6, 4)
+        plt.savefig(path+"response_nothing.png", dpi=300)
+
+        fig, ax = PlotsGenerator.generateGridWithColorSequences(something_figures, n_rows=len(something_figures), n_cols=1)
         plt.suptitle("Response: something")
-        PlotsGenerator.generateGridWithColorSequences(identified_figures, n_rows=len(identified_figures), n_cols=1)
+        fig.set_size_inches(6, 4)
+        plt.savefig(path+"response_something.png", dpi=300)
+
+        fig, ax = PlotsGenerator.generateGridWithColorSequences(identified_figures, n_rows=len(identified_figures), n_cols=1)
         plt.suptitle("Response: what the subject sees (correct + 1 incorrect)")
+        fig.set_size_inches(6, 4)
+        plt.savefig(path+"response_identified.png", dpi=300)
         plt.show()
 
     @staticmethod
-    def groupByStimulus(figure_array):
+    def groupByStimulus(figure_array, path):
 
         poseta = [figure_array[0], figure_array[31], figure_array[82],figure_array[106], figure_array[144],
                   figure_array[157], figure_array[185]]
@@ -248,66 +296,155 @@ class PlotsGenerator:
         pian = [figure_array[29], figure_array[40], figure_array[84], figure_array[104], figure_array[147],
                   figure_array[177], figure_array[202]]
 
-        PlotsGenerator.generateGridWithColorSequences(poseta, n_rows=7, n_cols=1)
+        fig, ax = PlotsGenerator.generateGridWithColorSequences(poseta, n_rows=7, n_cols=1)
         plt.suptitle("Stimulus: poseta/geanta (de dama)")
-        PlotsGenerator.generateGridWithColorSequences(topor, n_rows=7, n_cols=1)
+        fig.set_size_inches(6, 4)
+        plt.savefig(path+"stimulus_poseta.png", dpi=300)
+
+        fig, ax = PlotsGenerator.generateGridWithColorSequences(topor, n_rows=7, n_cols=1)
         plt.suptitle("Stimulus: topor/secure")
-        PlotsGenerator.generateGridWithColorSequences(oala, n_rows=7, n_cols=1)
+        fig.set_size_inches(6, 4)
+        plt.savefig(path+"stimulus_topor.png", dpi=300)
+
+        fig, ax = PlotsGenerator.generateGridWithColorSequences(oala, n_rows=7, n_cols=1)
         plt.suptitle("Stimulus: oala/cratita")
-        PlotsGenerator.generateGridWithColorSequences(elicopter, n_rows=7, n_cols=1)
+        fig.set_size_inches(6, 4)
+        plt.savefig(path+"stimulus_oala.png", dpi=300)
+
+        fig, ax = PlotsGenerator.generateGridWithColorSequences(elicopter, n_rows=7, n_cols=1)
         plt.suptitle("Stimulus: elicopter")
-        PlotsGenerator.generateGridWithColorSequences(urs, n_rows=7, n_cols=1)
+        fig.set_size_inches(6, 4)
+        plt.savefig(path+"stimulus_elicopter.png", dpi=300)
+
+        fig, ax = PlotsGenerator.generateGridWithColorSequences(urs, n_rows=7, n_cols=1)
         plt.suptitle("Stimulus: urs (polar)")
-        PlotsGenerator.generateGridWithColorSequences(palarie, n_rows=7, n_cols=1)
+        fig.set_size_inches(6, 4)
+        plt.savefig(path+"stimulus_urs.png", dpi=300)
+
+        fig, ax = PlotsGenerator.generateGridWithColorSequences(palarie, n_rows=7, n_cols=1)
         plt.suptitle("Stimulus: palarie")
-        PlotsGenerator.generateGridWithColorSequences(foarfece, n_rows=7, n_cols=1)
+        fig.set_size_inches(6, 4)
+        plt.savefig(path+"stimulus_palarie.png", dpi=300)
+
+        fig, ax = PlotsGenerator.generateGridWithColorSequences(foarfece, n_rows=7, n_cols=1)
         plt.suptitle("Stimulus: foarfece")
-        PlotsGenerator.generateGridWithColorSequences(banana, n_rows=7, n_cols=1)
+        fig.set_size_inches(6, 4)
+        plt.savefig(path+"stimulus_foarfece.png", dpi=300)
+
+        fig, ax = PlotsGenerator.generateGridWithColorSequences(banana, n_rows=7, n_cols=1)
         plt.suptitle("Stimulus: banana")
-        PlotsGenerator.generateGridWithColorSequences(lampa, n_rows=7, n_cols=1)
+        fig.set_size_inches(6, 4)
+        plt.savefig(path+"stimulus_banana.png", dpi=300)
+
+        fig, ax = PlotsGenerator.generateGridWithColorSequences(lampa, n_rows=7, n_cols=1)
         plt.suptitle("Stimulus: lampa/veioza")
-        PlotsGenerator.generateGridWithColorSequences(chitara, n_rows=7, n_cols=1)
+        fig.set_size_inches(6, 4)
+        plt.savefig(path+"stimulus_lampa.png", dpi=300)
+
+        fig, ax = PlotsGenerator.generateGridWithColorSequences(chitara, n_rows=7, n_cols=1)
         plt.suptitle("Stimulus: chitara (electrica)")
-        PlotsGenerator.generateGridWithColorSequences(masina, n_rows=7, n_cols=1)
+        fig.set_size_inches(6, 4)
+        plt.savefig(path+"stimulus_chitara.png", dpi=300)
+
+        fig, ax = PlotsGenerator.generateGridWithColorSequences(masina, n_rows=7, n_cols=1)
         plt.suptitle("Stimulus: masina")
-        PlotsGenerator.generateGridWithColorSequences(vaca, n_rows=7, n_cols=1)
+        fig.set_size_inches(6, 4)
+        plt.savefig(path+"stimulus_masina.png", dpi=300)
+
+        fig, ax = PlotsGenerator.generateGridWithColorSequences(vaca, n_rows=7, n_cols=1)
         plt.suptitle("Stimulus: vaca")
-        PlotsGenerator.generateGridWithColorSequences(furculita, n_rows=7, n_cols=1)
+        fig.set_size_inches(6, 4)
+        plt.savefig(path+"stimulus_vaca.png", dpi=300)
+
+        fig, ax = PlotsGenerator.generateGridWithColorSequences(furculita, n_rows=7, n_cols=1)
         plt.suptitle("Stimulus: furculita")
-        PlotsGenerator.generateGridWithColorSequences(cerb, n_rows=7, n_cols=1)
+        fig.set_size_inches(6, 4)
+        plt.savefig(path+"stimulus_furculita.png", dpi=300)
+
+        fig, ax = PlotsGenerator.generateGridWithColorSequences(cerb, n_rows=7, n_cols=1)
         plt.suptitle("Stimulus: cerb")
-        PlotsGenerator.generateGridWithColorSequences(pantaloni, n_rows=7, n_cols=1)
+        fig.set_size_inches(6, 4)
+        plt.savefig(path+"stimulus_cerb.png", dpi=300)
+
+        fig, ax = PlotsGenerator.generateGridWithColorSequences(pantaloni, n_rows=7, n_cols=1)
         plt.suptitle("Stimulus: pantaloni (scurti)")
-        PlotsGenerator.generateGridWithColorSequences(scaun, n_rows=7, n_cols=1)
+        fig.set_size_inches(6, 4)
+        plt.savefig(path+"stimulus_pantaloni.png", dpi=300)
+
+        fig, ax = PlotsGenerator.generateGridWithColorSequences(scaun, n_rows=7, n_cols=1)
         plt.suptitle("Stimulus: scaun")
-        PlotsGenerator.generateGridWithColorSequences(peste, n_rows=7, n_cols=1)
+        fig.set_size_inches(6, 4)
+        plt.savefig(path+"stimulus_scaun.png", dpi=300)
+
+        fig, ax = PlotsGenerator.generateGridWithColorSequences(peste, n_rows=7, n_cols=1)
         plt.suptitle("Stimulus: peste")
-        PlotsGenerator.generateGridWithColorSequences(caine, n_rows=7, n_cols=1)
+        fig.set_size_inches(6, 4)
+        plt.savefig(path+"stimulus_peste.png", dpi=300)
+
+        fig, ax = PlotsGenerator.generateGridWithColorSequences(caine, n_rows=7, n_cols=1)
         plt.suptitle("Stimulus: caine/catel")
-        PlotsGenerator.generateGridWithColorSequences(sticla, n_rows=7, n_cols=1)
+        fig.set_size_inches(6, 4)
+        plt.savefig(path+"stimulus_caine.png", dpi=300)
+
+        fig, ax = PlotsGenerator.generateGridWithColorSequences(sticla, n_rows=7, n_cols=1)
         plt.suptitle("Stimulus: sticla")
-        PlotsGenerator.generateGridWithColorSequences(pistol, n_rows=7, n_cols=1)
+        fig.set_size_inches(6, 4)
+        plt.savefig(path+"stimulus_sticla.png", dpi=300)
+
+        fig, ax = PlotsGenerator.generateGridWithColorSequences(pistol, n_rows=7, n_cols=1)
         plt.suptitle("Stimulus: pistol")
-        PlotsGenerator.generateGridWithColorSequences(bicicleta, n_rows=7, n_cols=1)
+        fig.set_size_inches(6, 4)
+        plt.savefig(path+"stimulus_pistol.png", dpi=300)
+
+        fig, ax = PlotsGenerator.generateGridWithColorSequences(bicicleta, n_rows=7, n_cols=1)
         plt.suptitle("Stimulus: bicicleta")
-        PlotsGenerator.generateGridWithColorSequences(cal, n_rows=7, n_cols=1)
+        fig.set_size_inches(6, 4)
+        plt.savefig(path+"stimulus_bicicleta.png", dpi=300)
+
+        fig, ax = PlotsGenerator.generateGridWithColorSequences(cal, n_rows=7, n_cols=1)
         plt.suptitle("Stimulus: cal")
-        PlotsGenerator.generateGridWithColorSequences(elefant, n_rows=7, n_cols=1)
+        fig.set_size_inches(6, 4)
+        plt.savefig(path+"stimulus_cal.png", dpi=300)
+
+        fig, ax = PlotsGenerator.generateGridWithColorSequences(elefant, n_rows=7, n_cols=1)
         plt.suptitle("Stimulus: elefant")
-        PlotsGenerator.generateGridWithColorSequences(iepure, n_rows=7, n_cols=1)
+        fig.set_size_inches(6, 4)
+        plt.savefig(path+"stimulus_elefant.png", dpi=300)
+
+        fig, ax = PlotsGenerator.generateGridWithColorSequences(iepure, n_rows=7, n_cols=1)
         plt.suptitle("Stimulus: iepure")
-        PlotsGenerator.generateGridWithColorSequences(pahar, n_rows=7, n_cols=1)
+        fig.set_size_inches(6, 4)
+        plt.savefig(path+"stimulus_iepure.png", dpi=300)
+
+        fig, ax = PlotsGenerator.generateGridWithColorSequences(pahar, n_rows=7, n_cols=1)
         plt.suptitle("Stimulus: pahar/cupa")
-        PlotsGenerator.generateGridWithColorSequences(masa, n_rows=7, n_cols=1)
+        fig.set_size_inches(6, 4)
+        plt.savefig(path+"stimulus_cupa.png", dpi=300)
+
+        fig, ax = PlotsGenerator.generateGridWithColorSequences(masa, n_rows=7, n_cols=1)
         plt.suptitle("Stimulus: masa")
-        PlotsGenerator.generateGridWithColorSequences(umbrela, n_rows=7, n_cols=1)
+        fig.set_size_inches(6, 4)
+        plt.savefig(path+"stimulus_masa.png", dpi=300)
+
+        fig, ax = PlotsGenerator.generateGridWithColorSequences(umbrela, n_rows=7, n_cols=1)
         plt.suptitle("Stimulus: umbrela")
-        PlotsGenerator.generateGridWithColorSequences(fluture, n_rows=7, n_cols=1)
+        fig.set_size_inches(6, 4)
+        plt.savefig(path+"stimulus_umbrela.png", dpi=300)
+
+        fig, ax = PlotsGenerator.generateGridWithColorSequences(fluture, n_rows=7, n_cols=1)
         plt.suptitle("Stimulus: fluture")
-        PlotsGenerator.generateGridWithColorSequences(girafa, n_rows=7, n_cols=1)
+        fig.set_size_inches(6, 4)
+        plt.savefig(path+"stimulus_fluture.png", dpi=300)
+
+        fig, ax = PlotsGenerator.generateGridWithColorSequences(girafa, n_rows=7, n_cols=1)
         plt.suptitle("Stimulus: girafa")
-        PlotsGenerator.generateGridWithColorSequences(pian, n_rows=7, n_cols=1)
+        fig.set_size_inches(6, 4)
+        plt.savefig(path+"stimulus_girafa.png", dpi=300)
+
+        fig, ax = PlotsGenerator.generateGridWithColorSequences(pian, n_rows=7, n_cols=1)
         plt.suptitle("Stimulus: pian")
+        fig.set_size_inches(6, 4)
+        plt.savefig(path+"stimulus_pian.png", dpi=300)
         plt.show()
 
     @staticmethod
@@ -504,7 +641,7 @@ class PlotsGenerator:
             title='Clusters given by som'
         )
         fig.show()
-        return np.array(samples_with_clusters_array), np.array(markers_and_colors)
+        return samples_with_clusters_array, markers_and_colors
 
     @staticmethod
     def generateSlicerPlotMayavi(distance_map):
@@ -527,7 +664,7 @@ class PlotsGenerator:
 
 
     @staticmethod
-    def getTrialSequencesArrayUsingClusters(all_trials_data, markers_and_clusters, samples_with_clusters):
+    def getTrialSequencesArrayUsingClustersLeftAlignment(all_trials_data, markers_and_clusters, samples_with_clusters):
         barcodes_array = []
         all_color_arrays = []
         max_length_color_array = 0
@@ -550,6 +687,35 @@ class PlotsGenerator:
             if len(colors_array) != max_length_color_array:
                 for i in range(0, max_length_color_array - len(colors_array)):
                     colors_array.append([1, 1, 1])
+            figure_data_tuple = PlotsGenerator.generateColorSequenceForTrialMatplotlib(colors_array)
+            barcodes_array.append(figure_data_tuple)
+        return barcodes_array
+
+    @staticmethod
+    def getTrialSequencesArrayUsingClustersRightAlignment(all_trials_data, markers_and_clusters, samples_with_clusters):
+        barcodes_array = []
+        all_color_arrays = []
+        max_length_color_array = 0
+        index = 0
+        for cnt, trial in enumerate(all_trials_data):
+            print("Trial " + str(cnt))
+            indexes_array = []
+            for i, sample in enumerate(trial.trial_data):
+                print("Sample " + str(i + index))
+                indexes_array.append(i + index)
+                #PlotsGenerator.validate(sample, samples_with_clusters[i + index][0])
+                if i == len(trial.trial_data) - 1:
+                    index = i + index + 1
+            colors_array = Utils.get_colors_array_with_clusters(indexes_array, markers_and_clusters,
+                                                                samples_with_clusters)
+            all_color_arrays.append(colors_array)
+            if len(colors_array) > max_length_color_array:
+                max_length_color_array = len(colors_array)
+        print("Max is ", max_length_color_array)
+        for cnt, colors_array in enumerate(all_color_arrays):
+            if len(colors_array) != max_length_color_array:
+                for i in range(0, max_length_color_array - len(colors_array)):
+                    colors_array.insert(0, [1, 1, 1])
             figure_data_tuple = PlotsGenerator.generateColorSequenceForTrialMatplotlib(colors_array)
             barcodes_array.append(figure_data_tuple)
         return barcodes_array

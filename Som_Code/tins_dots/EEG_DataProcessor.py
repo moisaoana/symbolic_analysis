@@ -1,6 +1,7 @@
 import os
 
 import numpy as np
+from sklearn.decomposition import PCA
 
 
 class EEG_Trial:
@@ -16,7 +17,7 @@ class EEG_DataProcessor:
         self.data = data
         self.event_timestamps = event_timestamps
         self.event_codes = event_codes
-
+        self.trials_lengths = []
         self.split_event_timestamps_by_codes()
 
     def split_event_codes(self):
@@ -66,6 +67,7 @@ class EEG_DataProcessor:
         processed_data = []
         for trial in self.trials:
             #print(trial.trial_data)
+            self.trials_lengths.append(len(trial.trial_data))
             processed_data.append(trial.trial_data)
 
         #print("processed data before: ", processed_data)
@@ -78,3 +80,15 @@ class EEG_DataProcessor:
             np.savetxt(self.DATASET_PATH + "/processed/" + "trial-all.csv", self.processed_data, delimiter=",")
 
         return self.processed_data
+
+    def apply_pca(self):
+        pca = PCA(n_components=5)
+        self.processed_data = pca.fit_transform(self.processed_data)
+        print(sum(pca.explained_variance_ratio_))
+
+    def reconstruct_trials(self):
+        start_index = 0
+        for cnt, trial in enumerate(self.trials):
+            last_index = start_index + self.trials_lengths[cnt]
+            trial.trial_data = self.processed_data[start_index:last_index]
+            start_index = start_index + self.trials_lengths[cnt]

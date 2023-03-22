@@ -28,6 +28,9 @@ class MySom3D(object):
     def getWeights(self):
         return self._weights
 
+    def setWeights(self,weights):
+        self._weights = weights
+
     def getX(self):
         return self._x
 
@@ -42,6 +45,7 @@ class MySom3D(object):
             print("Epoch: ", epoch)
             for sample in input_data:
                 sample = input_data[np.random.randint(0, len(input_data))]
+               # print("TYPE ", type(sample))
                 x_BMU, y_BMU, z_BMU = self.find_BMU(sample)
                 self._update_weights(sample, (x_BMU, y_BMU, z_BMU))
                 self._learning_rate, self._sigma = self._decay(epoch)

@@ -6,19 +6,32 @@ class ReaderUtils:
 
     @staticmethod
     def writeDistanceMap(distance_map):
-        with open('distance_map.txt', 'w') as file:
-            array_string = np.array2string(distance_map, separator=', ')
-            file.write(array_string)
+        with open('distance_map.bin', 'wb') as f:
+            np.save(f, distance_map)
 
     @staticmethod
-    def readDistanceMap(size):
-        return np.loadtxt('distance_map.txt', delimiter=',').reshape((size, size, size))
+    def readDistanceMap():
+        with open('distance_map.bin', 'rb') as f:
+            arr = np.load(f)
+        return arr
+
+    @staticmethod
+    def writeWeights(weights):
+        with open('weights.bin', 'wb') as f:
+            np.save(f, weights)
+
+    @staticmethod
+    def readWeights():
+        with open('weights.bin', 'rb') as f:
+            arr = np.load(f)
+        return arr
 
     @staticmethod
     def writeSamplesWithClusters(samples_with_clusters):
         with open('samples_with_clusters.txt', 'w') as file:
             for item in samples_with_clusters:
-                line = "{} {}\n".format(item[0], item[1])
+                values_str = ','.join(str(x) for x in item[0])
+                line = "{} {}\n".format('['+values_str+']', item[1])
                 file.write(line)
 
     @staticmethod
@@ -31,7 +44,7 @@ class ReaderUtils:
                 arr_str, num_str = line.split(' ')
                 arr = ast.literal_eval(arr_str)
                 num = int(num_str)
-                item = (arr, num)
+                item = (np.array(arr), num)
                 # Append the tuple to the data array
                 samples_with_clusters.append(item)
         return samples_with_clusters
@@ -40,7 +53,7 @@ class ReaderUtils:
     def writeMarkersAndColors(markers_and_colors):
         with open('markers_colors.txt', 'w') as file:
             for item in markers_and_colors:
-                line = "{} {} {} {}\n".format(item[0], item[1], item[2], item[3])
+                line = "{} {} {} {}\n".format(item[0], item[1], item[2], str(item[3]).replace(" ",""))
                 file.write(line)
 
     @staticmethod
