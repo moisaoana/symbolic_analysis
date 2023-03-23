@@ -60,7 +60,7 @@ PlotsGenerator.generateScatterPlotForDistanceMapPlotly(size, distance_map)
 #PlotsGenerator.groupByResponse(figure_data_array)
 #PlotsGenerator.groupByStimulus(figure_data_array)
 
-#samples_with_clusters_array_train, markers_and_colors_train = PlotsGenerator.generateScatterPlotForClustersPlotly(som, eegDataProcessor)
+#samples_with_clusters_array_train, markers_and_colors_train = PlotsGenerator.generateScatterPlotForClustersPlotly(som, eegDataProcessor.processed_data)
 #ReaderUtils.writeSamplesWithClusters(samples_with_clusters_array_train)
 #ReaderUtils.writeMarkersAndColors(markers_and_colors_train)
 samples_with_clusters_array = ReaderUtils.readSamplesWithClusters()

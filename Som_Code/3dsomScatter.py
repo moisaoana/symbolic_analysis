@@ -12,7 +12,7 @@ from mpl_toolkits.mplot3d import Axes3D
 import warnings
 
 # ignore all warnings
-from Som_Code.som_implementation_3D import MySom3D
+from som_implementation_3D import MySom3D
 
 warnings.filterwarnings('ignore')
 

@@ -122,13 +122,16 @@ class PlotsGenerator:
         return fig, ax, color_indices
 
     @staticmethod
-    def getTrialSequencesArrayUsingBMULeftAlignment(all_trials_data, som):
+    def getTrialSequencesArrayUsingBMULeftAlignment(all_trials_data, som, ssd=False):
         barcodes_array = []
         all_color_arrays = []
         max_length_color_array = 0
         for cnt, trial in enumerate(all_trials_data):
             print("Trial " + str(cnt))
-            colors_array = Utils.get_colors_array(trial.trial_data, som)
+            if ssd:
+                colors_array = Utils.get_colors_array(trial, som)
+            else:
+                colors_array = Utils.get_colors_array(trial.trial_data, som)
             all_color_arrays.append(colors_array)
             if len(colors_array) > max_length_color_array:
                 max_length_color_array = len(colors_array)
@@ -565,11 +568,11 @@ class PlotsGenerator:
         fig1.show()
 
     @staticmethod
-    def generateScatterPlotForClustersPlotly(som, eegDataProcessor):
-        threshold = som.find_threshold(eegDataProcessor.processed_data)
+    def generateScatterPlotForClustersPlotly(som, processed_data):
+        threshold = som.find_threshold(processed_data)
         print('Max dist ', threshold)
         no_clusters, bmu_array, samples_with_clusters_array = som.find_clusters_with_min_dist(
-            eegDataProcessor.processed_data,
+            processed_data,
             0.3, threshold)
         print('No clusters ', no_clusters)
         samples_with_symbols_array = Utils.assign_symbols(samples_with_clusters_array)
@@ -586,7 +589,7 @@ class PlotsGenerator:
         C = []
         BMU = []
 
-        for cnt, xx in enumerate(eegDataProcessor.processed_data):
+        for cnt, xx in enumerate(processed_data):
             w = som.find_BMU(xx)
             # print('W ', w)
             cluster = 0
