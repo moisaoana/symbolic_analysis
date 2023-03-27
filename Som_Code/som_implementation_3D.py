@@ -43,12 +43,17 @@ class MySom3D(object):
     def train(self, input_data, epochs):
         for epoch in np.arange(0, epochs):
             print("Epoch: ", epoch)
-            for sample in input_data:
-                sample = input_data[np.random.randint(0, len(input_data))]
-               # print("TYPE ", type(sample))
+            randomized = np.copy(input_data)
+            np.random.shuffle(randomized)
+            for id, sample in enumerate(randomized):
+                # print("TYPE ", type(sample))
                 x_BMU, y_BMU, z_BMU = self.find_BMU(sample)
                 self._update_weights(sample, (x_BMU, y_BMU, z_BMU))
                 self._learning_rate, self._sigma = self._decay(epoch)
+
+                if id % 1000 == 0:
+                    print(f"Epoch progress {id}/{len(input_data)}")
+
 
     def _decay(self, epoch):
         new_learning_rate = self._learning_rate * np.exp(-epoch * self._learning_rate_decay)
@@ -145,7 +150,8 @@ class MySom3D(object):
         no_clusters = 0
         sample_array = []
         for cnt, sample in enumerate(samples_data):
-            print('Sample ',cnt)
+            if cnt % 1000 == 0:
+                print('Sample progress', cnt)
             w = self.find_BMU(sample)
             sample_tuple = (sample, no_clusters)
             min_dist = sys.maxsize
@@ -169,9 +175,9 @@ class MySom3D(object):
     def find_threshold(self, samples_data):
         bmu_array = []
         max_threshold = 0
-        i = 0
-        for sample in samples_data:
-            print('Sample ', i)
+        for i, sample in enumerate(samples_data):
+            if i % 1000 == 0:
+                print('Sample progress', i)
             w = self.find_BMU(sample)
             for bmu in bmu_array:
                 difference = np.subtract(w, bmu)
@@ -181,7 +187,6 @@ class MySom3D(object):
                     max_threshold = dist
             if w not in bmu_array:
                 bmu_array.append(w)
-            i+=1
         return max_threshold
 
 

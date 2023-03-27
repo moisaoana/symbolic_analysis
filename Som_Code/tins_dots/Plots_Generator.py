@@ -15,9 +15,10 @@ from reportlab.lib.units import inch
 from reportlab.pdfgen import canvas
 from reportlab.lib.utils import ImageReader
 
-from utils import Utils
 
 #matplotlib.use('Qt5Agg')
+from utils import Utils
+
 
 class PlotsGenerator:
 
@@ -74,7 +75,8 @@ class PlotsGenerator:
         rows = no_trials
         columns = 1
         for cnt, trial in enumerate(all_trials_data):
-            print("Trial " + str(cnt))
+            if cnt % 1000 == 0:
+                print("Trial " + str(cnt))
             color_seq_fig, color_sequence = PlotsGenerator.generateColorSequenceForTrial(cnt, trial.trial_data, som)
             image_bytes = pio.to_image(color_seq_fig, format='png')
             image = Image.open(io.BytesIO(image_bytes))
@@ -93,7 +95,8 @@ class PlotsGenerator:
         img_height = 280
         y = PAGE_HEIGHT - TOP_MARGIN - img_height
         for cnt, trial in enumerate(all_trials_data):
-            print("Trial " + str(cnt))
+            if cnt % 1000 == 0:
+                print("Trial " + str(cnt))
             color_seq_fig, color_sequence = PlotsGenerator.generateColorSequenceForTrial(cnt, trial.trial_data, som)
             image_bytes = pio.to_image(color_seq_fig, format='png')
             image = Image.open(io.BytesIO(image_bytes))
@@ -127,11 +130,37 @@ class PlotsGenerator:
         all_color_arrays = []
         max_length_color_array = 0
         for cnt, trial in enumerate(all_trials_data):
-            print("Trial " + str(cnt))
+            if cnt % 1000 == 0:
+                print("Trial " + str(cnt))
             if ssd:
                 colors_array = Utils.get_colors_array(trial, som)
             else:
                 colors_array = Utils.get_colors_array(trial.trial_data, som)
+            all_color_arrays.append(colors_array)
+            if len(colors_array) > max_length_color_array:
+                max_length_color_array = len(colors_array)
+        print("Max is ",max_length_color_array)
+        for cnt, colors_array in enumerate(all_color_arrays):
+            if len(colors_array) != max_length_color_array:
+                for i in range(0, max_length_color_array-len(colors_array)):
+                    colors_array.append([1, 1, 1])
+            figure_data_tuple = PlotsGenerator.generateColorSequenceForTrialMatplotlib(colors_array)
+            barcodes_array.append(figure_data_tuple)
+        return barcodes_array
+
+
+    @staticmethod
+    def getTrialSequencesArrayUsingBMULeftAlignmentMINISOM(all_trials_data, som, ssd=False):
+        barcodes_array = []
+        all_color_arrays = []
+        max_length_color_array = 0
+        for cnt, trial in enumerate(all_trials_data):
+            if cnt % 1000 == 0:
+                print("Trial " + str(cnt))
+            if ssd:
+                colors_array = Utils.get_colors_arrayMINISOM(trial, som)
+            else:
+                colors_array = Utils.get_colors_arrayMINISOM(trial.trial_data, som)
             all_color_arrays.append(colors_array)
             if len(colors_array) > max_length_color_array:
                 max_length_color_array = len(colors_array)
@@ -150,7 +179,8 @@ class PlotsGenerator:
         all_color_arrays = []
         max_length_color_array = 0
         for cnt, trial in enumerate(all_trials_data):
-            print("Trial " + str(cnt))
+            if cnt % 1000 == 0:
+                print("Trial " + str(cnt))
             colors_array = Utils.get_colors_array(trial.trial_data, som)
             all_color_arrays.append(colors_array)
             if len(colors_array) > max_length_color_array:
@@ -676,7 +706,8 @@ class PlotsGenerator:
             print("Trial " + str(cnt))
             indexes_array = []
             for i, sample in enumerate(trial.trial_data):
-                print("Sample " + str(i+index))
+                if i % 1000 == 0:
+                    print("Sample progress" + str(i + index))
                 indexes_array.append(i+index)
                 PlotsGenerator.validate(sample, samples_with_clusters[i+index][0])
                 if i == len(trial.trial_data)-1:
@@ -704,7 +735,8 @@ class PlotsGenerator:
             print("Trial " + str(cnt))
             indexes_array = []
             for i, sample in enumerate(trial.trial_data):
-                print("Sample " + str(i + index))
+                if i % 1000 == 0:
+                    print("Sample progress" + str(i + index))
                 indexes_array.append(i + index)
                 #PlotsGenerator.validate(sample, samples_with_clusters[i + index][0])
                 if i == len(trial.trial_data) - 1:

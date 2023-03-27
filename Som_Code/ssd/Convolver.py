@@ -3,12 +3,13 @@ import struct
 
 import numpy as np
 import matplotlib.pyplot as plt
+import pandas as pd
 
-from SsdParser import SsdParser
+from ssd.SsdParser import SsdParser
 
 
 class Convolver():
-    def __init__(self, DATASET_PATH, THETA=20, show=False):
+    def __init__(self, DATASET_PATH, ELECTRODE = 'El_01', THETA=20, show=False):
         self.DATASET_PATH = DATASET_PATH
         self.show = show
         self.THETA = THETA
@@ -17,13 +18,13 @@ class Convolver():
 
         units_by_channels, labels_by_channels, timestamps_by_channels = parser.units_by_channel, parser.labels, parser.timestamps_by_channel
         event_codes, event_timestamps = parser.event_codes, parser.event_timestamps
+
         self.RECORDING_LENGTH = parser.RECORDING_LENGTH
         self.SAMPLING_FREQUENCY = parser.spike_sampling_frequency
 
         if self.RECORDING_LENGTH == 0:
             raise Exception("NU MERE")
 
-        ELECTRODE = 'El_15'
         self.X = np.array(units_by_channels[ELECTRODE])
         self.t = np.array(timestamps_by_channels[ELECTRODE])
         self.y = np.array(labels_by_channels[ELECTRODE])
@@ -86,7 +87,47 @@ class Convolver():
 
         return trial_rasters
 
-    def convolve_one_raster(self, trial_raster):
+
+    def downsample_raster(self, raster):
+        raster_samples_time = raster.shape[1]
+        # downsampling such that each sample now incorporates whether a spike occured in that ms
+        raster_ms_time = raster_samples_time / self.SAMPLING_FREQUENCY * 1000
+        samples_in_1ms = int(raster_samples_time / raster_ms_time)  # 32 samples
+
+        test = []
+        for index in range(0, raster_samples_time, samples_in_1ms):
+            spikes = np.count_nonzero(raster[:, index:index + samples_in_1ms], axis=1)  # might have 2 spikes in a single window of 32 samples
+            spikes[spikes == 0] = 0
+            spikes[spikes >= 1] = 1
+
+            test.append(spikes)
+
+        downsampled_raster = np.array(test, dtype=float).T
+
+        return downsampled_raster
+
+    def split_data_into_trials_by_ms(self, data, size):
+        raster_samples_time = self.RECORDING_LENGTH
+        raster_ms_time = raster_samples_time / self.SAMPLING_FREQUENCY * 1000
+        samples_in_1ms = int(raster_samples_time / raster_ms_time)  # 32 samples
+        trial_data = []
+        for timestamp_interval in self.timestamp_intervals:
+            trial = data[timestamp_interval[0]//samples_in_1ms:timestamp_interval[0]//samples_in_1ms + size]
+
+            trial_data.append(trial)
+
+        return trial_data
+
+    def split_data_into_trials(self, data):
+        trial_data = []
+        for timestamp_interval in self.timestamp_intervals:
+            trial = data[timestamp_interval[0]:timestamp_interval[1]]
+
+            trial_data.append(trial)
+
+        return trial_data
+
+    def convolve_one_trial_raster(self, trial_raster):
         for neuron in range(trial_raster.shape[0]):
             for time in range(trial_raster.shape[1]):
                 if trial_raster[neuron, time] == 1:  # had spike at time
@@ -96,12 +137,39 @@ class Convolver():
 
         return trial_raster
 
-    def convolve_all_rasters(self, trial_rasters):
+    def convolve_all_trial_rasters(self, trial_rasters):
         for trial_raster in trial_rasters:
-            trial_raster = self.convolve_one_raster(trial_raster)
+            trial_raster = self.convolve_one_trial_raster(trial_raster)
 
         if self.show == True:
             print(trial_rasters[0].shape)
             print("TRIAL RASTERS SHAPE: ", np.array(trial_rasters).shape)
 
         return trial_rasters
+
+    def get_trials_separated_by_conditions(self, trial_rasters):
+        csvs = self.find_csv_filenames()
+        condition_file = csvs[0]
+
+        condition_table = pd.read_csv(self.DATASET_PATH + condition_file, skiprows=2)
+        self.condition_numpy = condition_table.to_numpy()[:, :3]
+
+        trial_rasters_by_condition = self.separate_trials_by_conditions(trial_rasters, self.condition_numpy)
+
+        return trial_rasters_by_condition
+
+    def find_csv_filenames(self, suffix=".csv"):
+        filenames = os.listdir(self.DATASET_PATH)
+        return [filename for filename in filenames if filename.endswith(suffix)]
+
+    def separate_trials_by_conditions(self, trial_rasters, condition_numpy):
+        trial_rasters_by_condition = []
+        for condition in range(1, 9):  # 8 conditions
+            # print(np.where(condition_numpy[:, 1] == condition))
+            trial_rasters_condition = np.array(trial_rasters)[condition_numpy[:, 1] == condition]
+            trial_rasters_by_condition.append(trial_rasters_condition)
+
+        return trial_rasters_by_condition
+
+    def get_data_by_condition(self, data, condition):
+        return np.array(data)[self.condition_numpy[:, 1] == condition]

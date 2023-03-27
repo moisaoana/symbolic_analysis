@@ -44,7 +44,7 @@ class Utils:
             color_r = (float(bmu[0]) / float(som.getX())) * 255
             color_g = (float(bmu[1]) / float(som.getY())) * 255
             color_b = (float(bmu[2]) / float(som.getZ())) * 255
-            rgb_string = 'rgb(' + str(color_r) + ',' + str(color_g) + ',' + str(color_b) + ')'
+            rgb_string = 'rgb_EL_15_8(' + str(color_r) + ',' + str(color_g) + ',' + str(color_b) + ')'
             colors_array.append(rgb_string)
         return colors_array
 
@@ -55,4 +55,13 @@ class Utils:
             cluster = samples_with_clusters[i][1]
             color = markers_and_colors[cluster][3]
             colors_array.append(color)
+        return colors_array
+
+    @staticmethod
+    def get_colors_arrayMINISOM(samples, som):
+        colors_array = []
+        for s in samples:
+            bmu = som.winner(s)
+            colors_array.append([float(bmu[0]) / float(som.getX()), float(bmu[1]) / float(som.getY()),
+                                 float(bmu[2]) / float(som.getZ())])
         return colors_array

@@ -2,6 +2,7 @@ import os
 
 import numpy as np
 from sklearn.decomposition import PCA
+from sklearn.decomposition import FastICA
 
 
 class EEG_Trial:
@@ -57,22 +58,22 @@ class EEG_DataProcessor:
                     trial_data=self.data[timestamp[0]:timestamp[1]]
                 )
             )
-            if save==True:
-                if not os.path.exists(self.DATASET_PATH+"/processed/"):
-                    os.makedirs(self.DATASET_PATH+"/processed/")
-                np.savetxt(self.DATASET_PATH + "/processed/" + "trial{trial_id}-{timestamp[0]}-{timestamp[1]}.csv", self.data[timestamp[0]:timestamp[1]], delimiter=",")
-
+            if save == True:
+                if not os.path.exists(self.DATASET_PATH + "/processed/"):
+                    os.makedirs(self.DATASET_PATH + "/processed/")
+                np.savetxt(self.DATASET_PATH + "/processed/" + "trial{trial_id}-{timestamp[0]}-{timestamp[1]}.csv",
+                           self.data[timestamp[0]:timestamp[1]], delimiter=",")
 
     def link_trials(self, save=True):
         processed_data = []
         for trial in self.trials:
-            #print(trial.trial_data)
+            # print(trial.trial_data)
             self.trials_lengths.append(len(trial.trial_data))
             processed_data.append(trial.trial_data)
 
-        #print("processed data before: ", processed_data)
+        # print("processed data before: ", processed_data)
         self.processed_data = np.vstack(processed_data)
-        #print("processed data after: ", self.processed_data)
+        # print("processed data after: ", self.processed_data)
 
         if save == True:
             if not os.path.exists(self.DATASET_PATH + "/processed/"):
@@ -92,3 +93,7 @@ class EEG_DataProcessor:
             last_index = start_index + self.trials_lengths[cnt]
             trial.trial_data = self.processed_data[start_index:last_index]
             start_index = start_index + self.trials_lengths[cnt]
+
+    def apply_ica(self):
+        transformer = FastICA(whiten='unit-variance')
+        self.processed_data = transformer.fit_transform(self.processed_data)
