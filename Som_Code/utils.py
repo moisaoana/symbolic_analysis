@@ -1,3 +1,4 @@
+import numpy as np
 class Utils:
     all_markers = ['circle', 'square', 'cross', 'diamond',
                    'diamond-open', 'circle-open', 'square-open', 'x']
@@ -29,11 +30,13 @@ class Utils:
     @staticmethod
     def get_colors_array(samples, som):
         colors_array = []
+        freq_matrix = np.zeros((som.getX(), som.getY(), som.getZ()))
         for s in samples:
             bmu = som.find_BMU(s)
             colors_array.append([float(bmu[0]) / float(som.getX()), float(bmu[1]) / float(som.getY()),
                                  float(bmu[2]) / float(som.getZ())])
-        return colors_array
+            freq_matrix[bmu[0]][bmu[1]][bmu[2]] += 1
+        return colors_array, freq_matrix
 
     @staticmethod
     def get_rgb_colors_array(samples, som):

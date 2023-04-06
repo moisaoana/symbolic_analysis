@@ -1,6 +1,3 @@
 0 circle red [1,0,0]
 1 square orange [1,0.64,0]
 2 cross yellow [1,1,0]
-3 diamond green [0,1,0]
-4 diamond-open blue [0,0,1]
-5 circle-open purple [0.5,0,0.5]

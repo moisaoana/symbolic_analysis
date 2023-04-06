@@ -82,8 +82,8 @@ class EEG_DataProcessor:
 
         return self.processed_data
 
-    def apply_pca(self):
-        pca = PCA(n_components=5)
+    def apply_pca(self, no_components):
+        pca = PCA(n_components=no_components)
         self.processed_data = pca.fit_transform(self.processed_data)
         print(sum(pca.explained_variance_ratio_))
 
@@ -95,5 +95,5 @@ class EEG_DataProcessor:
             start_index = start_index + self.trials_lengths[cnt]
 
     def apply_ica(self):
-        transformer = FastICA(whiten='unit-variance')
+        transformer = FastICA(whiten='unit-variance', max_iter=1000)
         self.processed_data = transformer.fit_transform(self.processed_data)

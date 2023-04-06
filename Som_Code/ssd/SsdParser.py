@@ -3,15 +3,20 @@ import struct
 
 import numpy as np
 import matplotlib.pyplot as plt
+from sklearn.decomposition import PCA
 
 from ssd.TSCParser import TSCParser
 
 
 class SsdParser(TSCParser):
-    def __init__(self, dir_name, show=False):
+    def __init__(self, dir_name, show=False, TRIAL_START=1, STIMULUS_ON=2, STIMULUS_OFF=4, TRIAL_END=8):
         super().__init__()
         self.DATASET_PATH = dir_name
         self.show = show
+        self.TRIAL_START = TRIAL_START
+        self.STIMULUS_ON = STIMULUS_ON
+        self.STIMULUS_OFF = STIMULUS_OFF
+        self.TRIAL_END = TRIAL_END
 
         self.parse_ssd_file()
         if self.show == True:
@@ -27,7 +32,7 @@ class SsdParser(TSCParser):
         @return: spikes_per_channel: an array of length=nr of channels and each value is the number of spikes on that channel
         """
         string_nr_units = 'Number of units:'
-        string_unit_names = 'List with the names of units:'
+        string_unit_names= 'List with the names of units:'
         string_channel_names = 'List with the recording elements (channels, tetrodes, etc) where each unit originates:'
         string_spike_counts = 'Number of spikes in each unit:'
         string_waveform_length = 'Waveform length in samples:'
@@ -38,14 +43,15 @@ class SsdParser(TSCParser):
         string_spike_sampling_frequency = 'Spike times and event sampling frequency [Hz]:'
         string_waveform_sampling_frequency = 'Waveform internal sampling frequency [Hz] (can be different than the sampling of the spike times):'
 
+
         for file_name in os.listdir(self.DATASET_PATH):
-            print(self.DATASET_PATH + file_name)
             full_file_name = self.DATASET_PATH + file_name
             if full_file_name.endswith(".ssd"):
                 file = open(full_file_name, "r")
                 lines = file.readlines()
                 lines = [line.rstrip() for line in lines]
                 lines = np.array(lines)
+
 
                 index = self.get_index_line(lines, string_nr_units)
                 self.NR_UNITS = lines[index].astype(int)
@@ -76,6 +82,8 @@ class SsdParser(TSCParser):
                 index = self.get_index_line(lines, string_waveform_sampling_frequency)
                 self.waveform_sampling_frequency = lines[index].astype(float).astype(int)
 
+
+
                 try:
                     index = self.get_index_line(lines, string_electrodes_per_multitrode)
                     self.NR_ELECTRODES_PER_MULTITRODE = lines[index].astype(int)
@@ -95,6 +103,8 @@ class SsdParser(TSCParser):
                         self.WAVEFORM_ALIGNMENT = lines[index].astype(int)
                     except IndexError:
                         self.WAVEFORM_ALIGNMENT = 0
+
+
 
                 try:
                     index = self.get_index_line(lines, string_length)
@@ -167,26 +177,29 @@ class SsdParser(TSCParser):
             if file_name.endswith(".ssdus"):
                 unit_statistics_filename = DATASET_PATH + file_name
 
+            if file_name.endswith(".ssmpf"):
+                muie_file = DATASET_PATH + file_name
+
         return timestamp_file, waveform_file, event_timestamps_filename, event_codes_filename, unit_statistics_filename
 
     def get_data(self):
-        timestamp_file, waveform_file, event_timestamps_file, event_codes_file, unit_statistics_file = self.find_ssd_files(
-            self.DATASET_PATH)
+        timestamp_file, waveform_file, event_timestamps_file, event_codes_file, unit_statistics_file = self.find_ssd_files(self.DATASET_PATH)
 
         self.timestamps = self.FileReader.read_timestamps(timestamp_file)
         self.timestamps_by_unit = self.separate_by_unit(self.timestamps, self.TIMESTAMP_LENGTH)
-        self.timestamps_by_channel, _ = self.separate_units_by_channel_dict(self.timestamps_by_unit,
-                                                                            self.TIMESTAMP_LENGTH)
+        self.timestamps_by_channel, self.labels = self.separate_units_by_channel_dict(self.timestamps_by_unit, self.TIMESTAMP_LENGTH)
 
         if waveform_file != None:
             self.waveforms = self.FileReader.read_waveforms(waveform_file)
             self.waveforms_by_unit = self.separate_by_unit(self.waveforms, self.FULL_WAVEFORM_LENGTH)
-            self.units_by_channel, self.labels = self.separate_units_by_channel_dict(self.waveforms_by_unit,
-                                                                                     self.FULL_WAVEFORM_LENGTH)
+            self.units_by_channel, self.labels = self.separate_units_by_channel_dict(self.waveforms_by_unit, self.FULL_WAVEFORM_LENGTH)
+
 
         self.event_timestamps = self.FileReader.read_event_timestamps(event_timestamps_file)
         self.event_codes = self.FileReader.read_event_codes(event_codes_file)
         self.unit_statistics = self.FileReader.read_unit_statistics(unit_statistics_file)
+
+
 
     def separate_by_unit(self, data, length):
         """
@@ -203,6 +216,7 @@ class SsdParser(TSCParser):
             sum += spikes_in_unit
 
         return separated_data
+
 
     def get_data_from_unit(self, data_by_unit, unit, length):
         """
@@ -236,6 +250,7 @@ class SsdParser(TSCParser):
                 min_label = np.amin(label_set)
                 label_set = label_set - min_label + 1
                 labels[channel_name] = label_set.tolist()
+
 
         return units_in_channels, labels
 
@@ -295,19 +310,21 @@ class SsdParser(TSCParser):
 
         return units_by_electrodes
 
+
     def split_event_codes(self):
         groups = []
 
         group = []
+        # print(np.unique(self.event_codes))
         for id, event_code in enumerate(self.event_codes):
-            if event_code == 1:
+            if event_code == self.TRIAL_START:
                 group = []
                 group.append(id)
-            elif len(group) == 1 and event_code == 2:
+            elif len(group) == 1 and event_code == self.STIMULUS_ON:
                 group.append(id)
-            elif len(group) == 2 and event_code == 4:
+            elif len(group) == 2 and event_code == self.STIMULUS_OFF:
                 group.append(id)
-            elif len(group) == 3 and event_code == 8:
+            elif len(group) == 3 and event_code == self.TRIAL_END:
                 group.append(id)
                 groups.append(group)
                 group = []
@@ -321,11 +338,13 @@ class SsdParser(TSCParser):
 
         timestamp_intervals = []
         for group in groups:
+            # print(self.event_timestamps[group[0]], self.event_timestamps[group[1]] - self.event_timestamps[group[0]], self.event_timestamps[group[3]] - self.event_timestamps[group[2]],self.event_timestamps[group[3]])
             timestamps_of_interest = [self.event_timestamps[group[0]], self.event_timestamps[group[-1]]]
             timestamp_intervals.append(timestamps_of_interest)
 
-        self.timestamp_intervals = np.array(timestamp_intervals)
-        return self.timestamp_intervals
+        self.timestamp_trial_intervals = np.array(timestamp_intervals)
+        return self.timestamp_trial_intervals
+
 
     def assert_correctness(self):
         print(f"Number of Units: {self.spike_count_per_unit.shape}")
@@ -359,16 +378,15 @@ class SsdParser(TSCParser):
         print(f"Waveforms per channel: {list(map(len, waveforms_by_unit))}")
         print(f"Spikes per channel parsed from file: {self.spike_count_per_unit}")
         waveform_lens = list(map(len, waveforms_by_unit))
-        print(
-            f"Waveforms/{self.WAVEFORM_LENGTH} per channel should be equal: {[i // self.WAVEFORM_LENGTH for i in waveform_lens]}")
-        print(
-            f"Assert equality: {list(self.spike_count_per_unit) == [i // self.WAVEFORM_LENGTH for i in waveform_lens]}")
+        print(f"Waveforms/{self.WAVEFORM_LENGTH} per channel should be equal: {[i // self.WAVEFORM_LENGTH for i in waveform_lens]}")
+        print(f"Assert equality: {list(self.spike_count_per_unit) == [i // self.WAVEFORM_LENGTH for i in waveform_lens]}")
         print(f"Sum of lengths equal to total: {len(waveforms) == np.sum(np.array(waveform_lens))}")
         print("--------------------------------------------")
 
+
+
     def read_kampff_channel(self, key):
-        units_in_channels, labels = self.separate_units_by_channel_dict(self.waveforms_by_unit,
-                                                                        data_length=self.WAVEFORM_LENGTH)
+        units_in_channels, labels = self.separate_units_by_channel_dict(self.waveforms_by_unit, data_length=self.WAVEFORM_LENGTH)
         intracellular_labels = self.get_intracellular_labels()
 
         return units_in_channels[key], labels[key], intracellular_labels
@@ -386,21 +404,18 @@ class SsdParser(TSCParser):
     def plot_sorted_data_all_available_channels(self):
         for channel in range(self.NR_CHANNELS):
             if self.units_by_channel[channel] != [] and self.labels[channel] != []:
-                self.plot_data_pca(f"Units in Channel {channel + 1}", self.units_by_channel[channel],
-                                   self.labels[channel])
+                self.plot_data_pca(f"Units in Channel {channel + 1}", self.units_by_channel[channel], self.labels[channel])
         plt.show()
 
     def plot_sorted_data_all_available_channels_dict(self):
         for channel_name in self.channel_names:
             if self.units_by_channel[channel_name] != [] and self.labels[channel_name] != []:
-                self.plot_data_pca(f"Units in Channel {channel_name}", self.units_by_channel[channel_name],
-                                   self.labels[channel_name])
+                self.plot_data_pca(f"Units in Channel {channel_name}", self.units_by_channel[channel_name], self.labels[channel_name])
         plt.show()
 
     def plot_multitrode(self, data, labels, channel, nr_dim=2):
         for nr in range(self.NR_ELECTRODES_PER_MULTITRODE):
-            self.plot_data_pca(f'Multitrode {channel} - Electrode {nr + 1}', data[channel][nr], labels[channel],
-                               nr_dim=nr_dim, show=True)
+            self.plot_data_pca(f'Multitrode {channel} - Electrode {nr + 1}', data[channel][nr], labels[channel], nr_dim=nr_dim, show=True)
 
     def plot_multitrodes(self, data, labels, nr_dim):
         for channel_name in data.keys():

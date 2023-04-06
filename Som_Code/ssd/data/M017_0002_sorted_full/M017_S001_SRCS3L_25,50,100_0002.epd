@@ -1,0 +1,97 @@
+EEG Processor Dataset
+Format version:
+1.1
+
+Number of EEG channels:
+33
+
+Sampling frequency (Hz):
+32000.0
+
+Total number of samples:
+37040000
+
+List with filenames that hold individual channel samples (32 bit IEEE 754-1985, single precision floating point; amplitudes are measured in uV):
+M017_S001_SRCS3L_25,50,100_0002-Ch001.bin
+M017_S001_SRCS3L_25,50,100_0002-Ch002.bin
+M017_S001_SRCS3L_25,50,100_0002-Ch003.bin
+M017_S001_SRCS3L_25,50,100_0002-Ch004.bin
+M017_S001_SRCS3L_25,50,100_0002-Ch005.bin
+M017_S001_SRCS3L_25,50,100_0002-Ch006.bin
+M017_S001_SRCS3L_25,50,100_0002-Ch007.bin
+M017_S001_SRCS3L_25,50,100_0002-Ch008.bin
+M017_S001_SRCS3L_25,50,100_0002-Ch009.bin
+M017_S001_SRCS3L_25,50,100_0002-Ch010.bin
+M017_S001_SRCS3L_25,50,100_0002-Ch011.bin
+M017_S001_SRCS3L_25,50,100_0002-Ch012.bin
+M017_S001_SRCS3L_25,50,100_0002-Ch013.bin
+M017_S001_SRCS3L_25,50,100_0002-Ch014.bin
+M017_S001_SRCS3L_25,50,100_0002-Ch015.bin
+M017_S001_SRCS3L_25,50,100_0002-Ch016.bin
+M017_S001_SRCS3L_25,50,100_0002-Ch017.bin
+M017_S001_SRCS3L_25,50,100_0002-Ch018.bin
+M017_S001_SRCS3L_25,50,100_0002-Ch019.bin
+M017_S001_SRCS3L_25,50,100_0002-Ch020.bin
+M017_S001_SRCS3L_25,50,100_0002-Ch021.bin
+M017_S001_SRCS3L_25,50,100_0002-Ch022.bin
+M017_S001_SRCS3L_25,50,100_0002-Ch023.bin
+M017_S001_SRCS3L_25,50,100_0002-Ch024.bin
+M017_S001_SRCS3L_25,50,100_0002-Ch025.bin
+M017_S001_SRCS3L_25,50,100_0002-Ch026.bin
+M017_S001_SRCS3L_25,50,100_0002-Ch027.bin
+M017_S001_SRCS3L_25,50,100_0002-Ch028.bin
+M017_S001_SRCS3L_25,50,100_0002-Ch029.bin
+M017_S001_SRCS3L_25,50,100_0002-Ch030.bin
+M017_S001_SRCS3L_25,50,100_0002-Ch031.bin
+M017_S001_SRCS3L_25,50,100_0002-Ch032.bin
+M017_S001_SRCS3L_25,50,100_0002-Ch033.bin
+
+File holding event timestamps; timestamp is in samples; (32 bit signed integer file):
+M017_S001_SRCS3L_25,50,100_0002-Event-Timestamps.bin
+
+File holding codes of events corresponding to the event timestamps file; timestamp is in samples; (32 bit signed integer file):
+M017_S001_SRCS3L_25,50,100_0002-Event-Codes.bin
+
+Number of events (size of the list with event timestamps and list with event codes):
+960
+
+List with labels of EEG channels:
+El_01
+El_02
+El_03
+El_04
+El_05
+El_06
+El_07
+El_08
+El_09
+El_10
+El_11
+El_12
+El_13
+El_14
+El_15
+El_16
+El_17
+El_18
+El_19
+El_20
+El_21
+El_22
+El_23
+El_24
+El_25
+El_26
+El_27
+El_28
+El_29
+El_30
+El_31
+El_32
+El_33
+
+Number of channels that were considered for computing an average reference:
+0
+
+List of channels (index name) that were taken into computing an average reference (if empty, then signals were not referenced when importing to EPD; be careful with Biosemi datasets that are recorded unreferenced...):
+

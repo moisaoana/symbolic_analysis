@@ -9,7 +9,7 @@ import plotly.graph_objs as go
 
 
 from som_implementation_3D import MySom3D
-from Plots_Generator import PlotsGenerator
+from Plots_Generator import PlotsGenerator, GroupingMethod
 from readerUtils import ReaderUtils
 from utils import Utils
 
@@ -24,20 +24,26 @@ event_codes = parser.load_event_codes()
 eegDataProcessor = EEG_DataProcessor(DATASET_PATH, full_data, event_timestamps, event_codes)
 eegDataProcessor.create_trials(save=False)
 eegDataProcessor.link_trials(save=False)
-#eegDataProcessor.apply_pca()
+
+#cov_matrix = np.cov(eegDataProcessor.processed_data, bias=True)
+#rank = np.linalg.matrix_rank(cov_matrix)
+#print("Rank: "+ str(rank))
+
+eegDataProcessor.apply_pca(5)
 eegDataProcessor.apply_ica()
 eegDataProcessor.reconstruct_trials()
 
 
-size = 4
-no_features = 128
+size = 10
+no_features = eegDataProcessor.processed_data.shape[1]
 no_iterations = 1
+sigma = 2
+learning_rate = 1
 
 print(eegDataProcessor.processed_data.shape)
 
 print(len(eegDataProcessor.trials))
-
-som = MySom3D(size, size, size, no_features, sigma=0.3, learning_rate=0.5)
+som = MySom3D(size, size, size, no_features, sigma=sigma, learning_rate=learning_rate)
 som.train(eegDataProcessor.processed_data, no_iterations)
 
 distance_map_train = som.distance_map().T
@@ -61,16 +67,60 @@ PlotsGenerator.generateScatterPlotForDistanceMapPlotly(size, distance_map)
 #PlotsGenerator.groupByResponse(figure_data_array)
 #PlotsGenerator.groupByStimulus(figure_data_array)
 
+#CLUSTERING
 samples_with_clusters_array_train, markers_and_colors_train = PlotsGenerator.generateScatterPlotForClustersPlotly(som, eegDataProcessor.processed_data)
 ReaderUtils.writeSamplesWithClusters(samples_with_clusters_array_train)
 ReaderUtils.writeMarkersAndColors(markers_and_colors_train)
 samples_with_clusters_array = ReaderUtils.readSamplesWithClusters()
 markers_and_colors = ReaderUtils.readMarkersAndColors()
 
+path = "color_seq_plots/updated_som/all_channels/pca+ica_5comp/clusters/left/"
+params = "size: " + str(size) +" ep: " + str(no_iterations) +" feat: " + str(no_features) +" sigma: " + str(sigma) +" lr: " + str(learning_rate)
+response_psi_threshold = 0.5
+visibility_psi_threshold = 0.15
+stimulus_psi_threshold = 0.05
 
-figure_data_array = PlotsGenerator.getTrialSequencesArrayUsingBMULeftAlignment(eegDataProcessor.trials, som)
-PlotsGenerator.groupByStimulusVisibility(figure_data_array, "color_seq_plots/ica/rgb/left/")
-PlotsGenerator.groupByResponse(figure_data_array, "color_seq_plots/ica/rgb/left/")
-PlotsGenerator.groupByStimulus(figure_data_array, "color_seq_plots/ica/rgb/left/")
+figure_data_array, color_freq_for_each_trial = PlotsGenerator.getTrialSequencesArrayUsingClustersLeftAlignment(eegDataProcessor.trials, markers_and_colors, samples_with_clusters_array)
+PlotsGenerator.groupByStimulusVisibility(figure_data_array, path, params)
+PlotsGenerator.groupByResponse(figure_data_array, path, params)
+PlotsGenerator.groupByStimulus(figure_data_array, path, params)
+
+
+
+
+response_PSIs_for_all_colors_matrix_array = PlotsGenerator.computePSIByGroup(color_freq_for_each_trial, group= GroupingMethod.BY_RESPONSE)
+print("Response PSIs: ")
+print(response_PSIs_for_all_colors_matrix_array)
+PlotsGenerator.groupByResponseWithPsiUsingBMU(eegDataProcessor.trials,
+                                                som,
+                                                response_PSIs_for_all_colors_matrix_array,
+                                                response_psi_threshold,
+                                                path,
+                                                params,
+                                                align=0)
+
+
+visibility_PSIs_for_all_colors_matrix_array = PlotsGenerator.computePSIByGroup(color_freq_for_each_trial, group= GroupingMethod.BY_VISIBILITY)
+print("Visibility PSIs: ")
+print(visibility_PSIs_for_all_colors_matrix_array)
+PlotsGenerator.groupByVisibilityWithPsiUsingBMU(eegDataProcessor.trials,
+                                                    som,
+                                                    visibility_PSIs_for_all_colors_matrix_array,
+                                                    visibility_psi_threshold,
+                                                    path,
+                                                    params,
+                                                    align=0)
+
+
+stimulus_PSIs_for_all_colors_matrix_array = PlotsGenerator.computePSIByGroup(color_freq_for_each_trial, group= GroupingMethod.BY_STIMULUS)
+print("Stimulus PSIs: ")
+print(stimulus_PSIs_for_all_colors_matrix_array)
+PlotsGenerator.groupByStimulusWithPsiUsingBMU(eegDataProcessor.trials,
+                                                    som,
+                                                    stimulus_PSIs_for_all_colors_matrix_array,
+                                                    stimulus_psi_threshold,
+                                                    path,
+                                                    params,
+                                                    align=0)
 
 PlotsGenerator.generateSlicerPlotMayavi(distance_map)

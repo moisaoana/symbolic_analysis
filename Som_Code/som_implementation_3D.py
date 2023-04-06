@@ -1,4 +1,7 @@
 import sys
+from datetime import timedelta
+from time import time
+from sys import stdout
 
 import numpy as np
 from numpy import (random, subtract, nan, zeros, transpose, cov, argsort, linspace)
@@ -41,24 +44,67 @@ class MySom3D(object):
         return self._z
 
     def train(self, input_data, epochs):
-        for epoch in np.arange(0, epochs):
-            print("Epoch: ", epoch)
-            randomized = np.copy(input_data)
-            np.random.shuffle(randomized)
-            for id, sample in enumerate(randomized):
-                # print("TYPE ", type(sample))
-                x_BMU, y_BMU, z_BMU = self.find_BMU(sample)
-                self._update_weights(sample, (x_BMU, y_BMU, z_BMU))
-                self._learning_rate, self._sigma = self._decay(epoch)
+        # for epoch in np.arange(0, epochs):
+        #     print("Epoch: ", epoch)
+        #     randomized = np.copy(input_data)
+        #     np.random.shuffle(randomized)
+        #     for id, sample in enumerate(randomized):
+        #         # print("TYPE ", type(sample))
+        #         x_BMU, y_BMU, z_BMU = self.find_BMU(sample)
+        #         self._update_weights(sample, (x_BMU, y_BMU, z_BMU))
+        #         self._learning_rate, self._sigma = self._decay(epoch)
+        #
+        #         if id % 1000 == 0:
+        #             print(f"Epoch progress {id}/{len(input_data)}")
 
-                if id % 1000 == 0:
-                    print(f"Epoch progress {id}/{len(input_data)}")
+        data_length = len(input_data)
+        indexes = self._build_iteration_indexes(data_length, epochs, random.RandomState(None))
+        for id, index in enumerate(indexes):
+            sample = input_data[index]
+            # print("TYPE ", type(sample))
+            bmu = self.find_BMU(sample)
+            self._update_weights(sample, bmu)
+            # self._learning_rate, self._sigma = self._decay( id // data_length)
+            self._learning_rate, self._sigma = self._hard_decay(id, data_length * epochs)
+
+
+    def _build_iteration_indexes(self, data_length, epochs, random_generator=None):
+        """Returns an iterable with the indexes of the samples
+        to pick at each iteration of the training."""
+
+        iterations = np.arange(epochs * data_length) % data_length
+
+        if random_generator:
+            random_generator.shuffle(iterations)
+
+        return self._wrap_index_in_verbose(iterations, data_length, epochs)
+
+    def _wrap_index_in_verbose(self, iterations, data_length, epochs):
+        """Yields the values in iterations printing the status on the stdout."""
+        m = len(iterations)
+        digits = len(str(m))
+        # progress = f'\r [ {0:{digits}} / {m} ] {0:3.0f}% - ? it/s'
+        # stdout.write(progress)
+        beginning = time()
+        # stdout.write(progress)
+        for i, it in enumerate(iterations):
+            yield it
+            sec_left = ((m - i + 1) * (time() - beginning)) / (i + 1)
+            time_left = str(timedelta(seconds=sec_left))[:7]
+            progress = f'\r [Epoch {i // data_length + 1} / {epochs}] [ { (i + 1) % data_length :{digits}} / {m} ] {100 * (i + 1) / m:3.0f}%  - {time_left} left '
+            stdout.write(progress)
 
 
     def _decay(self, epoch):
         new_learning_rate = self._learning_rate * np.exp(-epoch * self._learning_rate_decay)
         new_sigma = self._sigma * np.exp(-epoch * self._sigma_decay)
         return new_learning_rate, new_sigma
+
+    def _hard_decay(self, current_iteration, max_iterations):
+        new_learning_rate = self._learning_rate / (1 + current_iteration / (max_iterations / 2))
+        new_sigma = self._sigma / (1 + current_iteration / (max_iterations / 2))
+        return new_learning_rate, new_sigma
+
 
     def find_BMU(self, sample):
         distance = self._euclidean_distance(sample, self._weights)
@@ -68,21 +114,44 @@ class MySom3D(object):
         x_BMU, y_BMU, z_BMU = BMU_coord
         # if radius is close to zero then only BMU is changed
         if self._sigma < self._sigma_threshold:
-            self._weights[x_BMU, y_BMU, z_BMU, :] += self._learning_rate * (
-                    sample - self._weights[x_BMU, y_BMU, z_BMU, :])
+            self._weights[x_BMU, y_BMU, z_BMU, :] += self._learning_rate * (sample - self._weights[x_BMU, y_BMU, z_BMU, :])
         else:
-            # Change all cells in a small neighborhood of BMU
-            for i in range(self._weights.shape[0]):
-                for j in range(self._weights.shape[1]):
-                    for k in range(self._weights.shape[2]):
-                        if self._euclidean_distance(np.array([i, j, k]), BMU_coord) < 3 * self._sigma:
-                            # formula pentru limitarea modificarilor, problematic ii ca tot itereaza prin toate weighturile
-                            self._weights[i, j, k, :] += self._learning_rate * self._neighborhood(i, j, k, x_BMU, y_BMU,
-                                                                                                  z_BMU) * (
-                                                                 sample - self._weights[i, j, k, :])
+            # start = time.time()
+            # # Change all cells in a small neighborhood of BMU
+            # for i in range(self._weights.shape[0]):
+            #     for j in range(self._weights.shape[1]):
+            #         for k in range(self._weights.shape[2]):
+            #             if self._euclidean_distance(np.array([i, j, k]), BMU_coord) < 3 * self._sigma:
+            #                 # formula pentru limitarea modificarilor, problematic ii ca tot itereaza prin toate weighturile
+            #                 self._weights[i, j, k, :] += self._learning_rate * self._neighborhood(i, j, k, x_BMU, y_BMU,z_BMU) * (sample - self._weights[i, j, k, :])
+            # print(f"Time for impl: {time.time() - start:.3f}")
 
-    def _gaussian(self, x_neighb, y_neighb, z_neighb, x_BMU, y_BMU, z_BMU):
-        dist_sq = np.square(x_neighb - x_BMU) + np.square(y_neighb - y_BMU) + np.square(z_neighb - z_BMU)
+            # start = time.time()
+            g = self._learning_rate * self.gaussian3D_by_center(BMU_coord)
+            self._weights += np.einsum('ijk, ijkl->ijkl', g, sample - self._weights)
+            # print(f"Time np impl: {time.time() - start:.3f}")
+            # print()
+
+
+
+    def gaussian3D_by_center(self, center):
+        """
+        Generates a 3D Gaussian array with center at a given point.
+
+        Parameters:
+            center (tuple): Center of the Gaussian in (x, y, z) coordinates.
+
+        Returns:
+            A 3D numpy array containing the Gaussian distribution.
+        """
+        x, y, z = np.meshgrid(np.arange(self._x), np.arange(self._y), np.arange(self._z))
+        x_center, y_center, z_center = center
+        dist = np.sqrt((x - x_center) ** 2 + (y - y_center) ** 2 + (z - z_center) ** 2)
+        return np.exp(-dist ** 2 / (2 * self._sigma ** 2))
+
+
+    def _gaussian(self, neigh_x, neigh_y, neigh_z, bmu_x, bmu_y, bmu_z):
+        dist_sq = np.square(neigh_x - bmu_x) + np.square(neigh_y - bmu_y) + np.square(neigh_z - bmu_z)
         dist_func = np.exp(-dist_sq / (2 * self._sigma * self._sigma))
         return dist_func
 

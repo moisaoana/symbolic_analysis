@@ -1,0 +1,133 @@
+Spike Sorted Dataset (SSD)
+Format version:
+1.0
+
+Number of units:
+29
+
+List with the names of units:
+U01
+U02
+U03
+U04
+U05
+U06
+U07
+U08
+U09
+U10
+U11
+U12
+U13
+U14
+U15
+U16
+U17
+U18
+U19
+U20
+U21
+U22
+U23
+U24
+U25
+U26
+U27
+U28
+U29
+
+List with the recording elements (channels, tetrodes, etc) where each unit originates:
+El_01
+El_01
+El_01
+El_04
+El_04
+El_04
+El_05
+El_05
+El_06
+El_06
+El_06
+El_08
+El_08
+El_08
+El_09
+El_10
+El_10
+El_10
+El_15
+El_15
+El_15
+El_16
+El_16
+El_16
+El_18
+El_18
+El_32
+El_32
+El_32
+
+Number of spikes in each unit:
+390
+510
+247
+115
+30
+338
+695
+220
+728
+126
+219
+506
+5988
+1381
+1603
+2786
+660
+541
+367
+599
+349
+714
+80
+178
+390
+22
+60
+47
+154
+
+Spike times and event sampling frequency [Hz]:
+32000.0
+
+Waveform internal sampling frequency [Hz] (can be different than the sampling of the spike times):
+32000.0
+
+Waveform length in samples:
+58
+
+Waveform spike align offset - the sample in waveform that is aligned to the spike:
+19
+
+Number of events (size of the list with event timestamps and list with event codes):
+960
+
+File holding spike timestamps for the units; binary file containing the time in samples from the beginning of the experiment (spikes of each unit are stored continuously); 32 bit signed integer file:
+M017_S001_SRCS3L_25,50,100_0002.ssdst
+
+File holding spike waveforms for the units; binary file containing the waveforms for all the units (waveforms for each unit are stored continuously);  32 bit IEEE 754-1985, single precision floating point file:
+M017_S001_SRCS3L_25,50,100_0002.ssduw
+
+File holding unit statistics (average & SD spike waveforms, spike widths); binary file with average waveforms stored one after another for each unit, SD waveforms for each unit, followed by the other statistics (spike width, etc); 32 bit IEEE 754-1985, single precision floating point:
+M017_S001_SRCS3L_25,50,100_0002.ssdus
+
+File holding event timestamps; timestamp is in samples; (32 bit signed integer file):
+M017_S001_SRCS3L_25,50,100_0002.ssdet
+
+File holding codes of events corresponding to the event timestamps file; timestamp is in samples; (32 bit signed integer file):
+M017_S001_SRCS3L_25,50,100_0002.ssdec
+
+
+Original recording length (in samples of spike times):
+37040000
