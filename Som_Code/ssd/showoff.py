@@ -74,7 +74,7 @@ som.train(processed_data, len(processed_data), verbose=False)
 
 distance_map = som.distance_map().T
 
-figure_data_array = PlotsGenerator.getTrialSequencesArrayUsingBMULeftAlignment(trials_transposed, som, ssd=True)
+figure_data_array = PlotsGenerator.getTrialSequencesArrayUsingBMU(trials_transposed, som, ssd=True)
 
 print(figure_data_array.shape)
 
