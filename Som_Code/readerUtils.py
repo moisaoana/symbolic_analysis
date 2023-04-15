@@ -1,5 +1,6 @@
 import numpy as np
 import ast
+import json
 
 
 class ReaderUtils:
@@ -31,7 +32,7 @@ class ReaderUtils:
         with open('samples_with_clusters.txt', 'w') as file:
             for item in samples_with_clusters:
                 values_str = ','.join(str(x) for x in item[0])
-                line = "{} {}\n".format('['+values_str+']', item[1])
+                line = "{} {}\n".format('[' + values_str + ']', item[1])
                 file.write(line)
 
     @staticmethod
@@ -53,7 +54,7 @@ class ReaderUtils:
     def writeMarkersAndColors(markers_and_colors):
         with open('markers_colors.txt', 'w') as file:
             for item in markers_and_colors:
-                line = "{} {} {} {}\n".format(item[0], item[1], item[2], str(item[3]).replace(" ",""))
+                line = "{} {} {} {}\n".format(item[0], item[1], item[2], str(item[3]).replace(" ", ""))
                 file.write(line)
 
     @staticmethod
@@ -75,3 +76,9 @@ class ReaderUtils:
                 # Append the tuple to the data array
                 markers_colors.append(item)
         return markers_colors
+
+    @staticmethod
+    def write_data_to_file(data, filename):
+        data_json = json.dumps(data)
+        with open(filename, 'w') as f:
+            f.write(data_json)

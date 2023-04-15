@@ -92,3 +92,31 @@ class RawEEGSignalParser(TinsParser):
         self.data_all_channels = np.vstack(data_all_channels).T
 
         return self.data_all_channels
+
+    def load_A_channels(self):
+        data_all_channels = []
+        for chn_id in range(32):
+            print(chn_id)
+            data_channel = self.FileReader.read_signal(self.DATASET_PATH + self.FILENAMES[chn_id])
+            data_all_channels.append(data_channel)
+
+        self.data_all_channels = np.vstack(data_all_channels).T
+
+        return self.data_all_channels
+
+    def load_B_and_D_channels(self):
+        data_all_channels = []
+
+        for chn_id in range(32, 64):
+            print(chn_id)
+            data_channel = self.FileReader.read_signal(self.DATASET_PATH + self.FILENAMES[chn_id])
+            data_all_channels.append(data_channel)
+
+        for chn_id in range(96,128):
+            print(chn_id)
+            data_channel = self.FileReader.read_signal(self.DATASET_PATH + self.FILENAMES[chn_id])
+            data_all_channels.append(data_channel)
+
+        self.data_all_channels = np.vstack(data_all_channels).T
+
+        return self.data_all_channels
