@@ -275,15 +275,18 @@ class PlotsGenerator:
         return list_psi
 
     @staticmethod
-    def findThresholdForGroupBasedOnPsiArray(psi_array):
+    def findThresholdForGroupBasedOnPsiArray(psi_array, som):
 
-        average_psi_array = np.empty(len(psi_array))
+        sum_avg = 0
+        total_size = len(psi_array) * som.getX() * som.getY() * som.getZ()
 
         for psi_matrix in psi_array:
-            np.append(average_psi_array, (np.average(psi_matrix)))
+            for x in range(0, som.getX()):
+                for y in range(0, som.getY()):
+                    for z in range(0, som.getZ()):
+                        sum_avg += psi_matrix[x][y][z]
 
-        return 1.25 * (np.average(average_psi_array))
-
+        return 1.25 * (sum_avg / total_size)
 
     @staticmethod
     def groupByResponseWithPsiUsingBMU(all_trials_data, som, psi_array, path, params, number_of_samples,
@@ -300,7 +303,7 @@ class PlotsGenerator:
             list_trials_by_group = [nothing_trials, something_trials, identified_trials]
             psi_array = PlotsGenerator.computeWeightedPSI(list_trials_by_group, psi_array, number_of_samples)
 
-        threshold = PlotsGenerator.findThresholdForGroupBasedOnPsiArray(psi_array)
+        threshold = PlotsGenerator.findThresholdForGroupBasedOnPsiArray(psi_array, som)
 
         nothing_figures = PlotsGenerator.getNewFigureArrayUsingPSI(som, nothing_trials, psi_array[0], threshold,
                                                                    alignment=alignment)
@@ -395,16 +398,18 @@ class PlotsGenerator:
         pian_trials = PlotsGenerator.sortTrials(pian_trials)
 
         if weighted:
-            list_trials_by_group = [poseta_trials, topor_trials, oala_trials, elicopter_trials, urs_trials, palarie_trials,
+            list_trials_by_group = [poseta_trials, topor_trials, oala_trials, elicopter_trials, urs_trials,
+                                    palarie_trials,
                                     foarfece_trials, banana_trials,
-                                    lampa_trials, chitara_trials, masina_trials, vaca_trials, furculita_trials, cerb_trials,
+                                    lampa_trials, chitara_trials, masina_trials, vaca_trials, furculita_trials,
+                                    cerb_trials,
                                     pantaloni_trials, scaun_trials, peste_trials, caine_trials,
                                     sticla_trials, pistol_trials, bicicleta_trials, cal_trials, elefant_trials,
                                     iepure_trials, pahar_trials, masa_trials, umbrela_trials,
                                     fluture_trials, girafa_trials, pian_trials]
             psi_array = PlotsGenerator.computeWeightedPSI(list_trials_by_group, psi_array, number_of_samples)
 
-        threshold = PlotsGenerator.findThresholdForGroupBasedOnPsiArray(psi_array)
+        threshold = PlotsGenerator.findThresholdForGroupBasedOnPsiArray(psi_array, som)
 
         poseta_figures = PlotsGenerator.getNewFigureArrayUsingPSI(som, poseta_trials, psi_array[0], threshold,
                                                                   alignment=alignment)
@@ -641,7 +646,7 @@ class PlotsGenerator:
             list_trials_by_group = [v0_trials, v1_trials, v2_trials, v3_trials, v4_trials, v5_trials, v6_trials]
             psi_array = PlotsGenerator.computeWeightedPSI(list_trials_by_group, psi_array, number_of_samples)
 
-        threshold = PlotsGenerator.findThresholdForGroupBasedOnPsiArray(psi_array)
+        threshold = PlotsGenerator.findThresholdForGroupBasedOnPsiArray(psi_array, som)
 
         v0_figures = PlotsGenerator.getNewFigureArrayUsingPSI(som, v0_trials, psi_array[0], threshold,
                                                               alignment=alignment)
@@ -1289,7 +1294,6 @@ class PlotsGenerator:
 
         return all_freq
 
-
     # Helper methods for plots generation -----------------------------------------------------------------------------
 
     @staticmethod
@@ -1416,7 +1420,7 @@ class PlotsGenerator:
         im = ax.imshow([color_indices], cmap=cmap, aspect="auto", extent=(0, width, 0, height))
         ax.set_xticks([])
         ax.set_yticks([])
-        #print('Barcode generated')
+        # print('Barcode generated')
         plt.close()
         return fig, ax, color_indices
 
@@ -1425,7 +1429,7 @@ class PlotsGenerator:
         figure_index = 0
         fig, axs = plt.subplots(nrows=n_rows, ncols=n_cols, figsize=(4 * n_cols, 3 * n_rows), squeeze=False)
         for i in range(n_rows * n_cols):
-            #print('Barcode grid figure index ', figure_index)
+            # print('Barcode grid figure index ', figure_index)
             row_idx = i // n_cols
             col_idx = i % n_cols
             _, ax, color_indices = figure_data_array[figure_index]
@@ -1694,7 +1698,6 @@ class PlotsGenerator:
         plt.savefig(path + "v0.3.png", dpi=300)
         plt.show()
 
-
     @staticmethod
     def groupByStimulusV1(figure_array, path, params):
         poseta = PlotsGenerator.getStimulusPosetaData(figure_array)
@@ -1879,7 +1882,6 @@ class PlotsGenerator:
         plt.savefig(path + "stimulus_pian.png", dpi=300)
         plt.show()
 
-
     @staticmethod
     def generateColorSeguenceForAllTrialsWithImages(no_trials, all_trials_data, som):
         fig = plt.figure(figsize=(10, 10))
@@ -1977,7 +1979,6 @@ class PlotsGenerator:
         )
 
         return fig, colors_sequence
-
 
     """
     @staticmethod

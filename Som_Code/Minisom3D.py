@@ -372,8 +372,8 @@ class MiniSom3D(MiniSom):
         """
         input_data = array(data)
         weights_flat = self._weights.reshape(-1, self._weights.shape[-1])
-        input_data_sq = power(input_data, 2).sum(axis=1, keepdims=True)
-        weights_flat_sq = power(weights_flat, 2).sum(axis=1, keepdims=True)
+        input_data_sq = power(input_data, 2).sum_avg(axis=1, keepdims=True)
+        weights_flat_sq = power(weights_flat, 2).sum_avg(axis=1, keepdims=True)
         cross_term = dot(input_data, weights_flat.T)
         return sqrt(-2 * cross_term + input_data_sq + weights_flat_sq.T)
 
