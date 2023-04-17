@@ -37,7 +37,7 @@ eegDataProcessor.reconstruct_trials()
 
 size = 10
 no_features = eegDataProcessor.processed_data.shape[1]
-no_iterations = 1
+no_iterations = 2
 sigma = 2
 learning_rate = 1
 no_samples = eegDataProcessor.processed_data.shape[0]
@@ -79,8 +79,8 @@ distance_map = som.distance_map().T
 # samples_with_clusters_array = ReaderUtils.readSamplesWithClusters()
 # markers_and_colors = ReaderUtils.readMarkersAndColors()
 
-pathLeft = "color_seq_plots/updated_som/B_and_D_channels/pca+ica_5comp/rgb/left/rularePsi1W/"
-pathRight = "color_seq_plots/updated_som/B_and_D_channels/pca+ica_5comp/rgb/right/rularePsi1W/"
+pathLeft = "color_seq_plots/updated_som/B_and_D_channels/pca+ica_5comp/rgb/left/rularePsi2/"
+pathRight = "color_seq_plots/updated_som/B_and_D_channels/pca+ica_5comp/rgb/right/rularePsi2/"
 params = "size: " + str(size) + " ep: " + str(no_iterations) + " feat: " + str(no_features) + " sigma: " + str(
     sigma) + " lr: " + str(learning_rate)
 # response_psi_threshold = 0.09
@@ -105,11 +105,11 @@ PlotsGenerator.groupByVisibilityV2(eegDataProcessor.trials, som, pathRight, para
 
 # ---------------------------------
 
-EEG_MainHelper.main_with_psi1(list_freq_by_response, list_freq_by_stimulus, list_freq_by_visibility, som, eegDataProcessor, pathLeft, pathRight, params, no_samples, weighted=True)
+# EEG_MainHelper.main_with_psi1(list_freq_by_response, list_freq_by_stimulus, list_freq_by_visibility, som, eegDataProcessor, pathLeft, pathRight, params, no_samples, weighted=True)
 
 # ---------------------------------
 
-# EEG_MainHelper.main_with_psi2(list_freq_by_response, list_freq_by_stimulus, list_freq_by_visibility, som, eegDataProcessor, pathLeft, pathRight, params, no_samples)
+EEG_MainHelper.main_with_psi2(list_freq_by_response, list_freq_by_stimulus, list_freq_by_visibility, som, eegDataProcessor, pathLeft, pathRight, params, no_samples)
 
 
 """"

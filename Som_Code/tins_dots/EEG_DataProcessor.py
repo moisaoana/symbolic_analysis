@@ -95,5 +95,5 @@ class EEG_DataProcessor:
             start_index = start_index + self.trials_lengths[cnt]
 
     def apply_ica(self):
-        transformer = FastICA(whiten='unit-variance', max_iter=1000, tol=1.5)
+        transformer = FastICA(whiten='unit-variance', max_iter=1000)
         self.processed_data = transformer.fit_transform(self.processed_data)

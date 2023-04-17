@@ -299,7 +299,7 @@ class PlotsGenerator:
         something_trials = PlotsGenerator.sortTrials(something_trials)
         identified_trials = PlotsGenerator.sortTrials(identified_trials)
 
-        copy_psi_array = psi_array
+        copy_psi_array = psi_array.copy()
 
         if weighted:
             list_trials_by_group = [nothing_trials, something_trials, identified_trials]
@@ -399,7 +399,7 @@ class PlotsGenerator:
         girafa_trials = PlotsGenerator.sortTrials(girafa_trials)
         pian_trials = PlotsGenerator.sortTrials(pian_trials)
 
-        copy_psi_array = psi_array
+        copy_psi_array = psi_array.copy()
 
         if weighted:
             list_trials_by_group = [poseta_trials, topor_trials, oala_trials, elicopter_trials, urs_trials,
@@ -646,7 +646,7 @@ class PlotsGenerator:
         v5_trials = PlotsGenerator.sortTrials(v5_trials)
         v6_trials = PlotsGenerator.sortTrials(v6_trials)
 
-        copy_psi_array = psi_array
+        copy_psi_array = psi_array.copy()
 
         if weighted:
             list_trials_by_group = [v0_trials, v1_trials, v2_trials, v3_trials, v4_trials, v5_trials, v6_trials]
