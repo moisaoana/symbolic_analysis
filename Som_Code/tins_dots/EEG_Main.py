@@ -16,9 +16,9 @@ from utils import Utils
 DATASET_PATH = "./data/Dots_30_001/"
 parser = RawEEGSignalParser(DATASET_PATH)
 
-full_data = parser.load_all_channels()
+# full_data = parser.load_all_channels()
 # full_data = parser.load_A_channels()
-# full_data = parser.load_B_and_D_channels()
+full_data = parser.load_B_and_D_channels()
 
 event_timestamps = parser.load_event_timestamps()
 event_codes = parser.load_event_codes()
@@ -46,6 +46,7 @@ print(eegDataProcessor.processed_data.shape)
 
 print(len(eegDataProcessor.trials))
 som = MySom3D(size, size, size, no_features, sigma=sigma, learning_rate=learning_rate)
+som.pca_init(eegDataProcessor.processed_data)
 som.train(eegDataProcessor.processed_data, no_iterations)
 
 distance_map = som.distance_map().T
@@ -78,8 +79,8 @@ distance_map = som.distance_map().T
 # samples_with_clusters_array = ReaderUtils.readSamplesWithClusters()
 # markers_and_colors = ReaderUtils.readMarkersAndColors()
 
-pathLeft = "color_seq_plots/updated_som/all_channels/pca+ica_5comp/rgb/left/rularePsi1W/"
-pathRight = "color_seq_plots/updated_som/all_channels/pca+ica_5comp/rgb/right/rularePsi1W/"
+pathLeft = "color_seq_plots/updated_som/B_and_D_channels/pca+ica_5comp/rgb/left/rularePsi1W/"
+pathRight = "color_seq_plots/updated_som/B_and_D_channels/pca+ica_5comp/rgb/right/rularePsi1W/"
 params = "size: " + str(size) + " ep: " + str(no_iterations) + " feat: " + str(no_features) + " sigma: " + str(
     sigma) + " lr: " + str(learning_rate)
 # response_psi_threshold = 0.09

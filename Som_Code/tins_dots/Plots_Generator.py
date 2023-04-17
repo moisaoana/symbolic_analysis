@@ -286,7 +286,7 @@ class PlotsGenerator:
                     for z in range(0, som.getZ()):
                         sum_avg += psi_matrix[x][y][z]
 
-        return 1.25 * (sum_avg / total_size)
+        return 1.1 * (sum_avg / total_size)
 
     @staticmethod
     def groupByResponseWithPsiUsingBMU(all_trials_data, som, psi_array, path, params, number_of_samples,
@@ -299,17 +299,19 @@ class PlotsGenerator:
         something_trials = PlotsGenerator.sortTrials(something_trials)
         identified_trials = PlotsGenerator.sortTrials(identified_trials)
 
+        copy_psi_array = psi_array
+
         if weighted:
             list_trials_by_group = [nothing_trials, something_trials, identified_trials]
-            psi_array = PlotsGenerator.computeWeightedPSI(list_trials_by_group, psi_array, number_of_samples)
+            copy_psi_array = PlotsGenerator.computeWeightedPSI(list_trials_by_group, copy_psi_array, number_of_samples)
 
-        threshold = PlotsGenerator.findThresholdForGroupBasedOnPsiArray(psi_array, som)
+        threshold = PlotsGenerator.findThresholdForGroupBasedOnPsiArray(copy_psi_array, som)
 
-        nothing_figures = PlotsGenerator.getNewFigureArrayUsingPSI(som, nothing_trials, psi_array[0], threshold,
+        nothing_figures = PlotsGenerator.getNewFigureArrayUsingPSI(som, nothing_trials, copy_psi_array[0], threshold,
                                                                    alignment=alignment)
-        something_figures = PlotsGenerator.getNewFigureArrayUsingPSI(som, something_trials, psi_array[1], threshold,
+        something_figures = PlotsGenerator.getNewFigureArrayUsingPSI(som, something_trials, copy_psi_array[1], threshold,
                                                                      alignment=alignment)
-        identified_figures = PlotsGenerator.getNewFigureArrayUsingPSI(som, identified_trials, psi_array[2], threshold,
+        identified_figures = PlotsGenerator.getNewFigureArrayUsingPSI(som, identified_trials, copy_psi_array[2], threshold,
                                                                       alignment=alignment)
 
         fig, ax = PlotsGenerator.generateGridWithColorSequences(nothing_figures, n_rows=len(nothing_figures), n_cols=1)
@@ -397,6 +399,8 @@ class PlotsGenerator:
         girafa_trials = PlotsGenerator.sortTrials(girafa_trials)
         pian_trials = PlotsGenerator.sortTrials(pian_trials)
 
+        copy_psi_array = psi_array
+
         if weighted:
             list_trials_by_group = [poseta_trials, topor_trials, oala_trials, elicopter_trials, urs_trials,
                                     palarie_trials,
@@ -407,69 +411,69 @@ class PlotsGenerator:
                                     sticla_trials, pistol_trials, bicicleta_trials, cal_trials, elefant_trials,
                                     iepure_trials, pahar_trials, masa_trials, umbrela_trials,
                                     fluture_trials, girafa_trials, pian_trials]
-            psi_array = PlotsGenerator.computeWeightedPSI(list_trials_by_group, psi_array, number_of_samples)
+            copy_psi_array = PlotsGenerator.computeWeightedPSI(list_trials_by_group, copy_psi_array, number_of_samples)
 
-        threshold = PlotsGenerator.findThresholdForGroupBasedOnPsiArray(psi_array, som)
+        threshold = PlotsGenerator.findThresholdForGroupBasedOnPsiArray(copy_psi_array, som)
 
-        poseta_figures = PlotsGenerator.getNewFigureArrayUsingPSI(som, poseta_trials, psi_array[0], threshold,
+        poseta_figures = PlotsGenerator.getNewFigureArrayUsingPSI(som, poseta_trials, copy_psi_array[0], threshold,
                                                                   alignment=alignment)
-        topor_figures = PlotsGenerator.getNewFigureArrayUsingPSI(som, topor_trials, psi_array[1], threshold,
+        topor_figures = PlotsGenerator.getNewFigureArrayUsingPSI(som, topor_trials, copy_psi_array[1], threshold,
                                                                  alignment=alignment)
-        oala_figures = PlotsGenerator.getNewFigureArrayUsingPSI(som, oala_trials, psi_array[2], threshold,
+        oala_figures = PlotsGenerator.getNewFigureArrayUsingPSI(som, oala_trials, copy_psi_array[2], threshold,
                                                                 alignment=alignment)
-        elicopter_figures = PlotsGenerator.getNewFigureArrayUsingPSI(som, elicopter_trials, psi_array[3], threshold,
+        elicopter_figures = PlotsGenerator.getNewFigureArrayUsingPSI(som, elicopter_trials, copy_psi_array[3], threshold,
                                                                      alignment=alignment)
-        urs_figures = PlotsGenerator.getNewFigureArrayUsingPSI(som, urs_trials, psi_array[4], threshold,
+        urs_figures = PlotsGenerator.getNewFigureArrayUsingPSI(som, urs_trials, copy_psi_array[4], threshold,
                                                                alignment=alignment)
-        palarie_figures = PlotsGenerator.getNewFigureArrayUsingPSI(som, palarie_trials, psi_array[5], threshold,
+        palarie_figures = PlotsGenerator.getNewFigureArrayUsingPSI(som, palarie_trials, copy_psi_array[5], threshold,
                                                                    alignment=alignment)
-        foarfece_figures = PlotsGenerator.getNewFigureArrayUsingPSI(som, foarfece_trials, psi_array[6], threshold,
+        foarfece_figures = PlotsGenerator.getNewFigureArrayUsingPSI(som, foarfece_trials, copy_psi_array[6], threshold,
                                                                     alignment=alignment)
-        banana_figures = PlotsGenerator.getNewFigureArrayUsingPSI(som, banana_trials, psi_array[7], threshold,
+        banana_figures = PlotsGenerator.getNewFigureArrayUsingPSI(som, banana_trials, copy_psi_array[7], threshold,
                                                                   alignment=alignment)
-        lampa_figures = PlotsGenerator.getNewFigureArrayUsingPSI(som, lampa_trials, psi_array[8], threshold,
+        lampa_figures = PlotsGenerator.getNewFigureArrayUsingPSI(som, lampa_trials, copy_psi_array[8], threshold,
                                                                  alignment=alignment)
-        chitara_figures = PlotsGenerator.getNewFigureArrayUsingPSI(som, chitara_trials, psi_array[9], threshold,
+        chitara_figures = PlotsGenerator.getNewFigureArrayUsingPSI(som, chitara_trials, copy_psi_array[9], threshold,
                                                                    alignment=alignment)
-        masina_figures = PlotsGenerator.getNewFigureArrayUsingPSI(som, masina_trials, psi_array[10], threshold,
+        masina_figures = PlotsGenerator.getNewFigureArrayUsingPSI(som, masina_trials, copy_psi_array[10], threshold,
                                                                   alignment=alignment)
-        vaca_figures = PlotsGenerator.getNewFigureArrayUsingPSI(som, vaca_trials, psi_array[11], threshold,
+        vaca_figures = PlotsGenerator.getNewFigureArrayUsingPSI(som, vaca_trials, copy_psi_array[11], threshold,
                                                                 alignment=alignment)
-        furculita_figures = PlotsGenerator.getNewFigureArrayUsingPSI(som, furculita_trials, psi_array[12], threshold,
+        furculita_figures = PlotsGenerator.getNewFigureArrayUsingPSI(som, furculita_trials, copy_psi_array[12], threshold,
                                                                      alignment=alignment)
-        cerb_figures = PlotsGenerator.getNewFigureArrayUsingPSI(som, cerb_trials, psi_array[13], threshold,
+        cerb_figures = PlotsGenerator.getNewFigureArrayUsingPSI(som, cerb_trials, copy_psi_array[13], threshold,
                                                                 alignment=alignment)
-        pantaloni_figures = PlotsGenerator.getNewFigureArrayUsingPSI(som, pantaloni_trials, psi_array[14], threshold,
+        pantaloni_figures = PlotsGenerator.getNewFigureArrayUsingPSI(som, pantaloni_trials, copy_psi_array[14], threshold,
                                                                      alignment=alignment)
-        scaun_figures = PlotsGenerator.getNewFigureArrayUsingPSI(som, scaun_trials, psi_array[15], threshold,
+        scaun_figures = PlotsGenerator.getNewFigureArrayUsingPSI(som, scaun_trials, copy_psi_array[15], threshold,
                                                                  alignment=alignment)
-        peste_figures = PlotsGenerator.getNewFigureArrayUsingPSI(som, peste_trials, psi_array[16], threshold,
+        peste_figures = PlotsGenerator.getNewFigureArrayUsingPSI(som, peste_trials, copy_psi_array[16], threshold,
                                                                  alignment=alignment)
-        caine_figures = PlotsGenerator.getNewFigureArrayUsingPSI(som, caine_trials, psi_array[17], threshold,
+        caine_figures = PlotsGenerator.getNewFigureArrayUsingPSI(som, caine_trials, copy_psi_array[17], threshold,
                                                                  alignment=alignment)
-        sticla_figures = PlotsGenerator.getNewFigureArrayUsingPSI(som, sticla_trials, psi_array[18], threshold,
+        sticla_figures = PlotsGenerator.getNewFigureArrayUsingPSI(som, sticla_trials, copy_psi_array[18], threshold,
                                                                   alignment=alignment)
-        pistol_figures = PlotsGenerator.getNewFigureArrayUsingPSI(som, pistol_trials, psi_array[19], threshold,
+        pistol_figures = PlotsGenerator.getNewFigureArrayUsingPSI(som, pistol_trials, copy_psi_array[19], threshold,
                                                                   alignment=alignment)
-        bicicleta_figures = PlotsGenerator.getNewFigureArrayUsingPSI(som, bicicleta_trials, psi_array[20], threshold,
+        bicicleta_figures = PlotsGenerator.getNewFigureArrayUsingPSI(som, bicicleta_trials, copy_psi_array[20], threshold,
                                                                      alignment=alignment)
-        cal_figures = PlotsGenerator.getNewFigureArrayUsingPSI(som, cal_trials, psi_array[21], threshold,
+        cal_figures = PlotsGenerator.getNewFigureArrayUsingPSI(som, cal_trials, copy_psi_array[21], threshold,
                                                                alignment=alignment)
-        elefant_figures = PlotsGenerator.getNewFigureArrayUsingPSI(som, elefant_trials, psi_array[22], threshold,
+        elefant_figures = PlotsGenerator.getNewFigureArrayUsingPSI(som, elefant_trials, copy_psi_array[22], threshold,
                                                                    alignment=alignment)
-        iepure_figures = PlotsGenerator.getNewFigureArrayUsingPSI(som, iepure_trials, psi_array[23], threshold,
+        iepure_figures = PlotsGenerator.getNewFigureArrayUsingPSI(som, iepure_trials, copy_psi_array[23], threshold,
                                                                   alignment=alignment)
-        pahar_figures = PlotsGenerator.getNewFigureArrayUsingPSI(som, pahar_trials, psi_array[24], threshold,
+        pahar_figures = PlotsGenerator.getNewFigureArrayUsingPSI(som, pahar_trials, copy_psi_array[24], threshold,
                                                                  alignment=alignment)
-        masa_figures = PlotsGenerator.getNewFigureArrayUsingPSI(som, masa_trials, psi_array[25], threshold,
+        masa_figures = PlotsGenerator.getNewFigureArrayUsingPSI(som, masa_trials, copy_psi_array[25], threshold,
                                                                 alignment=alignment)
-        umbrela_figures = PlotsGenerator.getNewFigureArrayUsingPSI(som, umbrela_trials, psi_array[26], threshold,
+        umbrela_figures = PlotsGenerator.getNewFigureArrayUsingPSI(som, umbrela_trials, copy_psi_array[26], threshold,
                                                                    alignment=alignment)
-        fluture_figures = PlotsGenerator.getNewFigureArrayUsingPSI(som, fluture_trials, psi_array[27], threshold,
+        fluture_figures = PlotsGenerator.getNewFigureArrayUsingPSI(som, fluture_trials, copy_psi_array[27], threshold,
                                                                    alignment=alignment)
-        girafa_figures = PlotsGenerator.getNewFigureArrayUsingPSI(som, girafa_trials, psi_array[28], threshold,
+        girafa_figures = PlotsGenerator.getNewFigureArrayUsingPSI(som, girafa_trials, copy_psi_array[28], threshold,
                                                                   alignment=alignment)
-        pian_figures = PlotsGenerator.getNewFigureArrayUsingPSI(som, pian_trials, psi_array[29], threshold,
+        pian_figures = PlotsGenerator.getNewFigureArrayUsingPSI(som, pian_trials, copy_psi_array[29], threshold,
                                                                 alignment=alignment)
 
         fig, ax = PlotsGenerator.generateGridWithColorSequences(poseta_figures, n_rows=7, n_cols=1)
@@ -642,25 +646,27 @@ class PlotsGenerator:
         v5_trials = PlotsGenerator.sortTrials(v5_trials)
         v6_trials = PlotsGenerator.sortTrials(v6_trials)
 
+        copy_psi_array = psi_array
+
         if weighted:
             list_trials_by_group = [v0_trials, v1_trials, v2_trials, v3_trials, v4_trials, v5_trials, v6_trials]
-            psi_array = PlotsGenerator.computeWeightedPSI(list_trials_by_group, psi_array, number_of_samples)
+            copy_psi_array = PlotsGenerator.computeWeightedPSI(list_trials_by_group, copy_psi_array, number_of_samples)
 
-        threshold = PlotsGenerator.findThresholdForGroupBasedOnPsiArray(psi_array, som)
+        threshold = PlotsGenerator.findThresholdForGroupBasedOnPsiArray(copy_psi_array, som)
 
-        v0_figures = PlotsGenerator.getNewFigureArrayUsingPSI(som, v0_trials, psi_array[0], threshold,
+        v0_figures = PlotsGenerator.getNewFigureArrayUsingPSI(som, v0_trials, copy_psi_array[0], threshold,
                                                               alignment=alignment)
-        v1_figures = PlotsGenerator.getNewFigureArrayUsingPSI(som, v1_trials, psi_array[1], threshold,
+        v1_figures = PlotsGenerator.getNewFigureArrayUsingPSI(som, v1_trials, copy_psi_array[1], threshold,
                                                               alignment=alignment)
-        v2_figures = PlotsGenerator.getNewFigureArrayUsingPSI(som, v2_trials, psi_array[2], threshold,
+        v2_figures = PlotsGenerator.getNewFigureArrayUsingPSI(som, v2_trials, copy_psi_array[2], threshold,
                                                               alignment=alignment)
-        v3_figures = PlotsGenerator.getNewFigureArrayUsingPSI(som, v3_trials, psi_array[3], threshold,
+        v3_figures = PlotsGenerator.getNewFigureArrayUsingPSI(som, v3_trials, copy_psi_array[3], threshold,
                                                               alignment=alignment)
-        v4_figures = PlotsGenerator.getNewFigureArrayUsingPSI(som, v4_trials, psi_array[4], threshold,
+        v4_figures = PlotsGenerator.getNewFigureArrayUsingPSI(som, v4_trials, copy_psi_array[4], threshold,
                                                               alignment=alignment)
-        v5_figures = PlotsGenerator.getNewFigureArrayUsingPSI(som, v5_trials, psi_array[5], threshold,
+        v5_figures = PlotsGenerator.getNewFigureArrayUsingPSI(som, v5_trials, copy_psi_array[5], threshold,
                                                               alignment=alignment)
-        v6_figures = PlotsGenerator.getNewFigureArrayUsingPSI(som, v6_trials, psi_array[6], threshold,
+        v6_figures = PlotsGenerator.getNewFigureArrayUsingPSI(som, v6_trials, copy_psi_array[6], threshold,
                                                               alignment=alignment)
 
         fig, ax = PlotsGenerator.generateGridWithColorSequences(v0_figures, n_rows=30, n_cols=1)
@@ -866,10 +872,6 @@ class PlotsGenerator:
         total_samples_group = []
         for matrix in group_total_freq_matrix_array:
             total_samples_group.append(np.sum(matrix))
-
-        print("------------total samples group------------")
-        print(total_samples_group)
-        print("--------------------------------")
 
         for cnt, matrix in enumerate(group_total_freq_matrix_array):
             group_PSIs_for_all_colors_matrix_array.append(matrix / total_samples_group[cnt])
@@ -1315,7 +1317,6 @@ class PlotsGenerator:
 
             if len(colors_array) > max_length_color_array:
                 max_length_color_array = len(colors_array)
-        print("Max is ", max_length_color_array)
         for cnt, colors_array in enumerate(all_color_arrays):
             if len(colors_array) != max_length_color_array:
                 for i in range(0, max_length_color_array - len(colors_array)):
@@ -1343,7 +1344,6 @@ class PlotsGenerator:
             all_color_arrays.append(colors_array)
             if len(colors_array) > max_length_color_array:
                 max_length_color_array = len(colors_array)
-        print("Max is ", max_length_color_array)
         for cnt, colors_array in enumerate(all_color_arrays):
             if len(colors_array) != max_length_color_array:
                 for i in range(0, max_length_color_array - len(colors_array)):
@@ -1373,7 +1373,6 @@ class PlotsGenerator:
             all_color_arrays.append(colors_array)
             if len(colors_array) > max_length_color_array:
                 max_length_color_array = len(colors_array)
-        print("Max is ", max_length_color_array)
         for cnt, colors_array in enumerate(all_color_arrays):
             if len(colors_array) != max_length_color_array:
                 for i in range(0, max_length_color_array - len(colors_array)):
@@ -1403,7 +1402,6 @@ class PlotsGenerator:
             all_color_arrays.append(colors_array)
             if len(colors_array) > max_length_color_array:
                 max_length_color_array = len(colors_array)
-        print("Max is ", max_length_color_array)
         for cnt, colors_array in enumerate(all_color_arrays):
             if len(colors_array) != max_length_color_array:
                 for i in range(0, max_length_color_array - len(colors_array)):

@@ -13,15 +13,6 @@ class EEG_MainHelper:
         visibility_PSIs_for_all_colors_matrix_array = PlotsGenerator.computePSIByGroup(list_freq_by_visibility,
                                                                                        som)
 
-        print("Response PSIs: ")
-        print(response_PSIs_for_all_colors_matrix_array)
-        print("-------------------------------------------------------------------")
-        print("Stimulus PSIs: ")
-        print(stimulus_PSIs_for_all_colors_matrix_array)
-        print("-------------------------------------------------------------------------")
-        print("Visibility PSIs: ")
-        print(visibility_PSIs_for_all_colors_matrix_array)
-        print("-----------------------------------------------------------------------------")
 
         PlotsGenerator.groupByResponseWithPsiUsingBMU(eegDataProcessor.trials,
                                                       som,
@@ -90,15 +81,6 @@ class EEG_MainHelper:
         visibility_PSIs_for_all_colors_matrix_array = PlotsGenerator.computePSIByGroupMethod2(list_freq_by_visibility,
                                                                                               som)
 
-        print("Response PSIs: ")
-        print(response_PSIs_for_all_colors_matrix_array)
-        print("-------------------------------------------------------------------")
-        print("Stimulus PSIs: ")
-        print(stimulus_PSIs_for_all_colors_matrix_array)
-        print("-------------------------------------------------------------------------")
-        print("Visibility PSIs: ")
-        print(visibility_PSIs_for_all_colors_matrix_array)
-        print("-----------------------------------------------------------------------------")
 
         PlotsGenerator.groupByResponseWithPsiUsingBMU(eegDataProcessor.trials,
                                                       som,
