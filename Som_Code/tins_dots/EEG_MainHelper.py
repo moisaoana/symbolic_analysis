@@ -1,7 +1,22 @@
-from tins_dots.Plots_Generator import Alignment, PlotsGenerator
+from Som_Code.tins_dots.Plots_Generator import Alignment, PlotsGenerator
 
 
 class EEG_MainHelper:
+
+    @staticmethod
+    def take_minimum_window_from_trials_start(all_trials, trials_lengths):
+        minimum_trial_length = min(trials_lengths)
+        for cnt, trial in enumerate(all_trials):
+            all_trials[cnt].trial_data = trial.trial_data[0:minimum_trial_length]
+
+    @staticmethod
+    def take_minimum_window_from_trials_end(all_trials, trials_lengths):
+        minimum_trial_length = min(trials_lengths)
+        for cnt, trial in enumerate(all_trials):
+            trial_len = len(all_trials[cnt].trial_data)
+            all_trials[cnt].trial_data = trial.trial_data[trial_len-minimum_trial_length:trial_len]
+
+
 
     @staticmethod
     def main_with_psi1(list_freq_by_response, list_freq_by_stimulus, list_freq_by_visibility, som, eegDataProcessor, pathLeft, pathRight, params, no_samples, weighted=False):
