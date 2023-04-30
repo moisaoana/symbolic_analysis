@@ -1,4 +1,6 @@
 import os
+import time
+
 import numpy as np
 
 from TinsParser import TinsParser
@@ -83,15 +85,23 @@ class RawEEGSignalParser(TinsParser):
 
 
     def load_all_channels(self):
-        data_all_channels = []
+        # data_all_channels = []
+        self.data_all_channels = np.zeros(shape=(self.NR_CHANNELS, self.NR_SAMPLES))
         for chn_id in range(self.NR_CHANNELS):
             print(chn_id)
-            data_channel = self.FileReader.read_signal(self.DATASET_PATH + self.FILENAMES[chn_id])
-            data_all_channels.append(data_channel)
+            # start = time.time()
+            # data_channel = self.FileReader.read_signal(self.DATASET_PATH + self.FILENAMES[chn_id])
+            # print(f"Binary reading: {time.time() - start:.3f}")
 
-        self.data_all_channels = np.vstack(data_all_channels).T
+            # start = time.time()
+            self.data_all_channels[chn_id] = np.fromfile(file=self.DATASET_PATH + self.FILENAMES[chn_id], dtype=np.float32)
+            # print(f"Numpy reading: {time.time() - start:.3f}")
 
-        return self.data_all_channels
+            # data_all_channels.append(data_channel)
+
+        # self.data_all_channels = np.vstack(data_all_channels).T
+
+        return self.data_all_channels.T
 
     def load_A_channels(self):
         data_all_channels = []

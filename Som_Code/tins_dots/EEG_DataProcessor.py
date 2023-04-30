@@ -1,8 +1,11 @@
 import os
 
+import mne
 import numpy as np
 from sklearn.decomposition import PCA
+from mne.preprocessing import ICA
 from sklearn.decomposition import FastICA
+
 
 
 class EEG_Trial:
@@ -61,7 +64,7 @@ class EEG_DataProcessor:
             if save == True:
                 if not os.path.exists(self.DATASET_PATH + "/processed/"):
                     os.makedirs(self.DATASET_PATH + "/processed/")
-                np.savetxt(self.DATASET_PATH + "/processed/" + "trial{trial_id}-{timestamp[0]}-{timestamp[1]}.csv",
+                np.savetxt(self.DATASET_PATH + "/processed/" + f"trial{trial_id}-{timestamp[0]}-{timestamp[1]}.csv",
                            self.data[timestamp[0]:timestamp[1]], delimiter=",")
 
     def link_trials(self, save=True):
@@ -94,6 +97,22 @@ class EEG_DataProcessor:
             trial.trial_data = self.processed_data[start_index:last_index]
             start_index = start_index + self.trials_lengths[cnt]
 
-    def apply_ica(self):
-        transformer = FastICA(whiten='unit-variance', max_iter=1000)
-        self.processed_data = transformer.fit_transform(self.processed_data)
+    def apply_ica(self, n_comp, all_trials, channel_names, sfreq):
+        #transformer = FastICA(n_comp, whiten='unit-variance', max_iter=1000)
+        #self.processed_data = transformer.fit_transform(self.processed_data)
+
+        ica = ICA(n_components=n_comp, method='infomax', random_state=23, verbose='INFO')
+        ch_types = ['eeg' for _ in range(128)]
+        info = mne.create_info(ch_names=channel_names.tolist(), ch_types=ch_types, sfreq=sfreq)
+        data = mne.io.RawArray(all_trials.T, info)
+        data.filter(1, 40, fir_design='firwin')
+        ica.fit(data)
+        #ica.plot_components()
+        clean_data = ica.apply(data).get_data()
+        print(clean_data.shape)
+
+    def apply_ica_infomax(self, n_comp, all_trials):
+        unmixing_matrix, n_it = mne.preprocessing.infomax(all_trials, n_subgauss=n_comp,return_n_iter=True, verbose='INFO')
+        print(n_it)
+        print(unmixing_matrix)
+

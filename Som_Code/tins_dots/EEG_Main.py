@@ -23,21 +23,34 @@ full_data = parser.load_all_channels()
 event_timestamps = parser.load_event_timestamps()
 event_codes = parser.load_event_codes()
 
+# print(full_data.shape)
+# print(np.where(event_codes == 129))
+# print(np.where(event_codes == 131))
+
+
 eegDataProcessor = EEG_DataProcessor(DATASET_PATH, full_data, event_timestamps, event_codes)
 eegDataProcessor.create_trials(save=False)
 eegDataProcessor.link_trials(save=False)
+
+print(eegDataProcessor.processed_data.shape)
+rank = np.linalg.matrix_rank(
+    np.matmul(eegDataProcessor.trials[0].trial_data, np.transpose(eegDataProcessor.trials[0].trial_data)))
+print(rank)
+
+
 
 #cov_matrix = np.cov(eegDataProcessor.processed_data, bias=True)
 #rank = np.linalg.matrix_rank(cov_matrix)
 #print("Rank: "+ str(rank))
 
 #eegDataProcessor.apply_pca(5)
-#eegDataProcessor.apply_ica()
+#eegDataProcessor.apply_ica(rank, eegDataProcessor.trials[0].trial_data, parser.CHANNEL_NAMES, parser.SAMPLING_FREQUENCY)
+#eegDataProcessor.apply_ica_infomax(99, eegDataProcessor.trials[0].trial_data)
 #eegDataProcessor.reconstruct_trials()
 
-size = 10
+size = 5
 no_features = eegDataProcessor.processed_data.shape[1]
-no_iterations = 1
+no_iterations = 2
 sigma = 2
 learning_rate = 1
 no_samples = eegDataProcessor.processed_data.shape[0]
@@ -81,8 +94,9 @@ samples_with_clusters_array = ReaderUtils.readSamplesWithClusters()
 markers_and_colors = ReaderUtils.readMarkersAndColors()
 """
 
-pathLeft = "color_seq_plots/updated_som/all_channels/no_pca_no_ica/rgb/rularePsi1W/left/"
-pathRight = "color_seq_plots/updated_som/all_channels/no_pca_no_ica/rgb/rularePsi1W/right/"
+pathLeft = "color_seq_plots/updated_som/all_channels/no_pca_no_ica/rgb/rularePsi1W_coeff1.5/left/rulareSOM5/"
+pathRight = "color_seq_plots/updated_som/all_channels/no_pca_no_ica/rgb/rularePsi1W_coeff1.5/right/rulareSOM5/"
+pathWindow = "color_seq_plots/updated_som/all_channels/no_pca_no_ica/rgb/rularePsi1W_coeff1.5/window_end/rulareSOM5/"
 params = "size: " + str(size) + " ep: " + str(no_iterations) + " feat: " + str(no_features) + " sigma: " + str(
     sigma) + " lr: " + str(learning_rate)
 # response_psi_threshold = 0.09
@@ -106,8 +120,16 @@ list_freq_by_visibility = PlotsGenerator.groupByVisibilityV2(eegDataProcessor.tr
                                                              alignment=Alignment.LEFT)
 PlotsGenerator.groupByVisibilityV2(eegDataProcessor.trials, som, pathRight, params, alignment=Alignment.RIGHT)
 """
-#EEG_MainHelper.take_minimum_window_from_trials(eegDataProcessor.trials, eegDataProcessor.trials_lengths)
+#WINDOW-----------------
+EEG_MainHelper.take_minimum_window_from_trials_end(eegDataProcessor.trials, eegDataProcessor.trials_lengths)
+list_freq_by_response = PlotsGenerator.groupByResponseV2(eegDataProcessor.trials, som, pathWindow, params, alignment=Alignment.LEFT, method=Method.BMU)
 
+list_freq_by_stimulus = PlotsGenerator.groupByStimulusV2(eegDataProcessor.trials, som, pathWindow, params, alignment=Alignment.LEFT, method=Method.BMU)
+
+list_freq_by_visibility = PlotsGenerator.groupByVisibilityV2(eegDataProcessor.trials, som, pathWindow, params, alignment=Alignment.LEFT, method=Method.BMU)
+
+#LEFT, RIGHT------------------------
+"""
 list_freq_by_response = PlotsGenerator.groupByResponseV2(eegDataProcessor.trials, som, pathLeft, params, alignment=Alignment.LEFT, method=Method.BMU)
 PlotsGenerator.groupByResponseV2(eegDataProcessor.trials, som, pathRight, params, alignment=Alignment.RIGHT, method=Method.BMU)
 
@@ -116,14 +138,14 @@ PlotsGenerator.groupByStimulusV2(eegDataProcessor.trials, som, pathRight, params
 
 list_freq_by_visibility = PlotsGenerator.groupByVisibilityV2(eegDataProcessor.trials, som, pathLeft, params, alignment=Alignment.LEFT, method=Method.BMU)
 PlotsGenerator.groupByVisibilityV2(eegDataProcessor.trials, som, pathRight, params, alignment=Alignment.RIGHT, method=Method.BMU)
+"""
+# ---------------------------------
+coeff = 1.5
+EEG_MainHelper.main_with_psi1(list_freq_by_response, list_freq_by_stimulus, list_freq_by_visibility, som, eegDataProcessor, pathLeft, pathRight, pathWindow, params, no_samples, coeff, weighted=True, window=True)
 
 # ---------------------------------
 
-EEG_MainHelper.main_with_psi1(list_freq_by_response, list_freq_by_stimulus, list_freq_by_visibility, som, eegDataProcessor, pathLeft, pathRight, params, no_samples, weighted=True)
-
-# ---------------------------------
-
-#EEG_MainHelper.main_with_psi2(list_freq_by_response, list_freq_by_stimulus, list_freq_by_visibility, som, eegDataProcessor, pathLeft, pathRight, params, no_samples)
+#EEG_MainHelper.main_with_psi2(list_freq_by_response, list_freq_by_stimulus, list_freq_by_visibility, som, eegDataProcessor, pathLeft, pathRight, pathWindow, params, no_samples, coeff, window=True)
 
 
 """"
