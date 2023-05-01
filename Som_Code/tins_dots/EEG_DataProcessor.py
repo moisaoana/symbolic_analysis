@@ -112,7 +112,9 @@ class EEG_DataProcessor:
         print(clean_data.shape)
 
     def apply_ica_infomax(self, n_comp, all_trials):
-        unmixing_matrix, n_it = mne.preprocessing.infomax(all_trials, n_subgauss=n_comp,return_n_iter=True, verbose='INFO')
-        print(n_it)
-        print(unmixing_matrix)
+        unmixing_matrix, n_it = mne.preprocessing.infomax(all_trials.T, n_subgauss=n_comp, return_n_iter=True, verbose='INFO')
+        new_data = np.matmul(unmixing_matrix, all_trials.T)
+        #self.processed_data = new_data.T
+        print(new_data.shape)
+
 

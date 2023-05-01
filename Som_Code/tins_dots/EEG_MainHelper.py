@@ -1,4 +1,4 @@
-from Som_Code.tins_dots.Plots_Generator import Alignment, PlotsGenerator
+from Som_Code.tins_dots.Plots_Generator import Alignment, PlotsGenerator, Method
 
 
 class EEG_MainHelper:
@@ -37,7 +37,8 @@ class EEG_MainHelper:
                                                           no_samples,
                                                           coeff,
                                                           alignment=Alignment.LEFT,
-                                                          weighted=weighted)
+                                                          weighted=weighted,
+                                                          psi_version=1)
 
             PlotsGenerator.groupByResponseWithPsiUsingBMU(eegDataProcessor.trials,
                                                           som,
@@ -47,7 +48,8 @@ class EEG_MainHelper:
                                                           no_samples,
                                                           coeff,
                                                           alignment=Alignment.RIGHT,
-                                                          weighted=weighted)
+                                                          weighted=weighted,
+                                                          psi_version=1)
 
             # -------------------------------------------------------------------
 
@@ -59,7 +61,8 @@ class EEG_MainHelper:
                                                           no_samples,
                                                           coeff,
                                                           alignment=Alignment.LEFT,
-                                                          weighted=weighted)
+                                                          weighted=weighted,
+                                                          psi_version=1)
 
             PlotsGenerator.groupByStimulusWithPsiUsingBMU(eegDataProcessor.trials,
                                                           som,
@@ -69,7 +72,8 @@ class EEG_MainHelper:
                                                           no_samples,
                                                           coeff,
                                                           alignment=Alignment.RIGHT,
-                                                          weighted=weighted)
+                                                          weighted=weighted,
+                                                          psi_version=1)
             # -------------------------------------------------------------------
 
             PlotsGenerator.groupByVisibilityWithPsiUsingBMU(eegDataProcessor.trials,
@@ -80,7 +84,8 @@ class EEG_MainHelper:
                                                             no_samples,
                                                             coeff,
                                                             alignment=Alignment.LEFT,
-                                                            weighted=weighted)
+                                                            weighted=weighted,
+                                                            psi_version=1)
 
             PlotsGenerator.groupByVisibilityWithPsiUsingBMU(eegDataProcessor.trials,
                                                             som,
@@ -90,7 +95,8 @@ class EEG_MainHelper:
                                                             no_samples,
                                                             coeff,
                                                             alignment=Alignment.RIGHT,
-                                                            weighted=weighted)
+                                                            weighted=weighted,
+                                                            psi_version=1)
         else:
             PlotsGenerator.groupByResponseWithPsiUsingBMU(eegDataProcessor.trials,
                                                           som,
@@ -100,7 +106,8 @@ class EEG_MainHelper:
                                                           no_samples,
                                                           coeff,
                                                           alignment=Alignment.LEFT,
-                                                          weighted=weighted)
+                                                          weighted=weighted,
+                                                          psi_version=1)
             # -------------------------------------------------------------------
 
             PlotsGenerator.groupByStimulusWithPsiUsingBMU(eegDataProcessor.trials,
@@ -111,7 +118,8 @@ class EEG_MainHelper:
                                                           no_samples,
                                                           coeff,
                                                           alignment=Alignment.LEFT,
-                                                          weighted=weighted)
+                                                          weighted=weighted,
+                                                          psi_version=1)
 
             # -------------------------------------------------------------------
 
@@ -123,7 +131,8 @@ class EEG_MainHelper:
                                                             no_samples,
                                                             coeff,
                                                             alignment=Alignment.LEFT,
-                                                            weighted=weighted)
+                                                            weighted=weighted,
+                                                            psi_version=1)
 
     @staticmethod
     def main_with_psi2(list_freq_by_response, list_freq_by_stimulus, list_freq_by_visibility, som, eegDataProcessor,
@@ -143,7 +152,8 @@ class EEG_MainHelper:
                                                           params,
                                                           no_samples,
                                                           coeff,
-                                                          alignment=Alignment.LEFT)
+                                                          alignment=Alignment.LEFT,
+                                                          psi_version=2)
 
             PlotsGenerator.groupByResponseWithPsiUsingBMU(eegDataProcessor.trials,
                                                           som,
@@ -152,7 +162,8 @@ class EEG_MainHelper:
                                                           params,
                                                           no_samples,
                                                           coeff,
-                                                          alignment=Alignment.RIGHT)
+                                                          alignment=Alignment.RIGHT,
+                                                          psi_version=2)
 
             # -------------------------------------------------------------------
 
@@ -163,7 +174,8 @@ class EEG_MainHelper:
                                                           params,
                                                           no_samples,
                                                           coeff,
-                                                          alignment=Alignment.LEFT)
+                                                          alignment=Alignment.LEFT,
+                                                          psi_version=2)
 
             PlotsGenerator.groupByStimulusWithPsiUsingBMU(eegDataProcessor.trials,
                                                           som,
@@ -172,7 +184,8 @@ class EEG_MainHelper:
                                                           params,
                                                           no_samples,
                                                           coeff,
-                                                          alignment=Alignment.RIGHT)
+                                                          alignment=Alignment.RIGHT,
+                                                          psi_version=2)
             # -------------------------------------------------------------------
 
             PlotsGenerator.groupByVisibilityWithPsiUsingBMU(eegDataProcessor.trials,
@@ -182,7 +195,8 @@ class EEG_MainHelper:
                                                             params,
                                                             no_samples,
                                                             coeff,
-                                                            alignment=Alignment.LEFT)
+                                                            alignment=Alignment.LEFT,
+                                                            psi_version=2)
 
             PlotsGenerator.groupByVisibilityWithPsiUsingBMU(eegDataProcessor.trials,
                                                             som,
@@ -191,7 +205,8 @@ class EEG_MainHelper:
                                                             params,
                                                             no_samples,
                                                             coeff,
-                                                            alignment=Alignment.RIGHT)
+                                                            alignment=Alignment.RIGHT,
+                                                            psi_version=2)
         else:
             PlotsGenerator.groupByResponseWithPsiUsingBMU(eegDataProcessor.trials,
                                                           som,
@@ -200,7 +215,8 @@ class EEG_MainHelper:
                                                           params,
                                                           no_samples,
                                                           coeff,
-                                                          alignment=Alignment.LEFT)
+                                                          alignment=Alignment.LEFT,
+                                                          psi_version=2)
 
             # -------------------------------------------------------------------
 
@@ -211,7 +227,8 @@ class EEG_MainHelper:
                                                           params,
                                                           no_samples,
                                                           coeff,
-                                                          alignment=Alignment.LEFT)
+                                                          alignment=Alignment.LEFT,
+                                                          psi_version=2)
             # -------------------------------------------------------------------
 
             PlotsGenerator.groupByVisibilityWithPsiUsingBMU(eegDataProcessor.trials,
@@ -221,4 +238,57 @@ class EEG_MainHelper:
                                                             params,
                                                             no_samples,
                                                             coeff,
-                                                            alignment=Alignment.LEFT)
+                                                            alignment=Alignment.LEFT,
+                                                            psi_version=2)
+
+    @staticmethod
+    def full_pipeline(eegDataProcessor, som, pathLeft, pathRight, pathWindowStart, pathWindowEnd, params, coeff, no_samples):
+
+        # LEFT, RIGHT -----------------------------------------------
+        # lista de liste (lista pt nothing, lista pt smth, lista pt identified), fiecare lista contine freq matrix pt each trial
+
+        list_freq_by_response = PlotsGenerator.groupByResponseV2(eegDataProcessor.trials, som, pathLeft, params, alignment=Alignment.LEFT, method=Method.BMU)
+        PlotsGenerator.groupByResponseV2(eegDataProcessor.trials, som, pathRight, params, alignment=Alignment.RIGHT, method=Method.BMU)
+
+        list_freq_by_stimulus = PlotsGenerator.groupByStimulusV2(eegDataProcessor.trials, som, pathLeft, params, alignment=Alignment.LEFT, method=Method.BMU)
+        PlotsGenerator.groupByStimulusV2(eegDataProcessor.trials, som, pathRight, params, alignment=Alignment.RIGHT, method=Method.BMU)
+
+        list_freq_by_visibility = PlotsGenerator.groupByVisibilityV2(eegDataProcessor.trials, som, pathLeft, params, alignment=Alignment.LEFT, method=Method.BMU)
+        PlotsGenerator.groupByVisibilityV2(eegDataProcessor.trials, som, pathRight, params, alignment=Alignment.RIGHT, method=Method.BMU)
+
+        EEG_MainHelper.main_with_psi1(list_freq_by_response, list_freq_by_stimulus, list_freq_by_visibility,
+                                      som, eegDataProcessor, pathLeft, pathRight, '', params,
+                                      no_samples, coeff, weighted=True, window=False)
+        EEG_MainHelper.main_with_psi2(list_freq_by_response, list_freq_by_stimulus, list_freq_by_visibility, som,
+                                      eegDataProcessor, pathLeft, pathRight, '', params, no_samples, coeff,
+                                      window=False)
+
+        # WINDOW-----------------
+        EEG_MainHelper.take_minimum_window_from_trials_start(eegDataProcessor.trials, eegDataProcessor.trials_lengths)
+        list_freq_by_response = PlotsGenerator.groupByResponseV2(eegDataProcessor.trials, som, pathWindowStart,params, alignment=Alignment.LEFT, method=Method.BMU)
+        list_freq_by_stimulus = PlotsGenerator.groupByStimulusV2(eegDataProcessor.trials, som, pathWindowStart, params, alignment=Alignment.LEFT, method=Method.BMU)
+        list_freq_by_visibility = PlotsGenerator.groupByVisibilityV2(eegDataProcessor.trials, som, pathWindowStart, params, alignment=Alignment.LEFT, method=Method.BMU)
+        EEG_MainHelper.main_with_psi1(list_freq_by_response, list_freq_by_stimulus, list_freq_by_visibility,
+                                      som, eegDataProcessor, '', '', pathWindowStart, params,
+                                      no_samples, coeff, weighted=True, window=True)
+        EEG_MainHelper.main_with_psi2(list_freq_by_response, list_freq_by_stimulus, list_freq_by_visibility, som,
+                                      eegDataProcessor, '', '', pathWindowStart, params, no_samples, coeff,
+                                      window=True)
+
+
+        EEG_MainHelper.take_minimum_window_from_trials_end(eegDataProcessor.trials, eegDataProcessor.trials_lengths)
+        list_freq_by_response = PlotsGenerator.groupByResponseV2(eegDataProcessor.trials, som, pathWindowEnd, params,
+                                                                 alignment=Alignment.LEFT, method=Method.BMU)
+        list_freq_by_stimulus = PlotsGenerator.groupByStimulusV2(eegDataProcessor.trials, som, pathWindowEnd, params,
+                                                                 alignment=Alignment.LEFT, method=Method.BMU)
+        list_freq_by_visibility = PlotsGenerator.groupByVisibilityV2(eegDataProcessor.trials, som, pathWindowEnd,
+                                                                     params, alignment=Alignment.LEFT,
+                                                                     method=Method.BMU)
+        EEG_MainHelper.main_with_psi1(list_freq_by_response, list_freq_by_stimulus, list_freq_by_visibility,
+                                      som, eegDataProcessor, '', '', pathWindowEnd, params,
+                                      no_samples, coeff, weighted=True, window=True)
+        EEG_MainHelper.main_with_psi2(list_freq_by_response, list_freq_by_stimulus, list_freq_by_visibility, som,
+                                      eegDataProcessor, '', '', pathWindowEnd, params, no_samples, coeff, window=True)
+
+
+
