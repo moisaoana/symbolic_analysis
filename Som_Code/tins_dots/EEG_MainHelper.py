@@ -26,7 +26,7 @@ class EEG_MainHelper:
                                                                                      som)
 
         visibility_PSIs_for_all_colors_matrix_array = PlotsGenerator.computePSIByGroup(list_freq_by_visibility,
-                                                                                       som)
+                                                                                      som)
 
         if not window:
             PlotsGenerator.groupByResponseWithPsiUsingBMU(eegDataProcessor.trials,
@@ -109,7 +109,6 @@ class EEG_MainHelper:
                                                           weighted=weighted,
                                                           psi_version=1)
             # -------------------------------------------------------------------
-
             PlotsGenerator.groupByStimulusWithPsiUsingBMU(eegDataProcessor.trials,
                                                           som,
                                                           stimulus_PSIs_for_all_colors_matrix_array,
@@ -256,9 +255,10 @@ class EEG_MainHelper:
         list_freq_by_visibility = PlotsGenerator.groupByVisibilityV2(eegDataProcessor.trials, som, pathLeft, params, alignment=Alignment.LEFT, method=Method.BMU)
         PlotsGenerator.groupByVisibilityV2(eegDataProcessor.trials, som, pathRight, params, alignment=Alignment.RIGHT, method=Method.BMU)
 
-        EEG_MainHelper.main_with_psi1(list_freq_by_response, list_freq_by_stimulus, list_freq_by_visibility,
+        EEG_MainHelper.main_with_psi1(list_freq_by_response, [], [],
                                       som, eegDataProcessor, pathLeft, pathRight, '', params,
                                       no_samples, coeff, weighted=True, window=False)
+
         EEG_MainHelper.main_with_psi2(list_freq_by_response, list_freq_by_stimulus, list_freq_by_visibility, som,
                                       eegDataProcessor, pathLeft, pathRight, '', params, no_samples, coeff,
                                       window=False)
@@ -289,6 +289,5 @@ class EEG_MainHelper:
                                       no_samples, coeff, weighted=True, window=True)
         EEG_MainHelper.main_with_psi2(list_freq_by_response, list_freq_by_stimulus, list_freq_by_visibility, som,
                                       eegDataProcessor, '', '', pathWindowEnd, params, no_samples, coeff, window=True)
-
 
 

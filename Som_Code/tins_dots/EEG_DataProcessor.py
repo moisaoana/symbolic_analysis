@@ -97,10 +97,22 @@ class EEG_DataProcessor:
             trial.trial_data = self.processed_data[start_index:last_index]
             start_index = start_index + self.trials_lengths[cnt]
 
-    def apply_ica(self, n_comp, all_trials, channel_names, sfreq):
-        #transformer = FastICA(n_comp, whiten='unit-variance', max_iter=1000)
-        #self.processed_data = transformer.fit_transform(self.processed_data)
+    def apply_fastica(self, data, n_comp):
+        transformer = FastICA(n_comp, whiten='arbitrary-variance', max_iter=10000)
+        s = transformer.fit_transform(data)
+        print(s.shape)
 
+    def apply_ica_on_each_trial(self, n_comp):
+        transformer = FastICA(n_comp, whiten='arbitrary-variance', max_iter=10000)
+        list = []
+        for cnt,trial in enumerate(self.trials):
+            s = transformer.fit_transform(trial.trial_data)
+            print(cnt)
+            print(s.shape)
+            list.append(s)
+        self.processed_data = np.vstack(list)
+
+    def apply_ica(self, n_comp, all_trials, channel_names, sfreq):
         ica = ICA(n_components=n_comp, method='infomax', random_state=23, verbose='INFO')
         ch_types = ['eeg' for _ in range(128)]
         info = mne.create_info(ch_names=channel_names.tolist(), ch_types=ch_types, sfreq=sfreq)
@@ -113,8 +125,9 @@ class EEG_DataProcessor:
 
     def apply_ica_infomax(self, n_comp, all_trials):
         unmixing_matrix, n_it = mne.preprocessing.infomax(all_trials.T, n_subgauss=n_comp, return_n_iter=True, verbose='INFO')
-        new_data = np.matmul(unmixing_matrix, all_trials.T)
-        #self.processed_data = new_data.T
+        print(unmixing_matrix.shape)
+        new_data = np.dot(unmixing_matrix, all_trials)
+        self.processed_data = new_data
         print(new_data.shape)
 
 

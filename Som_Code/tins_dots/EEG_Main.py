@@ -31,8 +31,10 @@ print(rank)
 
 #eegDataProcessor.apply_pca(5)
 #eegDataProcessor.apply_ica(rank, eegDataProcessor.trials[0].trial_data, parser.CHANNEL_NAMES, parser.SAMPLING_FREQUENCY)
-eegDataProcessor.apply_ica_infomax(99, eegDataProcessor.trials[0].trial_data)
-eegDataProcessor.reconstruct_trials()
+#eegDataProcessor.apply_ica_infomax(rank, eegDataProcessor.processed_data)
+#eegDataProcessor.apply_fastica(eegDataProcessor.processed_data, 99)
+#eegDataProcessor.apply_ica_on_each_trial(rank)
+#eegDataProcessor.reconstruct_trials()
 
 size = 10
 no_features = eegDataProcessor.processed_data.shape[1]
@@ -68,14 +70,14 @@ samples_with_clusters_array = ReaderUtils.readSamplesWithClusters()
 markers_and_colors = ReaderUtils.readMarkersAndColors()
 """
 
-pathLeft = "color_seq_plots/updated_som/all_channels/no_pca_no_ica/rgb/psi_coeff3/left/rulareSOM10/"
-pathRight = "color_seq_plots/updated_som/all_channels/no_pca_no_ica/rgb/psi_coeff3/right/rulareSOM10/"
-pathWindowStart = "color_seq_plots/updated_som/all_channels/no_pca_no_ica/rgb/psi_coeff3/window_start/rulareSOM10/"
-pathWindowEnd = "color_seq_plots/updated_som/all_channels/no_pca_no_ica/rgb/psi_coeff3/window_end/rulareSOM10/"
+pathLeft = "color_seq_plots/updated_som/all_channels/no_pca_no_ica/rgb/rularePsi1W_coeff2/left/rulareSOM10/"
+pathRight = "color_seq_plots/updated_som/all_channels/no_pca_no_ica/rgb/rularePsi1W_coeff1/right/rulareSOM10/"
+pathWindowStart = "color_seq_plots/updated_som/all_channels/no_pca_no_ica/rgb/rularePsi1W_coeff1/window_start/rulareSOM10/"
+pathWindowEnd = "color_seq_plots/updated_som/all_channels/no_pca_no_ica/rgb/rularePsi1W_coeff1/window_end/rulareSOM10/"
 params = "size: " + str(size) + " ep: " + str(no_iterations) + " feat: " + str(no_features) + " sigma: " + str(
     sigma) + " lr: " + str(learning_rate)
 
-coeff = 3
+coeff = 2
 EEG_MainHelper.full_pipeline(eegDataProcessor, som, pathLeft, pathRight, pathWindowStart, pathWindowEnd, params, coeff, no_samples)
 
 """
