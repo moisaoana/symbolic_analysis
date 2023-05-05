@@ -6,6 +6,7 @@ from sklearn.decomposition import PCA
 from mne.preprocessing import ICA
 from sklearn.decomposition import FastICA
 
+from readerUtils import ReaderUtils
 
 
 class EEG_Trial:
@@ -98,8 +99,9 @@ class EEG_DataProcessor:
             start_index = start_index + self.trials_lengths[cnt]
 
     def apply_fastica(self, data, n_comp):
-        transformer = FastICA(n_comp, whiten='arbitrary-variance', max_iter=10000)
+        transformer = FastICA(n_comp, whiten='unit-variance', max_iter=100000000)
         s = transformer.fit_transform(data)
+        self.processed_data = s
         print(s.shape)
 
     def apply_ica_on_each_trial(self, n_comp):
@@ -126,8 +128,10 @@ class EEG_DataProcessor:
     def apply_ica_infomax(self, n_comp, all_trials):
         unmixing_matrix, n_it = mne.preprocessing.infomax(all_trials.T, n_subgauss=n_comp, return_n_iter=True, verbose='INFO')
         print(unmixing_matrix.shape)
+        ReaderUtils.write_matrix_to_file(unmixing_matrix, "unmixing.txt")
         new_data = np.dot(unmixing_matrix, all_trials)
         self.processed_data = new_data
         print(new_data.shape)
+        ReaderUtils.write_matrix_to_file(unmixing_matrix, "newData.txt")
 
 

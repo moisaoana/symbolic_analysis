@@ -82,3 +82,12 @@ class ReaderUtils:
         data_json = json.dumps(data)
         with open(filename, 'w') as f:
             f.write(data_json)
+
+    @staticmethod
+    def write_matrix_to_file(data, filename):
+        # Open a file for writing
+        with open(filename, 'w') as f:
+            # Write each row of the matrix to the file
+            for row in data:
+                f.write(' '.join([str(elem) for elem in row]))
+                f.write('\n')

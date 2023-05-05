@@ -19,8 +19,9 @@ from reportlab.lib.utils import ImageReader
 from enum import Enum
 
 # matplotlib.use('Qt5Agg')
-from Som_Code.readerUtils import ReaderUtils
-from Som_Code.utils import Utils
+from readerUtils import ReaderUtils
+from utils import Utils
+
 matplotlib.use("Agg")
 
 
@@ -38,8 +39,6 @@ class Alignment(Enum):
 class Method(Enum):
     BMU = 1
     CLUSTERS = 2
-
-
 
 
 class PlotsGenerator:
@@ -225,7 +224,11 @@ class PlotsGenerator:
         barcodes_array = []
         all_color_arrays = []
         max_length_color_array = 0
+        pattern_indexes_per_trial = []
+
         for cnt, trial in enumerate(trials):
+            my_dict = {}
+
             if cnt % 1000 == 0:
                 print("Trial PSI " + str(cnt))
             if ssd:
@@ -235,8 +238,16 @@ class PlotsGenerator:
             for i, color in enumerate(colors_array):
                 color_PSI = PSI_matrix[int(color[0] * som.getX())][int(color[1] * som.getY())][
                     int(color[2] * som.getZ())]
-                if color_PSI-mean < coeff*st_dev:
+                if color_PSI - mean < coeff * st_dev:
                     colors_array[i] = [1, 1, 1]
+                else:
+                    color_tuple = color[0], color[1], color[2]
+                    if color_tuple in my_dict:
+                        my_dict[color_tuple].append(i)
+                    else:
+                        my_dict[color_tuple] = []
+                        my_dict[color_tuple].append(i)
+            pattern_indexes_per_trial.append(my_dict)
             all_color_arrays.append(colors_array)
             if len(colors_array) > max_length_color_array:
                 max_length_color_array = len(colors_array)
@@ -249,7 +260,7 @@ class PlotsGenerator:
                         colors_array.insert(0, [1, 1, 1])
             figure_data_tuple = PlotsGenerator.generateColorSequenceForTrialMatplotlib(colors_array)
             barcodes_array.append(figure_data_tuple)
-        return barcodes_array
+        return barcodes_array, pattern_indexes_per_trial
 
     @staticmethod
     def computeWeightedPSI(list_trials, list_psi, number_of_samples):
@@ -300,7 +311,7 @@ class PlotsGenerator:
 
     @staticmethod
     def computeMeanAndStDevForGroup(psi_array, som):
-        #with mean and st dev
+        # with mean and st dev
 
         sum_avg = 0
         total_size = len(psi_array) * som.getX() * som.getY() * som.getZ()
@@ -318,12 +329,79 @@ class PlotsGenerator:
             for x in range(0, som.getX()):
                 for y in range(0, som.getY()):
                     for z in range(0, som.getZ()):
-                        st_dev += (psi_matrix[x][y][z]-mean)**2
+                        st_dev += (psi_matrix[x][y][z] - mean) ** 2
 
-        st_dev = math.sqrt(st_dev/total_size)
+        st_dev = math.sqrt(st_dev / total_size)
         return mean, st_dev
 
+    @staticmethod
+    def computePatternTriggeredAverage(group_trials, pattern_indexes_per_trial_group, window_length, channel_type,
+                                       channel_number, grid_dimension, path):
+        pattern_pta_vectors_dictionary = {}
 
+        print("-----------------------------------------")
+
+        for cnt, trial in enumerate(group_trials):
+            trial_dictionary = pattern_indexes_per_trial_group[cnt]
+            print(trial_dictionary)
+            for pattern, list_indexes in trial_dictionary.items():
+                pta_vector = PlotsGenerator.computePTAForPattern(trial.trial_data, list_indexes, window_length,
+                                                                 channel_number)
+                if pattern in pattern_pta_vectors_dictionary:
+                    pattern_pta_vectors_dictionary[pattern].append(pta_vector)
+                else:
+                    pattern_pta_vectors_dictionary[pattern] = []
+                    pattern_pta_vectors_dictionary[pattern].append(pta_vector)
+
+        for pattern, pta_vectors in pattern_pta_vectors_dictionary.items():
+            for cnt, trial in enumerate(group_trials):
+                trial_dictionary = pattern_indexes_per_trial_group[cnt]
+                if pattern not in trial_dictionary:
+                    pta_vectors.insert(cnt, [])
+
+        for pattern, pta_vectors in pattern_pta_vectors_dictionary.items():
+            c0 = round(pattern[0], 3)
+            c1 = round(pattern[1], 3)
+            c2 = round(pattern[2], 3)
+            new_tup = c0, c1, c2
+            PlotsGenerator.plotPTAForPattern(pattern, pta_vectors, grid_dimension,
+                                             path + "pattern" + str(new_tup) + ".png", channel_type, channel_number,
+                                             window_length)
+
+    @staticmethod
+    def plotPTAForPattern(pattern, pta_vectors, grid_dimension, path, channel_type, channel_number, window_length):
+
+        line_color = pattern
+        fig, axs = plt.subplots(grid_dimension, grid_dimension, figsize=(50, 20))
+        axs = axs.ravel()
+        for i in range(len(pta_vectors)):
+            ax = axs[i]
+            ax.plot(pta_vectors[i], color=line_color)
+
+        c0 = round(pattern[0], 3)
+        c1 = round(pattern[1], 3)
+        c2 = round(pattern[2], 3)
+        new_tup = c0, c1, c2
+
+        plt.suptitle("Response: nothing, Pattern = " + str(new_tup) + ", Channel = " + channel_type + str(
+            channel_number % 32 + 1) + ", Window_length = " + str(window_length), fontsize=36)
+        plt.savefig(path, dpi=300)
+
+    @staticmethod
+    def computePTAForPattern(trial, list_indexes, window_length, channel):
+        pta_vector = np.zeros(2 * window_length + 1)
+        for pattern_index in list_indexes:
+            start_window = pattern_index - window_length
+            if start_window < 0:
+                start_window = 0
+            end_window = pattern_index + window_length
+            if end_window > len(trial):
+                end_window = len(trial)
+
+            for i in range(start_window, end_window):
+                pta_vector[i - pattern_index + window_length] += trial[i][channel]
+
+        return pta_vector / len(list_indexes)
 
     @staticmethod
     def groupByResponseWithPsiUsingBMU(all_trials_data, som, psi_array, path, params, number_of_samples, coeff,
@@ -342,23 +420,36 @@ class PlotsGenerator:
             list_trials_by_group = [nothing_trials, something_trials, identified_trials]
             copy_psi_array = PlotsGenerator.computeWeightedPSI(list_trials_by_group, copy_psi_array, number_of_samples)
 
-        #threshold = PlotsGenerator.findThresholdForGroupBasedOnPsiArray(copy_psi_array, som)
+        # threshold = PlotsGenerator.findThresholdForGroupBasedOnPsiArray(copy_psi_array, som)
         mean, st_dev = PlotsGenerator.computeMeanAndStDevForGroup(copy_psi_array, som)
 
-        nothing_figures = PlotsGenerator.getNewFigureArrayUsingPSI(som, nothing_trials, copy_psi_array[0], mean, st_dev, coeff,
-                                                                   alignment=alignment)
-        something_figures = PlotsGenerator.getNewFigureArrayUsingPSI(som, something_trials, copy_psi_array[1],
+        nothing_figures, pattern_indexes_dict_per_trial_nothing = PlotsGenerator.getNewFigureArrayUsingPSI(som,
+                                                                                                           nothing_trials,
+                                                                                                           copy_psi_array[
+                                                                                                               0], mean,
+                                                                                                           st_dev,
+                                                                                                           coeff,
+                                                                                                           alignment=alignment)
+
+        PlotsGenerator.computePatternTriggeredAverage(nothing_trials, pattern_indexes_dict_per_trial_nothing, 100, "A",
+                                                      22, 10, path + "response_nothing_pta_")
+
+        """
+        something_figures, _ = PlotsGenerator.getNewFigureArrayUsingPSI(som, something_trials, copy_psi_array[1],
                                                                      mean, st_dev, coeff,
                                                                      alignment=alignment)
-        identified_figures = PlotsGenerator.getNewFigureArrayUsingPSI(som, identified_trials, copy_psi_array[2],
+        identified_figures, _ = PlotsGenerator.getNewFigureArrayUsingPSI(som, identified_trials, copy_psi_array[2],
                                                                       mean, st_dev, coeff,
                                                                       alignment=alignment)
+        """
 
         fig, ax = PlotsGenerator.generateGridWithColorSequences(nothing_figures, n_rows=len(nothing_figures), n_cols=1)
-        plt.suptitle("Response: nothing, PSI mean = " + str(round(mean, 3)) + ", st_dev =  " + str(round(st_dev, 3)) + "\n" + params)
+        plt.suptitle("Response: nothing, PSI mean = " + str(round(mean, 3)) + ", st_dev =  " + str(
+            round(st_dev, 3)) + "\n" + params)
         fig.set_size_inches(6, 4)
-        plt.savefig(path + "response_nothing_psi"+str(psi_version)+".png", dpi=300)
+        plt.savefig(path + "response_nothing_psi" + str(psi_version) + ".png", dpi=300)
 
+        """
         fig, ax = PlotsGenerator.generateGridWithColorSequences(something_figures, n_rows=len(something_figures),
                                                                 n_cols=1)
         plt.suptitle("PSI - Response: something, PSI mean = " + str(round(mean, 3)) + ", st_dev =  " + str(round(st_dev, 3)) + "\n" + params)
@@ -372,6 +463,7 @@ class PlotsGenerator:
         fig.set_size_inches(6, 4)
         plt.savefig(path + "response_identified_psi"+str(psi_version)+".png", dpi=300)
         # plt.show()
+        """
 
     @staticmethod
     def groupByStimulusWithPsiUsingBMU(all_trials_data, som, psi_array, path, params, number_of_samples, coeff,
@@ -453,223 +545,277 @@ class PlotsGenerator:
                                     fluture_trials, girafa_trials, pian_trials]
             copy_psi_array = PlotsGenerator.computeWeightedPSI(list_trials_by_group, copy_psi_array, number_of_samples)
 
-        #threshold = PlotsGenerator.findThresholdForGroupBasedOnPsiArray(copy_psi_array, som)
+        # threshold = PlotsGenerator.findThresholdForGroupBasedOnPsiArray(copy_psi_array, som)
         mean, st_dev = PlotsGenerator.computeMeanAndStDevForGroup(copy_psi_array, som)
 
-        poseta_figures = PlotsGenerator.getNewFigureArrayUsingPSI(som, poseta_trials, copy_psi_array[0], mean, st_dev, coeff,
+        poseta_figures = PlotsGenerator.getNewFigureArrayUsingPSI(som, poseta_trials, copy_psi_array[0], mean, st_dev,
+                                                                  coeff,
                                                                   alignment=alignment)
-        topor_figures = PlotsGenerator.getNewFigureArrayUsingPSI(som, topor_trials, copy_psi_array[1], mean, st_dev, coeff,
+        topor_figures = PlotsGenerator.getNewFigureArrayUsingPSI(som, topor_trials, copy_psi_array[1], mean, st_dev,
+                                                                 coeff,
                                                                  alignment=alignment)
-        oala_figures = PlotsGenerator.getNewFigureArrayUsingPSI(som, oala_trials, copy_psi_array[2], mean, st_dev, coeff,
+        oala_figures = PlotsGenerator.getNewFigureArrayUsingPSI(som, oala_trials, copy_psi_array[2], mean, st_dev,
+                                                                coeff,
                                                                 alignment=alignment)
         elicopter_figures = PlotsGenerator.getNewFigureArrayUsingPSI(som, elicopter_trials, copy_psi_array[3],
                                                                      mean, st_dev, coeff,
                                                                      alignment=alignment)
         urs_figures = PlotsGenerator.getNewFigureArrayUsingPSI(som, urs_trials, copy_psi_array[4], mean, st_dev, coeff,
                                                                alignment=alignment)
-        palarie_figures = PlotsGenerator.getNewFigureArrayUsingPSI(som, palarie_trials, copy_psi_array[5], mean, st_dev, coeff,
+        palarie_figures = PlotsGenerator.getNewFigureArrayUsingPSI(som, palarie_trials, copy_psi_array[5], mean, st_dev,
+                                                                   coeff,
                                                                    alignment=alignment)
-        foarfece_figures = PlotsGenerator.getNewFigureArrayUsingPSI(som, foarfece_trials, copy_psi_array[6], mean, st_dev, coeff,
+        foarfece_figures = PlotsGenerator.getNewFigureArrayUsingPSI(som, foarfece_trials, copy_psi_array[6], mean,
+                                                                    st_dev, coeff,
                                                                     alignment=alignment)
-        banana_figures = PlotsGenerator.getNewFigureArrayUsingPSI(som, banana_trials, copy_psi_array[7], mean, st_dev, coeff,
+        banana_figures = PlotsGenerator.getNewFigureArrayUsingPSI(som, banana_trials, copy_psi_array[7], mean, st_dev,
+                                                                  coeff,
                                                                   alignment=alignment)
-        lampa_figures = PlotsGenerator.getNewFigureArrayUsingPSI(som, lampa_trials, copy_psi_array[8], mean, st_dev, coeff,
+        lampa_figures = PlotsGenerator.getNewFigureArrayUsingPSI(som, lampa_trials, copy_psi_array[8], mean, st_dev,
+                                                                 coeff,
                                                                  alignment=alignment)
-        chitara_figures = PlotsGenerator.getNewFigureArrayUsingPSI(som, chitara_trials, copy_psi_array[9], mean, st_dev, coeff,
+        chitara_figures = PlotsGenerator.getNewFigureArrayUsingPSI(som, chitara_trials, copy_psi_array[9], mean, st_dev,
+                                                                   coeff,
                                                                    alignment=alignment)
-        masina_figures = PlotsGenerator.getNewFigureArrayUsingPSI(som, masina_trials, copy_psi_array[10], mean, st_dev, coeff,
+        masina_figures = PlotsGenerator.getNewFigureArrayUsingPSI(som, masina_trials, copy_psi_array[10], mean, st_dev,
+                                                                  coeff,
                                                                   alignment=alignment)
-        vaca_figures = PlotsGenerator.getNewFigureArrayUsingPSI(som, vaca_trials, copy_psi_array[11], mean, st_dev, coeff,
+        vaca_figures = PlotsGenerator.getNewFigureArrayUsingPSI(som, vaca_trials, copy_psi_array[11], mean, st_dev,
+                                                                coeff,
                                                                 alignment=alignment)
         furculita_figures = PlotsGenerator.getNewFigureArrayUsingPSI(som, furculita_trials, copy_psi_array[12],
                                                                      mean, st_dev, coeff,
                                                                      alignment=alignment)
-        cerb_figures = PlotsGenerator.getNewFigureArrayUsingPSI(som, cerb_trials, copy_psi_array[13], mean, st_dev, coeff,
+        cerb_figures = PlotsGenerator.getNewFigureArrayUsingPSI(som, cerb_trials, copy_psi_array[13], mean, st_dev,
+                                                                coeff,
                                                                 alignment=alignment)
         pantaloni_figures = PlotsGenerator.getNewFigureArrayUsingPSI(som, pantaloni_trials, copy_psi_array[14],
                                                                      mean, st_dev, coeff,
                                                                      alignment=alignment)
-        scaun_figures = PlotsGenerator.getNewFigureArrayUsingPSI(som, scaun_trials, copy_psi_array[15], mean, st_dev, coeff,
+        scaun_figures = PlotsGenerator.getNewFigureArrayUsingPSI(som, scaun_trials, copy_psi_array[15], mean, st_dev,
+                                                                 coeff,
                                                                  alignment=alignment)
-        peste_figures = PlotsGenerator.getNewFigureArrayUsingPSI(som, peste_trials, copy_psi_array[16], mean, st_dev, coeff,
+        peste_figures = PlotsGenerator.getNewFigureArrayUsingPSI(som, peste_trials, copy_psi_array[16], mean, st_dev,
+                                                                 coeff,
                                                                  alignment=alignment)
-        caine_figures = PlotsGenerator.getNewFigureArrayUsingPSI(som, caine_trials, copy_psi_array[17], mean, st_dev, coeff,
+        caine_figures = PlotsGenerator.getNewFigureArrayUsingPSI(som, caine_trials, copy_psi_array[17], mean, st_dev,
+                                                                 coeff,
                                                                  alignment=alignment)
-        sticla_figures = PlotsGenerator.getNewFigureArrayUsingPSI(som, sticla_trials, copy_psi_array[18], mean, st_dev, coeff,
+        sticla_figures = PlotsGenerator.getNewFigureArrayUsingPSI(som, sticla_trials, copy_psi_array[18], mean, st_dev,
+                                                                  coeff,
                                                                   alignment=alignment)
-        pistol_figures = PlotsGenerator.getNewFigureArrayUsingPSI(som, pistol_trials, copy_psi_array[19], mean, st_dev, coeff,
+        pistol_figures = PlotsGenerator.getNewFigureArrayUsingPSI(som, pistol_trials, copy_psi_array[19], mean, st_dev,
+                                                                  coeff,
                                                                   alignment=alignment)
         bicicleta_figures = PlotsGenerator.getNewFigureArrayUsingPSI(som, bicicleta_trials, copy_psi_array[20],
                                                                      mean, st_dev, coeff,
                                                                      alignment=alignment)
         cal_figures = PlotsGenerator.getNewFigureArrayUsingPSI(som, cal_trials, copy_psi_array[21], mean, st_dev, coeff,
                                                                alignment=alignment)
-        elefant_figures = PlotsGenerator.getNewFigureArrayUsingPSI(som, elefant_trials, copy_psi_array[22], mean, st_dev, coeff,
+        elefant_figures = PlotsGenerator.getNewFigureArrayUsingPSI(som, elefant_trials, copy_psi_array[22], mean,
+                                                                   st_dev, coeff,
                                                                    alignment=alignment)
-        iepure_figures = PlotsGenerator.getNewFigureArrayUsingPSI(som, iepure_trials, copy_psi_array[23], mean, st_dev, coeff,
+        iepure_figures = PlotsGenerator.getNewFigureArrayUsingPSI(som, iepure_trials, copy_psi_array[23], mean, st_dev,
+                                                                  coeff,
                                                                   alignment=alignment)
-        pahar_figures = PlotsGenerator.getNewFigureArrayUsingPSI(som, pahar_trials, copy_psi_array[24], mean, st_dev, coeff,
+        pahar_figures = PlotsGenerator.getNewFigureArrayUsingPSI(som, pahar_trials, copy_psi_array[24], mean, st_dev,
+                                                                 coeff,
                                                                  alignment=alignment)
-        masa_figures = PlotsGenerator.getNewFigureArrayUsingPSI(som, masa_trials, copy_psi_array[25], mean, st_dev, coeff,
+        masa_figures = PlotsGenerator.getNewFigureArrayUsingPSI(som, masa_trials, copy_psi_array[25], mean, st_dev,
+                                                                coeff,
                                                                 alignment=alignment)
-        umbrela_figures = PlotsGenerator.getNewFigureArrayUsingPSI(som, umbrela_trials, copy_psi_array[26], mean, st_dev, coeff,
+        umbrela_figures = PlotsGenerator.getNewFigureArrayUsingPSI(som, umbrela_trials, copy_psi_array[26], mean,
+                                                                   st_dev, coeff,
                                                                    alignment=alignment)
-        fluture_figures = PlotsGenerator.getNewFigureArrayUsingPSI(som, fluture_trials, copy_psi_array[27], mean, st_dev, coeff,
+        fluture_figures = PlotsGenerator.getNewFigureArrayUsingPSI(som, fluture_trials, copy_psi_array[27], mean,
+                                                                   st_dev, coeff,
                                                                    alignment=alignment)
-        girafa_figures = PlotsGenerator.getNewFigureArrayUsingPSI(som, girafa_trials, copy_psi_array[28], mean, st_dev, coeff,
+        girafa_figures = PlotsGenerator.getNewFigureArrayUsingPSI(som, girafa_trials, copy_psi_array[28], mean, st_dev,
+                                                                  coeff,
                                                                   alignment=alignment)
-        pian_figures = PlotsGenerator.getNewFigureArrayUsingPSI(som, pian_trials, copy_psi_array[29], mean, st_dev, coeff,
+        pian_figures = PlotsGenerator.getNewFigureArrayUsingPSI(som, pian_trials, copy_psi_array[29], mean, st_dev,
+                                                                coeff,
                                                                 alignment=alignment)
 
         fig, ax = PlotsGenerator.generateGridWithColorSequences(poseta_figures, n_rows=7, n_cols=1)
-        plt.suptitle("Stimulus: poseta/geanta (de dama), PSI mean = " + str(round(mean, 3)) + ", st_dev =  " + str(round(st_dev, 3)) + "\n" + params)
+        plt.suptitle("Stimulus: poseta/geanta (de dama), PSI mean = " + str(round(mean, 3)) + ", st_dev =  " + str(
+            round(st_dev, 3)) + "\n" + params)
         fig.set_size_inches(6, 4)
-        plt.savefig(path + "stimulus_poseta_psi"+str(psi_version)+".png", dpi=300)
+        plt.savefig(path + "stimulus_poseta_psi" + str(psi_version) + ".png", dpi=300)
 
         fig, ax = PlotsGenerator.generateGridWithColorSequences(topor_figures, n_rows=7, n_cols=1)
-        plt.suptitle("Stimulus: topor/secure, PSI mean = " + str(round(mean, 3)) + ", st_dev =  " + str(round(st_dev, 3)) + "\n" + params)
+        plt.suptitle("Stimulus: topor/secure, PSI mean = " + str(round(mean, 3)) + ", st_dev =  " + str(
+            round(st_dev, 3)) + "\n" + params)
         fig.set_size_inches(6, 4)
-        plt.savefig(path + "stimulus_topor_psi"+str(psi_version)+".png", dpi=300)
+        plt.savefig(path + "stimulus_topor_psi" + str(psi_version) + ".png", dpi=300)
 
         fig, ax = PlotsGenerator.generateGridWithColorSequences(oala_figures, n_rows=7, n_cols=1)
-        plt.suptitle("Stimulus: oala/cratita, PSI mean = " + str(round(mean, 3)) + ", st_dev =  " + str(round(st_dev, 3)) + "\n" + params)
+        plt.suptitle("Stimulus: oala/cratita, PSI mean = " + str(round(mean, 3)) + ", st_dev =  " + str(
+            round(st_dev, 3)) + "\n" + params)
         fig.set_size_inches(6, 4)
-        plt.savefig(path + "stimulus_oala_psi"+str(psi_version)+".png", dpi=300)
+        plt.savefig(path + "stimulus_oala_psi" + str(psi_version) + ".png", dpi=300)
 
         fig, ax = PlotsGenerator.generateGridWithColorSequences(elicopter_figures, n_rows=7, n_cols=1)
-        plt.suptitle("Stimulus: elicopter, PSI mean = " + str(round(mean, 3)) + ", st_dev =  " + str(round(st_dev, 3)) + "\n" + params)
+        plt.suptitle("Stimulus: elicopter, PSI mean = " + str(round(mean, 3)) + ", st_dev =  " + str(
+            round(st_dev, 3)) + "\n" + params)
         fig.set_size_inches(6, 4)
-        plt.savefig(path + "stimulus_elicopter_psi"+str(psi_version)+".png", dpi=300)
+        plt.savefig(path + "stimulus_elicopter_psi" + str(psi_version) + ".png", dpi=300)
 
         fig, ax = PlotsGenerator.generateGridWithColorSequences(urs_figures, n_rows=7, n_cols=1)
-        plt.suptitle("Stimulus: urs (polar), PSI mean = " + str(round(mean, 3)) + ", st_dev =  " + str(round(st_dev, 3)) + "\n" + params)
+        plt.suptitle("Stimulus: urs (polar), PSI mean = " + str(round(mean, 3)) + ", st_dev =  " + str(
+            round(st_dev, 3)) + "\n" + params)
         fig.set_size_inches(6, 4)
-        plt.savefig(path + "stimulus_urs_psi"+str(psi_version)+".png", dpi=300)
+        plt.savefig(path + "stimulus_urs_psi" + str(psi_version) + ".png", dpi=300)
 
         fig, ax = PlotsGenerator.generateGridWithColorSequences(palarie_figures, n_rows=7, n_cols=1)
-        plt.suptitle("Stimulus: palarie, PSI mean = " + str(round(mean, 3)) + ", st_dev =  " + str(round(st_dev, 3)) + "\n" + params)
+        plt.suptitle("Stimulus: palarie, PSI mean = " + str(round(mean, 3)) + ", st_dev =  " + str(
+            round(st_dev, 3)) + "\n" + params)
         fig.set_size_inches(6, 4)
-        plt.savefig(path + "stimulus_palarie_psi"+str(psi_version)+".png", dpi=300)
+        plt.savefig(path + "stimulus_palarie_psi" + str(psi_version) + ".png", dpi=300)
 
         fig, ax = PlotsGenerator.generateGridWithColorSequences(foarfece_figures, n_rows=7, n_cols=1)
-        plt.suptitle("Stimulus: foarfece, PSI mean = " + str(round(mean, 3)) + ", st_dev =  " + str(round(st_dev, 3)) + "\n" + params)
+        plt.suptitle("Stimulus: foarfece, PSI mean = " + str(round(mean, 3)) + ", st_dev =  " + str(
+            round(st_dev, 3)) + "\n" + params)
         fig.set_size_inches(6, 4)
-        plt.savefig(path + "stimulus_foarfece_psi"+str(psi_version)+".png", dpi=300)
+        plt.savefig(path + "stimulus_foarfece_psi" + str(psi_version) + ".png", dpi=300)
 
         fig, ax = PlotsGenerator.generateGridWithColorSequences(banana_figures, n_rows=7, n_cols=1)
-        plt.suptitle("Stimulus: banana, PSI mean = " + str(round(mean, 3)) + ", st_dev =  " + str(round(st_dev, 3)) + "\n" + params)
+        plt.suptitle("Stimulus: banana, PSI mean = " + str(round(mean, 3)) + ", st_dev =  " + str(
+            round(st_dev, 3)) + "\n" + params)
         fig.set_size_inches(6, 4)
-        plt.savefig(path + "stimulus_banana_psi"+str(psi_version)+".png", dpi=300)
+        plt.savefig(path + "stimulus_banana_psi" + str(psi_version) + ".png", dpi=300)
 
         fig, ax = PlotsGenerator.generateGridWithColorSequences(lampa_figures, n_rows=7, n_cols=1)
-        plt.suptitle("Stimulus: lampa/veioza, PSI mean = " + str(round(mean, 3)) + ", st_dev =  " + str(round(st_dev, 3)) + "\n" + params)
+        plt.suptitle("Stimulus: lampa/veioza, PSI mean = " + str(round(mean, 3)) + ", st_dev =  " + str(
+            round(st_dev, 3)) + "\n" + params)
         fig.set_size_inches(6, 4)
-        plt.savefig(path + "stimulus_lampa_psi"+str(psi_version)+".png", dpi=300)
+        plt.savefig(path + "stimulus_lampa_psi" + str(psi_version) + ".png", dpi=300)
 
         fig, ax = PlotsGenerator.generateGridWithColorSequences(chitara_figures, n_rows=7, n_cols=1)
-        plt.suptitle("Stimulus: chitara (electrica), PSI mean = " + str(round(mean, 3)) + ", st_dev =  " + str(round(st_dev, 3)) + "\n" + params)
+        plt.suptitle("Stimulus: chitara (electrica), PSI mean = " + str(round(mean, 3)) + ", st_dev =  " + str(
+            round(st_dev, 3)) + "\n" + params)
         fig.set_size_inches(6, 4)
-        plt.savefig(path + "stimulus_chitara_psi"+str(psi_version)+".png", dpi=300)
+        plt.savefig(path + "stimulus_chitara_psi" + str(psi_version) + ".png", dpi=300)
 
         fig, ax = PlotsGenerator.generateGridWithColorSequences(masina_figures, n_rows=7, n_cols=1)
-        plt.suptitle("Stimulus: masina, PSI mean = " + str(round(mean, 3)) + ", st_dev =  " + str(round(st_dev, 3)) + "\n" + params)
+        plt.suptitle("Stimulus: masina, PSI mean = " + str(round(mean, 3)) + ", st_dev =  " + str(
+            round(st_dev, 3)) + "\n" + params)
         fig.set_size_inches(6, 4)
-        plt.savefig(path + "stimulus_masina_psi"+str(psi_version)+".png", dpi=300)
+        plt.savefig(path + "stimulus_masina_psi" + str(psi_version) + ".png", dpi=300)
 
         fig, ax = PlotsGenerator.generateGridWithColorSequences(vaca_figures, n_rows=7, n_cols=1)
-        plt.suptitle("Stimulus: vaca, PSI mean = " + str(round(mean, 3)) + ", st_dev =  " + str(round(st_dev, 3)) + "\n" + params)
+        plt.suptitle("Stimulus: vaca, PSI mean = " + str(round(mean, 3)) + ", st_dev =  " + str(
+            round(st_dev, 3)) + "\n" + params)
         fig.set_size_inches(6, 4)
-        plt.savefig(path + "stimulus_vaca_psi"+str(psi_version)+".png", dpi=300)
+        plt.savefig(path + "stimulus_vaca_psi" + str(psi_version) + ".png", dpi=300)
 
         fig, ax = PlotsGenerator.generateGridWithColorSequences(furculita_figures, n_rows=7, n_cols=1)
-        plt.suptitle("Stimulus: furculita, PSI mean = " + str(round(mean, 3)) + ", st_dev =  " + str(round(st_dev, 3)) + "\n" + params)
+        plt.suptitle("Stimulus: furculita, PSI mean = " + str(round(mean, 3)) + ", st_dev =  " + str(
+            round(st_dev, 3)) + "\n" + params)
         fig.set_size_inches(6, 4)
-        plt.savefig(path + "stimulus_furculita_psi"+str(psi_version)+".png", dpi=300)
+        plt.savefig(path + "stimulus_furculita_psi" + str(psi_version) + ".png", dpi=300)
 
         fig, ax = PlotsGenerator.generateGridWithColorSequences(cerb_figures, n_rows=7, n_cols=1)
-        plt.suptitle("Stimulus: cerb, PSI mean = " + str(round(mean, 3)) + ", st_dev =  " + str(round(st_dev, 3)) + "\n" + params)
+        plt.suptitle("Stimulus: cerb, PSI mean = " + str(round(mean, 3)) + ", st_dev =  " + str(
+            round(st_dev, 3)) + "\n" + params)
         fig.set_size_inches(6, 4)
-        plt.savefig(path + "stimulus_cerb_psi"+str(psi_version)+".png", dpi=300)
+        plt.savefig(path + "stimulus_cerb_psi" + str(psi_version) + ".png", dpi=300)
 
         fig, ax = PlotsGenerator.generateGridWithColorSequences(pantaloni_figures, n_rows=7, n_cols=1)
-        plt.suptitle("Stimulus: pantaloni (scurti), PSI mean = " + str(round(mean, 3)) + ", st_dev =  " + str(round(st_dev, 3)) + "\n" + params)
+        plt.suptitle("Stimulus: pantaloni (scurti), PSI mean = " + str(round(mean, 3)) + ", st_dev =  " + str(
+            round(st_dev, 3)) + "\n" + params)
         fig.set_size_inches(6, 4)
-        plt.savefig(path + "stimulus_pantaloni_psi"+str(psi_version)+".png", dpi=300)
+        plt.savefig(path + "stimulus_pantaloni_psi" + str(psi_version) + ".png", dpi=300)
 
         fig, ax = PlotsGenerator.generateGridWithColorSequences(scaun_figures, n_rows=7, n_cols=1)
-        plt.suptitle("Stimulus: scaun, PSI mean = " + str(round(mean, 3)) + ", st_dev =  " + str(round(st_dev, 3)) + "\n" + params)
+        plt.suptitle("Stimulus: scaun, PSI mean = " + str(round(mean, 3)) + ", st_dev =  " + str(
+            round(st_dev, 3)) + "\n" + params)
         fig.set_size_inches(6, 4)
-        plt.savefig(path + "stimulus_scaun_psi"+str(psi_version)+".png", dpi=300)
+        plt.savefig(path + "stimulus_scaun_psi" + str(psi_version) + ".png", dpi=300)
 
         fig, ax = PlotsGenerator.generateGridWithColorSequences(peste_figures, n_rows=7, n_cols=1)
-        plt.suptitle("Stimulus: peste, PSI mean = " + str(round(mean, 3)) + ", st_dev =  " + str(round(st_dev, 3)) + "\n" + params)
+        plt.suptitle("Stimulus: peste, PSI mean = " + str(round(mean, 3)) + ", st_dev =  " + str(
+            round(st_dev, 3)) + "\n" + params)
         fig.set_size_inches(6, 4)
-        plt.savefig(path + "stimulus_peste_psi"+str(psi_version)+".png", dpi=300)
+        plt.savefig(path + "stimulus_peste_psi" + str(psi_version) + ".png", dpi=300)
 
         fig, ax = PlotsGenerator.generateGridWithColorSequences(caine_figures, n_rows=7, n_cols=1)
-        plt.suptitle("Stimulus: caine/catel, PSI mean = " + str(round(mean, 3)) + ", st_dev =  " + str(round(st_dev, 3)) + "\n" + params)
+        plt.suptitle("Stimulus: caine/catel, PSI mean = " + str(round(mean, 3)) + ", st_dev =  " + str(
+            round(st_dev, 3)) + "\n" + params)
         fig.set_size_inches(6, 4)
-        plt.savefig(path + "stimulus_caine_psi"+str(psi_version)+".png", dpi=300)
+        plt.savefig(path + "stimulus_caine_psi" + str(psi_version) + ".png", dpi=300)
 
         fig, ax = PlotsGenerator.generateGridWithColorSequences(sticla_figures, n_rows=7, n_cols=1)
-        plt.suptitle("Stimulus: sticla, PSI mean = " + str(round(mean, 3)) + ", st_dev =  " + str(round(st_dev, 3)) + "\n" + params)
+        plt.suptitle("Stimulus: sticla, PSI mean = " + str(round(mean, 3)) + ", st_dev =  " + str(
+            round(st_dev, 3)) + "\n" + params)
         fig.set_size_inches(6, 4)
-        plt.savefig(path + "stimulus_sticla_psi"+str(psi_version)+".png", dpi=300)
+        plt.savefig(path + "stimulus_sticla_psi" + str(psi_version) + ".png", dpi=300)
 
         fig, ax = PlotsGenerator.generateGridWithColorSequences(pistol_figures, n_rows=7, n_cols=1)
-        plt.suptitle("Stimulus: pistol, PSI mean = " + str(round(mean, 3)) + ", st_dev =  " + str(round(st_dev, 3)) + "\n" + params)
+        plt.suptitle("Stimulus: pistol, PSI mean = " + str(round(mean, 3)) + ", st_dev =  " + str(
+            round(st_dev, 3)) + "\n" + params)
         fig.set_size_inches(6, 4)
-        plt.savefig(path + "stimulus_pistol_psi"+str(psi_version)+".png", dpi=300)
+        plt.savefig(path + "stimulus_pistol_psi" + str(psi_version) + ".png", dpi=300)
 
         fig, ax = PlotsGenerator.generateGridWithColorSequences(bicicleta_figures, n_rows=7, n_cols=1)
-        plt.suptitle("Stimulus: bicicleta, PSI mean = " + str(round(mean, 3)) + ", st_dev =  " + str(round(st_dev, 3)) + "\n" + params)
+        plt.suptitle("Stimulus: bicicleta, PSI mean = " + str(round(mean, 3)) + ", st_dev =  " + str(
+            round(st_dev, 3)) + "\n" + params)
         fig.set_size_inches(6, 4)
-        plt.savefig(path + "stimulus_bicicleta_psi"+str(psi_version)+".png", dpi=300)
+        plt.savefig(path + "stimulus_bicicleta_psi" + str(psi_version) + ".png", dpi=300)
 
         fig, ax = PlotsGenerator.generateGridWithColorSequences(cal_figures, n_rows=7, n_cols=1)
-        plt.suptitle("Stimulus: cal, PSI mean = " + str(round(mean, 3)) + ", st_dev =  " + str(round(st_dev, 3)) + "\n" + params)
+        plt.suptitle(
+            "Stimulus: cal, PSI mean = " + str(round(mean, 3)) + ", st_dev =  " + str(round(st_dev, 3)) + "\n" + params)
         fig.set_size_inches(6, 4)
-        plt.savefig(path + "stimulus_cal_psi"+str(psi_version)+".png", dpi=300)
+        plt.savefig(path + "stimulus_cal_psi" + str(psi_version) + ".png", dpi=300)
 
         fig, ax = PlotsGenerator.generateGridWithColorSequences(elefant_figures, n_rows=7, n_cols=1)
-        plt.suptitle("Stimulus: elefant, PSI mean = " + str(round(mean, 3)) + ", st_dev =  " + str(round(st_dev, 3)) + "\n" + params)
+        plt.suptitle("Stimulus: elefant, PSI mean = " + str(round(mean, 3)) + ", st_dev =  " + str(
+            round(st_dev, 3)) + "\n" + params)
         fig.set_size_inches(6, 4)
-        plt.savefig(path + "stimulus_elefant_psi"+str(psi_version)+".png", dpi=300)
+        plt.savefig(path + "stimulus_elefant_psi" + str(psi_version) + ".png", dpi=300)
 
         fig, ax = PlotsGenerator.generateGridWithColorSequences(iepure_figures, n_rows=7, n_cols=1)
-        plt.suptitle("Stimulus: iepure, PSI mean = " + str(round(mean, 3)) + ", st_dev =  " + str(round(st_dev, 3)) + "\n" + params)
+        plt.suptitle("Stimulus: iepure, PSI mean = " + str(round(mean, 3)) + ", st_dev =  " + str(
+            round(st_dev, 3)) + "\n" + params)
         fig.set_size_inches(6, 4)
-        plt.savefig(path + "stimulus_iepure_psi"+str(psi_version)+".png", dpi=300)
+        plt.savefig(path + "stimulus_iepure_psi" + str(psi_version) + ".png", dpi=300)
 
         fig, ax = PlotsGenerator.generateGridWithColorSequences(pahar_figures, n_rows=7, n_cols=1)
-        plt.suptitle("Stimulus: pahar/cupa, PSI mean = " + str(round(mean, 3)) + ", st_dev =  " + str(round(st_dev, 3)) + "\n" + params)
+        plt.suptitle("Stimulus: pahar/cupa, PSI mean = " + str(round(mean, 3)) + ", st_dev =  " + str(
+            round(st_dev, 3)) + "\n" + params)
         fig.set_size_inches(6, 4)
-        plt.savefig(path + "stimulus_cupa_psi"+str(psi_version)+".png", dpi=300)
+        plt.savefig(path + "stimulus_cupa_psi" + str(psi_version) + ".png", dpi=300)
 
         fig, ax = PlotsGenerator.generateGridWithColorSequences(masa_figures, n_rows=7, n_cols=1)
-        plt.suptitle("Stimulus: masa, PSI mean = " + str(round(mean, 3)) + ", st_dev =  " + str(round(st_dev, 3)) + "\n" + params)
+        plt.suptitle("Stimulus: masa, PSI mean = " + str(round(mean, 3)) + ", st_dev =  " + str(
+            round(st_dev, 3)) + "\n" + params)
         fig.set_size_inches(6, 4)
-        plt.savefig(path + "stimulus_masa_psi"+str(psi_version)+".png", dpi=300)
+        plt.savefig(path + "stimulus_masa_psi" + str(psi_version) + ".png", dpi=300)
 
         fig, ax = PlotsGenerator.generateGridWithColorSequences(umbrela_figures, n_rows=7, n_cols=1)
-        plt.suptitle("Stimulus: umbrela, PSI mean = " + str(round(mean, 3)) + ", st_dev =  " + str(round(st_dev, 3)) + "\n" + params)
+        plt.suptitle("Stimulus: umbrela, PSI mean = " + str(round(mean, 3)) + ", st_dev =  " + str(
+            round(st_dev, 3)) + "\n" + params)
         fig.set_size_inches(6, 4)
-        plt.savefig(path + "stimulus_umbrela_psi"+str(psi_version)+".png", dpi=300)
+        plt.savefig(path + "stimulus_umbrela_psi" + str(psi_version) + ".png", dpi=300)
 
         fig, ax = PlotsGenerator.generateGridWithColorSequences(fluture_figures, n_rows=7, n_cols=1)
-        plt.suptitle("Stimulus: fluture, PSI mean = " + str(round(mean, 3)) + ", st_dev =  " + str(round(st_dev, 3)) + "\n" + params)
+        plt.suptitle("Stimulus: fluture, PSI mean = " + str(round(mean, 3)) + ", st_dev =  " + str(
+            round(st_dev, 3)) + "\n" + params)
         fig.set_size_inches(6, 4)
-        plt.savefig(path + "stimulus_fluture_psi"+str(psi_version)+".png", dpi=300)
+        plt.savefig(path + "stimulus_fluture_psi" + str(psi_version) + ".png", dpi=300)
 
         fig, ax = PlotsGenerator.generateGridWithColorSequences(girafa_figures, n_rows=7, n_cols=1)
-        plt.suptitle("Stimulus: girafa, PSI mean = " + str(round(mean, 3)) + ", st_dev =  " + str(round(st_dev, 3)) + "\n" + params)
+        plt.suptitle("Stimulus: girafa, PSI mean = " + str(round(mean, 3)) + ", st_dev =  " + str(
+            round(st_dev, 3)) + "\n" + params)
         fig.set_size_inches(6, 4)
-        plt.savefig(path + "stimulus_girafa_psi"+str(psi_version)+".png", dpi=300)
+        plt.savefig(path + "stimulus_girafa_psi" + str(psi_version) + ".png", dpi=300)
 
         fig, ax = PlotsGenerator.generateGridWithColorSequences(pian_figures, n_rows=7, n_cols=1)
-        plt.suptitle("Stimulus: pian, PSI mean = " + str(round(mean, 3)) + ", st_dev =  " + str(round(st_dev, 3)) + "\n" + params)
+        plt.suptitle("Stimulus: pian, PSI mean = " + str(round(mean, 3)) + ", st_dev =  " + str(
+            round(st_dev, 3)) + "\n" + params)
         fig.set_size_inches(6, 4)
-        plt.savefig(path + "stimulus_pian_psi"+str(psi_version)+".png", dpi=300)
+        plt.savefig(path + "stimulus_pian_psi" + str(psi_version) + ".png", dpi=300)
         # plt.show()
 
     @staticmethod
@@ -697,7 +843,7 @@ class PlotsGenerator:
             list_trials_by_group = [v0_trials, v1_trials, v2_trials, v3_trials, v4_trials, v5_trials, v6_trials]
             copy_psi_array = PlotsGenerator.computeWeightedPSI(list_trials_by_group, copy_psi_array, number_of_samples)
 
-        #threshold = PlotsGenerator.findThresholdForGroupBasedOnPsiArray(copy_psi_array, som)
+        # threshold = PlotsGenerator.findThresholdForGroupBasedOnPsiArray(copy_psi_array, som)
         mean, st_dev = PlotsGenerator.computeMeanAndStDevForGroup(copy_psi_array, som)
 
         v0_figures = PlotsGenerator.getNewFigureArrayUsingPSI(som, v0_trials, copy_psi_array[0], mean, st_dev, coeff,
@@ -716,39 +862,46 @@ class PlotsGenerator:
                                                               alignment=alignment)
 
         fig, ax = PlotsGenerator.generateGridWithColorSequences(v0_figures, n_rows=30, n_cols=1)
-        plt.suptitle("Stimulus visibility: 0.00, PSI mean = " + str(round(mean, 3)) + ", st_dev =  " + str(round(st_dev, 3)) + "\n" + params)
+        plt.suptitle("Stimulus visibility: 0.00, PSI mean = " + str(round(mean, 3)) + ", st_dev =  " + str(
+            round(st_dev, 3)) + "\n" + params)
         fig.set_size_inches(6, 4)
-        plt.savefig(path + "v0.0_psi"+str(psi_version)+".png", dpi=300)
+        plt.savefig(path + "v0.0_psi" + str(psi_version) + ".png", dpi=300)
 
         fig, ax = PlotsGenerator.generateGridWithColorSequences(v1_figures, n_rows=30, n_cols=1)
-        plt.suptitle("Stimulus visibility: 0.05, PSI mean = " + str(round(mean, 3)) + ", st_dev =  " + str(round(st_dev, 3)) + "\n" + params)
+        plt.suptitle("Stimulus visibility: 0.05, PSI mean = " + str(round(mean, 3)) + ", st_dev =  " + str(
+            round(st_dev, 3)) + "\n" + params)
         fig.set_size_inches(6, 4)
-        plt.savefig(path + "v0.05_psi"+str(psi_version)+".png", dpi=300)
+        plt.savefig(path + "v0.05_psi" + str(psi_version) + ".png", dpi=300)
 
         fig, ax = PlotsGenerator.generateGridWithColorSequences(v2_figures, n_rows=30, n_cols=1)
-        plt.suptitle("Stimulus visibility: 0.1, PSI mean = " + str(round(mean, 3)) + ", st_dev =  " + str(round(st_dev, 3)) + "\n" + params)
+        plt.suptitle("Stimulus visibility: 0.1, PSI mean = " + str(round(mean, 3)) + ", st_dev =  " + str(
+            round(st_dev, 3)) + "\n" + params)
         fig.set_size_inches(6, 4)
-        plt.savefig(path + "v0.1_psi"+str(psi_version)+".png", dpi=300)
+        plt.savefig(path + "v0.1_psi" + str(psi_version) + ".png", dpi=300)
 
         fig, ax = PlotsGenerator.generateGridWithColorSequences(v3_figures, n_rows=30, n_cols=1)
-        plt.suptitle("Stimulus visibility: 0.15, PSI mean = " + str(round(mean, 3)) + ", st_dev =  " + str(round(st_dev, 3)) + "\n" + params)
+        plt.suptitle("Stimulus visibility: 0.15, PSI mean = " + str(round(mean, 3)) + ", st_dev =  " + str(
+            round(st_dev, 3)) + "\n" + params)
         fig.set_size_inches(6, 4)
-        plt.savefig(path + "v0.15_psi"+str(psi_version)+".png", dpi=300)
+        plt.savefig(path + "v0.15_psi" + str(psi_version) + ".png", dpi=300)
 
         fig, ax = PlotsGenerator.generateGridWithColorSequences(v4_figures, n_rows=30, n_cols=1)
-        plt.suptitle("Stimulus visibility: 0.2, PSI mean = " + str(round(mean, 3)) + ", st_dev =  " + str(round(st_dev, 3)) + "\n" + params)
+        plt.suptitle("Stimulus visibility: 0.2, PSI mean = " + str(round(mean, 3)) + ", st_dev =  " + str(
+            round(st_dev, 3)) + "\n" + params)
         fig.set_size_inches(6, 4)
-        plt.savefig(path + "v0.2_psi"+str(psi_version)+".png", dpi=300)
+        plt.savefig(path + "v0.2_psi" + str(psi_version) + ".png", dpi=300)
 
         fig, ax = PlotsGenerator.generateGridWithColorSequences(v5_figures, n_rows=30, n_cols=1)
-        plt.suptitle("Stimulus visibility: 0.25, PSI mean = " + str(round(mean, 3)) + ", st_dev =  " + str(round(st_dev, 3)) + "\n" + params)
+        plt.suptitle("Stimulus visibility: 0.25, PSI mean = " + str(round(mean, 3)) + ", st_dev =  " + str(
+            round(st_dev, 3)) + "\n" + params)
         fig.set_size_inches(6, 4)
-        plt.savefig(path + "v0.25_psi"+str(psi_version)+".png", dpi=300)
+        plt.savefig(path + "v0.25_psi" + str(psi_version) + ".png", dpi=300)
 
         fig, ax = PlotsGenerator.generateGridWithColorSequences(v6_figures, n_rows=30, n_cols=1)
-        plt.suptitle("Stimulus visibility: 0.3, PSI mean = " + str(round(mean, 3)) + ", st_dev =  " + str(round(st_dev, 3)) + "\n" + params)
+        plt.suptitle("Stimulus visibility: 0.3, PSI mean = " + str(round(mean, 3)) + ", st_dev =  " + str(
+            round(st_dev, 3)) + "\n" + params)
         fig.set_size_inches(6, 4)
-        plt.savefig(path + "v0.3_psi"+str(psi_version)+".png", dpi=300)
+        plt.savefig(path + "v0.3_psi" + str(psi_version) + ".png", dpi=300)
         # plt.show()
 
     # compute color frequencies ---------------------------------------------------------------------------------------
@@ -896,7 +1049,7 @@ class PlotsGenerator:
         for matrix in group_total_freq_matrix_array:
             group_PSIs_for_all_colors_matrix_array.append(PlotsGenerator.computePSI(matrix, total_freq_matrix))
 
-        return group_PSIs_for_all_colors_matrix_array
+        return np.array(group_PSIs_for_all_colors_matrix_array)
 
     @staticmethod
     def computePSIByGroupMethod2(group_color_freq_array, som):
@@ -1123,36 +1276,94 @@ class PlotsGenerator:
             pian_figures, freq_pian = PlotsGenerator.getTrialSequencesArrayUsingBMU(pian, som,
                                                                                     alignment=alignment)
         else:
-            poseta_figures= PlotsGenerator.getTrialSequencesArrayUsingClusters(poseta, markers_and_colors, samples_with_clusters, alignment=alignment)
-            topor_figures= PlotsGenerator.getTrialSequencesArrayUsingClusters(topor, markers_and_colors, samples_with_clusters, alignment=alignment)
-            oala_figures = PlotsGenerator.getTrialSequencesArrayUsingClusters(oala, markers_and_colors, samples_with_clusters, alignment=alignment)
-            elicopter_figures= PlotsGenerator.getTrialSequencesArrayUsingClusters(elicopter, markers_and_colors, samples_with_clusters, alignment=alignment)
-            urs_figures= PlotsGenerator.getTrialSequencesArrayUsingClusters(urs, markers_and_colors, samples_with_clusters, alignment=alignment)
-            palarie_figures= PlotsGenerator.getTrialSequencesArrayUsingClusters(palarie, markers_and_colors, samples_with_clusters, alignment=alignment)
-            foarfece_figures= PlotsGenerator.getTrialSequencesArrayUsingClusters(foarfece, markers_and_colors, samples_with_clusters, alignment=alignment)
-            banana_figures= PlotsGenerator.getTrialSequencesArrayUsingClusters(banana, markers_and_colors, samples_with_clusters, alignment=alignment)
-            lampa_figures= PlotsGenerator.getTrialSequencesArrayUsingClusters(lampa, markers_and_colors, samples_with_clusters, alignment=alignment)
-            chitara_figures = PlotsGenerator.getTrialSequencesArrayUsingClusters(chitara, markers_and_colors, samples_with_clusters, alignment=alignment)
-            masina_figures = PlotsGenerator.getTrialSequencesArrayUsingClusters(masina, markers_and_colors, samples_with_clusters, alignment=alignment)
-            vaca_figures = PlotsGenerator.getTrialSequencesArrayUsingClusters(vaca, markers_and_colors, samples_with_clusters, alignment=alignment)
-            furculita_figures= PlotsGenerator.getTrialSequencesArrayUsingClusters(furculita, markers_and_colors, samples_with_clusters, alignment=alignment)
-            cerb_figures = PlotsGenerator.getTrialSequencesArrayUsingClusters(cerb, markers_and_colors, samples_with_clusters, alignment=alignment)
-            pantaloni_figures = PlotsGenerator.getTrialSequencesArrayUsingClusters(pantaloni, markers_and_colors, samples_with_clusters, alignment=alignment)
-            scaun_figures = PlotsGenerator.getTrialSequencesArrayUsingClusters(scaun, markers_and_colors, samples_with_clusters, alignment=alignment)
-            peste_figures = PlotsGenerator.getTrialSequencesArrayUsingClusters(peste, markers_and_colors, samples_with_clusters, alignment=alignment)
-            caine_figures = PlotsGenerator.getTrialSequencesArrayUsingClusters(caine, markers_and_colors, samples_with_clusters, alignment=alignment)
-            sticla_figures = PlotsGenerator.getTrialSequencesArrayUsingClusters(sticla, markers_and_colors, samples_with_clusters, alignment=alignment)
-            pistol_figures = PlotsGenerator.getTrialSequencesArrayUsingClusters(pistol, markers_and_colors, samples_with_clusters, alignment=alignment)
-            bicicleta_figures = PlotsGenerator.getTrialSequencesArrayUsingClusters(bicicleta, markers_and_colors, samples_with_clusters,  alignment=alignment)
-            cal_figures = PlotsGenerator.getTrialSequencesArrayUsingClusters(cal, markers_and_colors, samples_with_clusters, alignment=alignment)
-            elefant_figures = PlotsGenerator.getTrialSequencesArrayUsingClusters(elicopter, markers_and_colors, samples_with_clusters, alignment=alignment)
-            iepure_figures = PlotsGenerator.getTrialSequencesArrayUsingClusters(iepure, markers_and_colors, samples_with_clusters, alignment=alignment)
-            pahar_figures = PlotsGenerator.getTrialSequencesArrayUsingClusters(pahar, markers_and_colors, samples_with_clusters, alignment=alignment)
-            masa_figures = PlotsGenerator.getTrialSequencesArrayUsingClusters(masa, markers_and_colors, samples_with_clusters, alignment=alignment)
-            umbrela_figures = PlotsGenerator.getTrialSequencesArrayUsingClusters(umbrela, markers_and_colors, samples_with_clusters, alignment=alignment)
-            fluture_figures = PlotsGenerator.getTrialSequencesArrayUsingClusters(fluture, markers_and_colors, samples_with_clusters, alignment=alignment)
-            girafa_figures = PlotsGenerator.getTrialSequencesArrayUsingClusters(girafa, markers_and_colors, samples_with_clusters, alignment=alignment)
-            pian_figures = PlotsGenerator.getTrialSequencesArrayUsingClusters(pian, markers_and_colors, samples_with_clusters, alignment=alignment)
+            poseta_figures = PlotsGenerator.getTrialSequencesArrayUsingClusters(poseta, markers_and_colors,
+                                                                                samples_with_clusters,
+                                                                                alignment=alignment)
+            topor_figures = PlotsGenerator.getTrialSequencesArrayUsingClusters(topor, markers_and_colors,
+                                                                               samples_with_clusters,
+                                                                               alignment=alignment)
+            oala_figures = PlotsGenerator.getTrialSequencesArrayUsingClusters(oala, markers_and_colors,
+                                                                              samples_with_clusters,
+                                                                              alignment=alignment)
+            elicopter_figures = PlotsGenerator.getTrialSequencesArrayUsingClusters(elicopter, markers_and_colors,
+                                                                                   samples_with_clusters,
+                                                                                   alignment=alignment)
+            urs_figures = PlotsGenerator.getTrialSequencesArrayUsingClusters(urs, markers_and_colors,
+                                                                             samples_with_clusters, alignment=alignment)
+            palarie_figures = PlotsGenerator.getTrialSequencesArrayUsingClusters(palarie, markers_and_colors,
+                                                                                 samples_with_clusters,
+                                                                                 alignment=alignment)
+            foarfece_figures = PlotsGenerator.getTrialSequencesArrayUsingClusters(foarfece, markers_and_colors,
+                                                                                  samples_with_clusters,
+                                                                                  alignment=alignment)
+            banana_figures = PlotsGenerator.getTrialSequencesArrayUsingClusters(banana, markers_and_colors,
+                                                                                samples_with_clusters,
+                                                                                alignment=alignment)
+            lampa_figures = PlotsGenerator.getTrialSequencesArrayUsingClusters(lampa, markers_and_colors,
+                                                                               samples_with_clusters,
+                                                                               alignment=alignment)
+            chitara_figures = PlotsGenerator.getTrialSequencesArrayUsingClusters(chitara, markers_and_colors,
+                                                                                 samples_with_clusters,
+                                                                                 alignment=alignment)
+            masina_figures = PlotsGenerator.getTrialSequencesArrayUsingClusters(masina, markers_and_colors,
+                                                                                samples_with_clusters,
+                                                                                alignment=alignment)
+            vaca_figures = PlotsGenerator.getTrialSequencesArrayUsingClusters(vaca, markers_and_colors,
+                                                                              samples_with_clusters,
+                                                                              alignment=alignment)
+            furculita_figures = PlotsGenerator.getTrialSequencesArrayUsingClusters(furculita, markers_and_colors,
+                                                                                   samples_with_clusters,
+                                                                                   alignment=alignment)
+            cerb_figures = PlotsGenerator.getTrialSequencesArrayUsingClusters(cerb, markers_and_colors,
+                                                                              samples_with_clusters,
+                                                                              alignment=alignment)
+            pantaloni_figures = PlotsGenerator.getTrialSequencesArrayUsingClusters(pantaloni, markers_and_colors,
+                                                                                   samples_with_clusters,
+                                                                                   alignment=alignment)
+            scaun_figures = PlotsGenerator.getTrialSequencesArrayUsingClusters(scaun, markers_and_colors,
+                                                                               samples_with_clusters,
+                                                                               alignment=alignment)
+            peste_figures = PlotsGenerator.getTrialSequencesArrayUsingClusters(peste, markers_and_colors,
+                                                                               samples_with_clusters,
+                                                                               alignment=alignment)
+            caine_figures = PlotsGenerator.getTrialSequencesArrayUsingClusters(caine, markers_and_colors,
+                                                                               samples_with_clusters,
+                                                                               alignment=alignment)
+            sticla_figures = PlotsGenerator.getTrialSequencesArrayUsingClusters(sticla, markers_and_colors,
+                                                                                samples_with_clusters,
+                                                                                alignment=alignment)
+            pistol_figures = PlotsGenerator.getTrialSequencesArrayUsingClusters(pistol, markers_and_colors,
+                                                                                samples_with_clusters,
+                                                                                alignment=alignment)
+            bicicleta_figures = PlotsGenerator.getTrialSequencesArrayUsingClusters(bicicleta, markers_and_colors,
+                                                                                   samples_with_clusters,
+                                                                                   alignment=alignment)
+            cal_figures = PlotsGenerator.getTrialSequencesArrayUsingClusters(cal, markers_and_colors,
+                                                                             samples_with_clusters, alignment=alignment)
+            elefant_figures = PlotsGenerator.getTrialSequencesArrayUsingClusters(elicopter, markers_and_colors,
+                                                                                 samples_with_clusters,
+                                                                                 alignment=alignment)
+            iepure_figures = PlotsGenerator.getTrialSequencesArrayUsingClusters(iepure, markers_and_colors,
+                                                                                samples_with_clusters,
+                                                                                alignment=alignment)
+            pahar_figures = PlotsGenerator.getTrialSequencesArrayUsingClusters(pahar, markers_and_colors,
+                                                                               samples_with_clusters,
+                                                                               alignment=alignment)
+            masa_figures = PlotsGenerator.getTrialSequencesArrayUsingClusters(masa, markers_and_colors,
+                                                                              samples_with_clusters,
+                                                                              alignment=alignment)
+            umbrela_figures = PlotsGenerator.getTrialSequencesArrayUsingClusters(umbrela, markers_and_colors,
+                                                                                 samples_with_clusters,
+                                                                                 alignment=alignment)
+            fluture_figures = PlotsGenerator.getTrialSequencesArrayUsingClusters(fluture, markers_and_colors,
+                                                                                 samples_with_clusters,
+                                                                                 alignment=alignment)
+            girafa_figures = PlotsGenerator.getTrialSequencesArrayUsingClusters(girafa, markers_and_colors,
+                                                                                samples_with_clusters,
+                                                                                alignment=alignment)
+            pian_figures = PlotsGenerator.getTrialSequencesArrayUsingClusters(pian, markers_and_colors,
+                                                                              samples_with_clusters,
+                                                                              alignment=alignment)
 
         fig, ax = PlotsGenerator.generateGridWithColorSequences(poseta_figures, n_rows=7, n_cols=1)
         plt.suptitle("Stimulus: poseta/geanta (de dama)\n" + params)
@@ -1316,10 +1527,9 @@ class PlotsGenerator:
 
             return all_freq
 
-
     @staticmethod
     def groupByVisibilityV2(all_trials_data, som, path, params, ssd=False, alignment=Alignment.LEFT, method=Method.BMU,
-                          markers_and_colors=None, samples_with_clusters=None):
+                            markers_and_colors=None, samples_with_clusters=None):
         v0_trials = all_trials_data[0:30]
         v1_trials = all_trials_data[30:60]
         v2_trials = all_trials_data[60:90]
@@ -1353,13 +1563,20 @@ class PlotsGenerator:
             v6_figures, freq_v6 = PlotsGenerator.getTrialSequencesArrayUsingBMU(v6_trials, som,
                                                                                 alignment=alignment)
         else:
-            v0_figures = PlotsGenerator.getTrialSequencesArrayUsingClusters(v0_trials, markers_and_colors, samples_with_clusters, alignment=alignment)
-            v1_figures = PlotsGenerator.getTrialSequencesArrayUsingClusters(v1_trials, markers_and_colors, samples_with_clusters, alignment=alignment)
-            v2_figures = PlotsGenerator.getTrialSequencesArrayUsingClusters(v2_trials, markers_and_colors, samples_with_clusters,  alignment=alignment)
-            v3_figures = PlotsGenerator.getTrialSequencesArrayUsingClusters(v3_trials, markers_and_colors, samples_with_clusters, alignment=alignment)
-            v4_figures = PlotsGenerator.getTrialSequencesArrayUsingClusters(v4_trials, markers_and_colors, samples_with_clusters, alignment=alignment)
-            v5_figures = PlotsGenerator.getTrialSequencesArrayUsingClusters(v5_trials, markers_and_colors, samples_with_clusters, alignment=alignment)
-            v6_figures = PlotsGenerator.getTrialSequencesArrayUsingClusters(v6_trials, markers_and_colors, samples_with_clusters, alignment=alignment)
+            v0_figures = PlotsGenerator.getTrialSequencesArrayUsingClusters(v0_trials, markers_and_colors,
+                                                                            samples_with_clusters, alignment=alignment)
+            v1_figures = PlotsGenerator.getTrialSequencesArrayUsingClusters(v1_trials, markers_and_colors,
+                                                                            samples_with_clusters, alignment=alignment)
+            v2_figures = PlotsGenerator.getTrialSequencesArrayUsingClusters(v2_trials, markers_and_colors,
+                                                                            samples_with_clusters, alignment=alignment)
+            v3_figures = PlotsGenerator.getTrialSequencesArrayUsingClusters(v3_trials, markers_and_colors,
+                                                                            samples_with_clusters, alignment=alignment)
+            v4_figures = PlotsGenerator.getTrialSequencesArrayUsingClusters(v4_trials, markers_and_colors,
+                                                                            samples_with_clusters, alignment=alignment)
+            v5_figures = PlotsGenerator.getTrialSequencesArrayUsingClusters(v5_trials, markers_and_colors,
+                                                                            samples_with_clusters, alignment=alignment)
+            v6_figures = PlotsGenerator.getTrialSequencesArrayUsingClusters(v6_trials, markers_and_colors,
+                                                                            samples_with_clusters, alignment=alignment)
 
         fig, ax = PlotsGenerator.generateGridWithColorSequences(v0_figures, n_rows=30, n_cols=1)
         plt.suptitle("Stimulus visibility: 0.00\n" + params)

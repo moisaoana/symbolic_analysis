@@ -4,10 +4,10 @@ from mpl_toolkits.mplot3d import Axes3D
 
 from EEG_DataProcessor import EEG_DataProcessor
 from RawEEGSignalParser import RawEEGSignalParser
-from Som_Code.som_implementation_3D import MySom3D
-from Som_Code.tins_dots.Plots_Generator import PlotsGenerator
+from som_implementation_3D import MySom3D
+from tins_dots.Plots_Generator import PlotsGenerator
 
-from Som_Code.utils import Utils
+from utils import Utils
 
 DATASET_PATH = "./data/Dots_30_001/"
 parser = RawEEGSignalParser(DATASET_PATH)
