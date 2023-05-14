@@ -107,7 +107,7 @@ class EEG_DataProcessor:
     def apply_ica_on_each_trial(self, n_comp):
         transformer = FastICA(n_comp, whiten='arbitrary-variance', max_iter=10000)
         list = []
-        for cnt,trial in enumerate(self.trials):
+        for cnt, trial in enumerate(self.trials):
             s = transformer.fit_transform(trial.trial_data)
             print(cnt)
             print(s.shape)
@@ -121,12 +121,13 @@ class EEG_DataProcessor:
         data = mne.io.RawArray(all_trials.T, info)
         data.filter(1, 40, fir_design='firwin')
         ica.fit(data)
-        #ica.plot_components()
+        # ica.plot_components()
         clean_data = ica.apply(data).get_data()
         print(clean_data.shape)
 
     def apply_ica_infomax(self, n_comp, all_trials):
-        unmixing_matrix, n_it = mne.preprocessing.infomax(all_trials.T, n_subgauss=n_comp, return_n_iter=True, verbose='INFO')
+        unmixing_matrix, n_it = mne.preprocessing.infomax(all_trials.T, n_subgauss=n_comp, return_n_iter=True,
+                                                          verbose='INFO')
         print(unmixing_matrix.shape)
         ReaderUtils.write_matrix_to_file(unmixing_matrix, "unmixing.txt")
         new_data = np.dot(unmixing_matrix, all_trials)
@@ -134,4 +135,8 @@ class EEG_DataProcessor:
         print(new_data.shape)
         ReaderUtils.write_matrix_to_file(unmixing_matrix, "newData.txt")
 
-
+    def apply_ica_matlab(self, file, all_trials,):
+        unmixing_matrix = ReaderUtils.readUnmixingMatrixFromFile(file)
+        print(all_trials.shape)
+        print(unmixing_matrix.shape)
+        self.processed_data = np.matmul(all_trials, unmixing_matrix.T)

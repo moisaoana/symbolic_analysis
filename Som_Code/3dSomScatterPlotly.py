@@ -13,7 +13,7 @@ from mpl_toolkits.mplot3d import Axes3D
 import warnings
 
 # ignore all warnings
-from Som_Code.som_implementation_3D import MySom3D
+from som_implementation_3D import MySom3D
 
 warnings.filterwarnings('ignore')
 
@@ -42,8 +42,9 @@ number_features = data.shape[1]
 
 print(size)
 
-som = MySom3D(size, size, size, number_features, sigma=0.3, learning_rate=0.5)
-som.train(data, 1000)
+som = Minisom3D.MiniSom3D(size, size, size, number_features, sigma=0.3, learning_rate=0.5)
+som.pca_weights_init(data)
+som.train(data, 100)
 
 distanceMap = som.distance_map().T
 

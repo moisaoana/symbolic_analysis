@@ -5,6 +5,7 @@ import math
 import plotly.graph_objs as go
 
 from matplotlib import pyplot as plt
+from matplotlib import cm
 
 from mpl_toolkits.mplot3d import Axes3D
 
@@ -42,7 +43,7 @@ number_features = data.shape[1]
 print(size)
 
 som = MySom3D(size, size, size, number_features, sigma=0.3, learning_rate=0.5)
-som.train(data, 1000)
+som.train(data, 100)
 
 distanceMap = som.distance_map().T
 

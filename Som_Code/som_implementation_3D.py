@@ -31,7 +31,7 @@ class MySom3D(object):
     def getWeights(self):
         return self._weights
 
-    def setWeights(self,weights):
+    def setWeights(self, weights):
         self._weights = weights
 
     def getX(self):
@@ -66,6 +66,7 @@ class MySom3D(object):
             self._update_weights(sample, bmu)
             # self._learning_rate, self._sigma = self._decay( id // data_length)
             self._learning_rate, self._sigma = self._hard_decay(id, data_length * epochs)
+            #print(self._learning_rate)
 
 
     def _build_iteration_indexes(self, data_length, epochs, random_generator=None):
@@ -91,9 +92,8 @@ class MySom3D(object):
             yield it
             sec_left = ((m - i + 1) * (time() - beginning)) / (i + 1)
             time_left = str(timedelta(seconds=sec_left))[:7]
-            progress = f'\r [Epoch {i // data_length + 1} / {epochs}] [ { (i + 1) % data_length :{digits}} / {m} ] {100 * (i + 1) / m:3.0f}%  - {time_left} left '
+            progress = f'\r [Epoch {i // data_length + 1} / {epochs}] [ {(i + 1) % data_length :{digits}} / {m} ] {100 * (i + 1) / m:3.0f}%  - {time_left} left '
             stdout.write(progress)
-
 
     def _decay(self, epoch):
         new_learning_rate = self._learning_rate * np.exp(-epoch * self._learning_rate_decay)
@@ -105,7 +105,6 @@ class MySom3D(object):
         new_sigma = self._sigma / (1 + current_iteration / (max_iterations / 2))
         return new_learning_rate, new_sigma
 
-
     def find_BMU(self, sample):
         distance = self._euclidean_distance(sample, self._weights)
         return np.unravel_index(np.argmin(distance, axis=None), distance.shape)  # returns coords of min
@@ -114,7 +113,8 @@ class MySom3D(object):
         x_BMU, y_BMU, z_BMU = BMU_coord
         # if radius is close to zero then only BMU is changed
         if self._sigma < self._sigma_threshold:
-            self._weights[x_BMU, y_BMU, z_BMU, :] += self._learning_rate * (sample - self._weights[x_BMU, y_BMU, z_BMU, :])
+            self._weights[x_BMU, y_BMU, z_BMU, :] += self._learning_rate * (
+                    sample - self._weights[x_BMU, y_BMU, z_BMU, :])
         else:
             # start = time.time()
             # # Change all cells in a small neighborhood of BMU
@@ -128,11 +128,13 @@ class MySom3D(object):
 
             # start = time.time()
             g = self._learning_rate * self.gaussian3D_by_center(BMU_coord)
+            # print("--------------")
+            # print(BMU_coord)
+            # print(self.gaussian3D_by_center(BMU_coord))
+            # print("--------------")
             self._weights += np.einsum('ijk, ijkl->ijkl', g, sample - self._weights)
             # print(f"Time np impl: {time.time() - start:.3f}")
             # print()
-
-
 
     def gaussian3D_by_center(self, center):
         """
@@ -148,7 +150,6 @@ class MySom3D(object):
         x_center, y_center, z_center = center
         dist = np.sqrt((x - x_center) ** 2 + (y - y_center) ** 2 + (z - z_center) ** 2)
         return np.exp(-dist ** 2 / (2 * self._sigma ** 2))
-
 
     def _gaussian(self, neigh_x, neigh_y, neigh_z, bmu_x, bmu_y, bmu_z):
         dist_sq = np.square(neigh_x - bmu_x) + np.square(neigh_y - bmu_y) + np.square(neigh_z - bmu_z)
@@ -229,7 +230,7 @@ class MySom3D(object):
                 difference = np.subtract(w, bmu[0])
                 squared = np.square(difference)
                 dist = np.sqrt(np.sum(squared, axis=-1))
-                if dist/max_distance < threshold and dist < min_dist:
+                if dist / max_distance < threshold and dist < min_dist:
                     min_dist = dist
                     min_cluster = bmu[1]
             sample_tuple = (sample, min_cluster)

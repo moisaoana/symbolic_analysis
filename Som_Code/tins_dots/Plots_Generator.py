@@ -220,11 +220,13 @@ class PlotsGenerator:
     # PSI plots ------------------------------------------------------------------------------------------------
 
     @staticmethod
-    def getNewFigureArrayUsingPSI(som, trials, PSI_matrix, mean, st_dev, coeff, ssd=False, alignment=Alignment.LEFT):
+    def getNewFigureArrayUsingPSI(som, trials, PSI_matrix, mean, st_dev, coeff, ssd=False, alignment=Alignment.LEFT,
+                                  window=False):
         barcodes_array = []
         all_color_arrays = []
         max_length_color_array = 0
         pattern_indexes_per_trial = []
+        psth_dictionary = {}
 
         for cnt, trial in enumerate(trials):
             my_dict = {}
@@ -242,11 +244,24 @@ class PlotsGenerator:
                     colors_array[i] = [1, 1, 1]
                 else:
                     color_tuple = color[0], color[1], color[2]
+
+                    # pta
                     if color_tuple in my_dict:
                         my_dict[color_tuple].append(i)
                     else:
                         my_dict[color_tuple] = []
                         my_dict[color_tuple].append(i)
+
+                    # pst
+                    if window:
+                        if color_tuple in psth_dictionary:
+                            freq_array = psth_dictionary[color_tuple]
+                            freq_array[i] += 1
+                        else:
+                            psth_dictionary[color_tuple] = np.zeros(len(colors_array))
+                            freq_array = psth_dictionary[color_tuple]
+                            freq_array[i] += 1
+
             pattern_indexes_per_trial.append(my_dict)
             all_color_arrays.append(colors_array)
             if len(colors_array) > max_length_color_array:
@@ -260,7 +275,7 @@ class PlotsGenerator:
                         colors_array.insert(0, [1, 1, 1])
             figure_data_tuple = PlotsGenerator.generateColorSequenceForTrialMatplotlib(colors_array)
             barcodes_array.append(figure_data_tuple)
-        return barcodes_array, pattern_indexes_per_trial
+        return barcodes_array, pattern_indexes_per_trial, psth_dictionary
 
     @staticmethod
     def computeWeightedPSI(list_trials, list_psi, number_of_samples):
@@ -336,14 +351,11 @@ class PlotsGenerator:
 
     @staticmethod
     def computePatternTriggeredAverage(group_trials, pattern_indexes_per_trial_group, window_length, channel_type,
-                                       channel_number, grid_dimension, path):
+                                       channel_number, grid_dimension, path, title):
         pattern_pta_vectors_dictionary = {}
-
-        print("-----------------------------------------")
 
         for cnt, trial in enumerate(group_trials):
             trial_dictionary = pattern_indexes_per_trial_group[cnt]
-            print(trial_dictionary)
             for pattern, list_indexes in trial_dictionary.items():
                 pta_vector = PlotsGenerator.computePTAForPattern(trial.trial_data, list_indexes, window_length,
                                                                  channel_number)
@@ -366,10 +378,11 @@ class PlotsGenerator:
             new_tup = c0, c1, c2
             PlotsGenerator.plotPTAForPattern(pattern, pta_vectors, grid_dimension,
                                              path + "pattern" + str(new_tup) + ".png", channel_type, channel_number,
-                                             window_length)
+                                             window_length, title)
 
     @staticmethod
-    def plotPTAForPattern(pattern, pta_vectors, grid_dimension, path, channel_type, channel_number, window_length):
+    def plotPTAForPattern(pattern, pta_vectors, grid_dimension, path, channel_type, channel_number, window_length,
+                          title):
 
         line_color = pattern
         fig, axs = plt.subplots(grid_dimension, grid_dimension, figsize=(50, 20))
@@ -383,7 +396,7 @@ class PlotsGenerator:
         c2 = round(pattern[2], 3)
         new_tup = c0, c1, c2
 
-        plt.suptitle("Response: nothing, Pattern = " + str(new_tup) + ", Channel = " + channel_type + str(
+        plt.suptitle(title + ", Pattern = " + str(new_tup) + ", Channel = " + channel_type + str(
             channel_number % 32 + 1) + ", Window_length = " + str(window_length), fontsize=36)
         plt.savefig(path, dpi=300)
 
@@ -404,8 +417,31 @@ class PlotsGenerator:
         return pta_vector / len(list_indexes)
 
     @staticmethod
+    def computePeriStimulusTimeHistogram(psth_dictionary, path, title):
+        for pattern, freq_array in psth_dictionary.items():
+            PlotsGenerator.plotPSTHForPattern(pattern, freq_array, path, title)
+
+    @staticmethod
+    def plotPSTHForPattern(pattern, freq_array, path, title):
+        fig = plt.figure(figsize=(50, 20))
+        pos = range(len(freq_array))
+
+        plt.bar(pos, freq_array, color=pattern)
+        plt.xlabel('Time')
+        plt.ylabel('Pattern Frequency')
+
+        c0 = round(pattern[0], 3)
+        c1 = round(pattern[1], 3)
+        c2 = round(pattern[2], 3)
+        new_tup = c0, c1, c2
+
+        plt.title('PSTH ' + title + ", Pattern: " + str(new_tup), fontsize=36)
+        plt.savefig(path + "pattern" + str(new_tup) + ".png", dpi=300)
+
+    @staticmethod
     def groupByResponseWithPsiUsingBMU(all_trials_data, som, psi_array, path, params, number_of_samples, coeff,
-                                       ssd=False, alignment=Alignment.LEFT, weighted=False, psi_version=1):
+                                       ssd=False, alignment=Alignment.LEFT, weighted=False, psi_version=1,
+                                       window=False):
         nothing_trials = PlotsGenerator.getNothingData(all_trials_data)
         something_trials = PlotsGenerator.getSomethingData(all_trials_data)
         identified_trials = PlotsGenerator.getIdentifiedData(all_trials_data)
@@ -416,6 +452,10 @@ class PlotsGenerator:
 
         copy_psi_array = psi_array.copy()
 
+        nothing_max = len(nothing_trials[-1].trial_data)
+        something_max = len(something_trials[-1].trial_data)
+        identified_max = len(identified_trials[-1].trial_data)
+
         if weighted:
             list_trials_by_group = [nothing_trials, something_trials, identified_trials]
             copy_psi_array = PlotsGenerator.computeWeightedPSI(list_trials_by_group, copy_psi_array, number_of_samples)
@@ -423,51 +463,84 @@ class PlotsGenerator:
         # threshold = PlotsGenerator.findThresholdForGroupBasedOnPsiArray(copy_psi_array, som)
         mean, st_dev = PlotsGenerator.computeMeanAndStDevForGroup(copy_psi_array, som)
 
-        nothing_figures, pattern_indexes_dict_per_trial_nothing = PlotsGenerator.getNewFigureArrayUsingPSI(som,
-                                                                                                           nothing_trials,
-                                                                                                           copy_psi_array[
-                                                                                                               0], mean,
-                                                                                                           st_dev,
-                                                                                                           coeff,
-                                                                                                           alignment=alignment)
+        nothing_figures, pattern_indexes_dict_per_trial_nothing, psth_dict_nothing = PlotsGenerator.getNewFigureArrayUsingPSI(
+            som,
+            nothing_trials,
+            copy_psi_array[
+                0], mean,
+            st_dev,
+            coeff,
+
+            alignment=alignment, window=window)
 
         PlotsGenerator.computePatternTriggeredAverage(nothing_trials, pattern_indexes_dict_per_trial_nothing, 100, "A",
-                                                      22, 10, path + "response_nothing_pta_")
+                                                      22, 10, path + "response_nothing_pta_", "Response: nothing")
 
-        """
-        something_figures, _ = PlotsGenerator.getNewFigureArrayUsingPSI(som, something_trials, copy_psi_array[1],
-                                                                     mean, st_dev, coeff,
-                                                                     alignment=alignment)
-        identified_figures, _ = PlotsGenerator.getNewFigureArrayUsingPSI(som, identified_trials, copy_psi_array[2],
-                                                                      mean, st_dev, coeff,
-                                                                      alignment=alignment)
-        """
+        if window:
+            PlotsGenerator.computePeriStimulusTimeHistogram(psth_dict_nothing, path + "response_nothing_psth_",
+                                                            "Response: nothing")
 
-        fig, ax = PlotsGenerator.generateGridWithColorSequences(nothing_figures, n_rows=len(nothing_figures), n_cols=1)
+        something_figures, pattern_indexes_dict_per_trial_something, psth_dict_something = PlotsGenerator.getNewFigureArrayUsingPSI(
+            som,
+            something_trials,
+            copy_psi_array[
+                1],
+            mean,
+            st_dev,
+            coeff,
+            alignment=alignment, window=window)
+
+        PlotsGenerator.computePatternTriggeredAverage(something_trials, pattern_indexes_dict_per_trial_something, 100,
+                                                      "A",
+                                                      22, 10, path + "response_something_pta_", "Response: something")
+        if window:
+            PlotsGenerator.computePeriStimulusTimeHistogram(psth_dict_something, path + "response_something_psth_",
+                                                            "Response: something")
+
+        identified_figures, pattern_indexes_dict_per_trial_identified, psth_dict_identified = PlotsGenerator.getNewFigureArrayUsingPSI(
+            som,
+            identified_trials,
+            copy_psi_array[
+                2],
+            mean,
+            st_dev,
+            coeff,
+            alignment=alignment, window=window)
+
+        PlotsGenerator.computePatternTriggeredAverage(identified_trials, pattern_indexes_dict_per_trial_identified, 100,
+                                                      "A",
+                                                      22, 10, path + "response_identified_pta_", "Response: identified")
+
+        if window:
+            PlotsGenerator.computePeriStimulusTimeHistogram(psth_dict_identified, path + "response_identified_psth_",
+                                                            "Response: identified")
+
+        fig, ax = PlotsGenerator.generateGridWithColorSequences(nothing_figures, n_rows=len(nothing_figures), n_cols=1, max_trial_len=nothing_max)
         plt.suptitle("Response: nothing, PSI mean = " + str(round(mean, 3)) + ", st_dev =  " + str(
             round(st_dev, 3)) + "\n" + params)
         fig.set_size_inches(6, 4)
         plt.savefig(path + "response_nothing_psi" + str(psi_version) + ".png", dpi=300)
 
-        """
         fig, ax = PlotsGenerator.generateGridWithColorSequences(something_figures, n_rows=len(something_figures),
-                                                                n_cols=1)
-        plt.suptitle("PSI - Response: something, PSI mean = " + str(round(mean, 3)) + ", st_dev =  " + str(round(st_dev, 3)) + "\n" + params)
+                                                                n_cols=1, max_trial_len=something_max)
+        plt.suptitle("PSI - Response: something, PSI mean = " + str(round(mean, 3)) + ", st_dev =  " + str(
+            round(st_dev, 3)) + "\n" + params)
         fig.set_size_inches(6, 4)
-        plt.savefig(path + "response_something_psi"+str(psi_version)+".png", dpi=300)
+        plt.savefig(path + "response_something_psi" + str(psi_version) + ".png", dpi=300)
 
         fig, ax = PlotsGenerator.generateGridWithColorSequences(identified_figures, n_rows=len(identified_figures),
-                                                                n_cols=1)
+                                                                n_cols=1, max_trial_len=identified_max)
         plt.suptitle(
-            "PSI - Response: what the subject sees (correct + 1 incorrect), PSI mean = " + str(round(mean, 3)) + ", st_dev =  " + str(round(st_dev, 3)) + "\n" + params)
+            "PSI - Response: what the subject sees (correct + 1 incorrect), PSI mean = " + str(
+                round(mean, 3)) + ", st_dev =  " + str(round(st_dev, 3)) + "\n" + params)
         fig.set_size_inches(6, 4)
-        plt.savefig(path + "response_identified_psi"+str(psi_version)+".png", dpi=300)
+        plt.savefig(path + "response_identified_psi" + str(psi_version) + ".png", dpi=300)
         # plt.show()
-        """
 
     @staticmethod
     def groupByStimulusWithPsiUsingBMU(all_trials_data, som, psi_array, path, params, number_of_samples, coeff,
-                                       ssd=False, alignment=Alignment.LEFT, weighted=False, psi_version=1):
+                                       ssd=False, alignment=Alignment.LEFT, weighted=False, psi_version=1,
+                                       window=False):
 
         poseta_trials = PlotsGenerator.getStimulusPosetaData(all_trials_data)
         topor_trials = PlotsGenerator.getStimulusToporData(all_trials_data)
@@ -548,94 +621,115 @@ class PlotsGenerator:
         # threshold = PlotsGenerator.findThresholdForGroupBasedOnPsiArray(copy_psi_array, som)
         mean, st_dev = PlotsGenerator.computeMeanAndStDevForGroup(copy_psi_array, som)
 
-        poseta_figures = PlotsGenerator.getNewFigureArrayUsingPSI(som, poseta_trials, copy_psi_array[0], mean, st_dev,
-                                                                  coeff,
-                                                                  alignment=alignment)
-        topor_figures = PlotsGenerator.getNewFigureArrayUsingPSI(som, topor_trials, copy_psi_array[1], mean, st_dev,
-                                                                 coeff,
-                                                                 alignment=alignment)
-        oala_figures = PlotsGenerator.getNewFigureArrayUsingPSI(som, oala_trials, copy_psi_array[2], mean, st_dev,
-                                                                coeff,
-                                                                alignment=alignment)
-        elicopter_figures = PlotsGenerator.getNewFigureArrayUsingPSI(som, elicopter_trials, copy_psi_array[3],
-                                                                     mean, st_dev, coeff,
-                                                                     alignment=alignment)
-        urs_figures = PlotsGenerator.getNewFigureArrayUsingPSI(som, urs_trials, copy_psi_array[4], mean, st_dev, coeff,
-                                                               alignment=alignment)
-        palarie_figures = PlotsGenerator.getNewFigureArrayUsingPSI(som, palarie_trials, copy_psi_array[5], mean, st_dev,
-                                                                   coeff,
-                                                                   alignment=alignment)
-        foarfece_figures = PlotsGenerator.getNewFigureArrayUsingPSI(som, foarfece_trials, copy_psi_array[6], mean,
-                                                                    st_dev, coeff,
-                                                                    alignment=alignment)
-        banana_figures = PlotsGenerator.getNewFigureArrayUsingPSI(som, banana_trials, copy_psi_array[7], mean, st_dev,
-                                                                  coeff,
-                                                                  alignment=alignment)
-        lampa_figures = PlotsGenerator.getNewFigureArrayUsingPSI(som, lampa_trials, copy_psi_array[8], mean, st_dev,
-                                                                 coeff,
-                                                                 alignment=alignment)
-        chitara_figures = PlotsGenerator.getNewFigureArrayUsingPSI(som, chitara_trials, copy_psi_array[9], mean, st_dev,
-                                                                   coeff,
-                                                                   alignment=alignment)
-        masina_figures = PlotsGenerator.getNewFigureArrayUsingPSI(som, masina_trials, copy_psi_array[10], mean, st_dev,
-                                                                  coeff,
-                                                                  alignment=alignment)
-        vaca_figures = PlotsGenerator.getNewFigureArrayUsingPSI(som, vaca_trials, copy_psi_array[11], mean, st_dev,
-                                                                coeff,
-                                                                alignment=alignment)
-        furculita_figures = PlotsGenerator.getNewFigureArrayUsingPSI(som, furculita_trials, copy_psi_array[12],
-                                                                     mean, st_dev, coeff,
-                                                                     alignment=alignment)
-        cerb_figures = PlotsGenerator.getNewFigureArrayUsingPSI(som, cerb_trials, copy_psi_array[13], mean, st_dev,
-                                                                coeff,
-                                                                alignment=alignment)
-        pantaloni_figures = PlotsGenerator.getNewFigureArrayUsingPSI(som, pantaloni_trials, copy_psi_array[14],
-                                                                     mean, st_dev, coeff,
-                                                                     alignment=alignment)
-        scaun_figures = PlotsGenerator.getNewFigureArrayUsingPSI(som, scaun_trials, copy_psi_array[15], mean, st_dev,
-                                                                 coeff,
-                                                                 alignment=alignment)
-        peste_figures = PlotsGenerator.getNewFigureArrayUsingPSI(som, peste_trials, copy_psi_array[16], mean, st_dev,
-                                                                 coeff,
-                                                                 alignment=alignment)
-        caine_figures = PlotsGenerator.getNewFigureArrayUsingPSI(som, caine_trials, copy_psi_array[17], mean, st_dev,
-                                                                 coeff,
-                                                                 alignment=alignment)
-        sticla_figures = PlotsGenerator.getNewFigureArrayUsingPSI(som, sticla_trials, copy_psi_array[18], mean, st_dev,
-                                                                  coeff,
-                                                                  alignment=alignment)
-        pistol_figures = PlotsGenerator.getNewFigureArrayUsingPSI(som, pistol_trials, copy_psi_array[19], mean, st_dev,
-                                                                  coeff,
-                                                                  alignment=alignment)
-        bicicleta_figures = PlotsGenerator.getNewFigureArrayUsingPSI(som, bicicleta_trials, copy_psi_array[20],
-                                                                     mean, st_dev, coeff,
-                                                                     alignment=alignment)
-        cal_figures = PlotsGenerator.getNewFigureArrayUsingPSI(som, cal_trials, copy_psi_array[21], mean, st_dev, coeff,
-                                                               alignment=alignment)
-        elefant_figures = PlotsGenerator.getNewFigureArrayUsingPSI(som, elefant_trials, copy_psi_array[22], mean,
-                                                                   st_dev, coeff,
-                                                                   alignment=alignment)
-        iepure_figures = PlotsGenerator.getNewFigureArrayUsingPSI(som, iepure_trials, copy_psi_array[23], mean, st_dev,
-                                                                  coeff,
-                                                                  alignment=alignment)
-        pahar_figures = PlotsGenerator.getNewFigureArrayUsingPSI(som, pahar_trials, copy_psi_array[24], mean, st_dev,
-                                                                 coeff,
-                                                                 alignment=alignment)
-        masa_figures = PlotsGenerator.getNewFigureArrayUsingPSI(som, masa_trials, copy_psi_array[25], mean, st_dev,
-                                                                coeff,
-                                                                alignment=alignment)
-        umbrela_figures = PlotsGenerator.getNewFigureArrayUsingPSI(som, umbrela_trials, copy_psi_array[26], mean,
-                                                                   st_dev, coeff,
-                                                                   alignment=alignment)
-        fluture_figures = PlotsGenerator.getNewFigureArrayUsingPSI(som, fluture_trials, copy_psi_array[27], mean,
-                                                                   st_dev, coeff,
-                                                                   alignment=alignment)
-        girafa_figures = PlotsGenerator.getNewFigureArrayUsingPSI(som, girafa_trials, copy_psi_array[28], mean, st_dev,
-                                                                  coeff,
-                                                                  alignment=alignment)
-        pian_figures = PlotsGenerator.getNewFigureArrayUsingPSI(som, pian_trials, copy_psi_array[29], mean, st_dev,
-                                                                coeff,
-                                                                alignment=alignment)
+        poseta_figures, _, _ = PlotsGenerator.getNewFigureArrayUsingPSI(som, poseta_trials, copy_psi_array[0], mean,
+                                                                        st_dev,
+                                                                        coeff,
+                                                                        alignment=alignment, window=window)
+        topor_figures, _, _ = PlotsGenerator.getNewFigureArrayUsingPSI(som, topor_trials, copy_psi_array[1], mean,
+                                                                       st_dev,
+                                                                       coeff,
+                                                                       alignment=alignment, window=window)
+        oala_figures, _, _ = PlotsGenerator.getNewFigureArrayUsingPSI(som, oala_trials, copy_psi_array[2], mean, st_dev,
+                                                                      coeff,
+                                                                      alignment=alignment, window=window)
+        elicopter_figures, _, _ = PlotsGenerator.getNewFigureArrayUsingPSI(som, elicopter_trials, copy_psi_array[3],
+                                                                           mean, st_dev, coeff,
+                                                                           alignment=alignment, window=window)
+        urs_figures, _, _ = PlotsGenerator.getNewFigureArrayUsingPSI(som, urs_trials, copy_psi_array[4], mean, st_dev,
+                                                                     coeff,
+                                                                     alignment=alignment, window=window)
+        palarie_figures, _, _ = PlotsGenerator.getNewFigureArrayUsingPSI(som, palarie_trials, copy_psi_array[5], mean,
+                                                                         st_dev,
+                                                                         coeff,
+                                                                         alignment=alignment, window=window)
+        foarfece_figures, _, _ = PlotsGenerator.getNewFigureArrayUsingPSI(som, foarfece_trials, copy_psi_array[6], mean,
+                                                                          st_dev, coeff,
+                                                                          alignment=alignment, window=window)
+        banana_figures, _, _ = PlotsGenerator.getNewFigureArrayUsingPSI(som, banana_trials, copy_psi_array[7], mean,
+                                                                        st_dev,
+                                                                        coeff,
+                                                                        alignment=alignment, window=window)
+        lampa_figures, _, _ = PlotsGenerator.getNewFigureArrayUsingPSI(som, lampa_trials, copy_psi_array[8], mean,
+                                                                       st_dev,
+                                                                       coeff,
+                                                                       alignment=alignment, window=window)
+        chitara_figures, _, _ = PlotsGenerator.getNewFigureArrayUsingPSI(som, chitara_trials, copy_psi_array[9], mean,
+                                                                         st_dev,
+                                                                         coeff,
+                                                                         alignment=alignment, window=window)
+        masina_figures, _, _ = PlotsGenerator.getNewFigureArrayUsingPSI(som, masina_trials, copy_psi_array[10], mean,
+                                                                        st_dev,
+                                                                        coeff,
+                                                                        alignment=alignment, window=window)
+        vaca_figures, _, _ = PlotsGenerator.getNewFigureArrayUsingPSI(som, vaca_trials, copy_psi_array[11], mean,
+                                                                      st_dev,
+                                                                      coeff,
+                                                                      alignment=alignment, window=window)
+        furculita_figures, _, _ = PlotsGenerator.getNewFigureArrayUsingPSI(som, furculita_trials, copy_psi_array[12],
+                                                                           mean, st_dev, coeff,
+                                                                           alignment=alignment, window=window)
+        cerb_figures, _, _ = PlotsGenerator.getNewFigureArrayUsingPSI(som, cerb_trials, copy_psi_array[13], mean,
+                                                                      st_dev,
+                                                                      coeff,
+                                                                      alignment=alignment, window=window)
+        pantaloni_figures, _, _ = PlotsGenerator.getNewFigureArrayUsingPSI(som, pantaloni_trials, copy_psi_array[14],
+                                                                           mean, st_dev, coeff,
+                                                                           alignment=alignment, window=window)
+        scaun_figures, _, _ = PlotsGenerator.getNewFigureArrayUsingPSI(som, scaun_trials, copy_psi_array[15], mean,
+                                                                       st_dev,
+                                                                       coeff,
+                                                                       alignment=alignment, window=window)
+        peste_figures, _, _ = PlotsGenerator.getNewFigureArrayUsingPSI(som, peste_trials, copy_psi_array[16], mean,
+                                                                       st_dev,
+                                                                       coeff,
+                                                                       alignment=alignment, window=window)
+        caine_figures, _, _ = PlotsGenerator.getNewFigureArrayUsingPSI(som, caine_trials, copy_psi_array[17], mean,
+                                                                       st_dev,
+                                                                       coeff,
+                                                                       alignment=alignment, window=window)
+        sticla_figures, _, _ = PlotsGenerator.getNewFigureArrayUsingPSI(som, sticla_trials, copy_psi_array[18], mean,
+                                                                        st_dev,
+                                                                        coeff,
+                                                                        alignment=alignment, window=window)
+        pistol_figures, _, _ = PlotsGenerator.getNewFigureArrayUsingPSI(som, pistol_trials, copy_psi_array[19], mean,
+                                                                        st_dev,
+                                                                        coeff,
+                                                                        alignment=alignment, window=window)
+        bicicleta_figures, _, _ = PlotsGenerator.getNewFigureArrayUsingPSI(som, bicicleta_trials, copy_psi_array[20],
+                                                                           mean, st_dev, coeff,
+                                                                           alignment=alignment, window=window)
+        cal_figures, _, _ = PlotsGenerator.getNewFigureArrayUsingPSI(som, cal_trials, copy_psi_array[21], mean, st_dev,
+                                                                     coeff,
+                                                                     alignment=alignment, window=window)
+        elefant_figures, _, _ = PlotsGenerator.getNewFigureArrayUsingPSI(som, elefant_trials, copy_psi_array[22], mean,
+                                                                         st_dev, coeff,
+                                                                         alignment=alignment, window=window)
+        iepure_figures, _, _ = PlotsGenerator.getNewFigureArrayUsingPSI(som, iepure_trials, copy_psi_array[23], mean,
+                                                                        st_dev,
+                                                                        coeff,
+                                                                        alignment=alignment, window=window)
+        pahar_figures, _, _ = PlotsGenerator.getNewFigureArrayUsingPSI(som, pahar_trials, copy_psi_array[24], mean,
+                                                                       st_dev,
+                                                                       coeff,
+                                                                       alignment=alignment, window=window)
+        masa_figures, _, _ = PlotsGenerator.getNewFigureArrayUsingPSI(som, masa_trials, copy_psi_array[25], mean,
+                                                                      st_dev,
+                                                                      coeff,
+                                                                      alignment=alignment, window=window)
+        umbrela_figures, _, _ = PlotsGenerator.getNewFigureArrayUsingPSI(som, umbrela_trials, copy_psi_array[26], mean,
+                                                                         st_dev, coeff,
+                                                                         alignment=alignment, window=window)
+        fluture_figures, _, _ = PlotsGenerator.getNewFigureArrayUsingPSI(som, fluture_trials, copy_psi_array[27], mean,
+                                                                         st_dev, coeff,
+                                                                         alignment=alignment, window=window)
+        girafa_figures, _, _ = PlotsGenerator.getNewFigureArrayUsingPSI(som, girafa_trials, copy_psi_array[28], mean,
+                                                                        st_dev,
+                                                                        coeff,
+                                                                        alignment=alignment, window=window)
+        pian_figures, _, _ = PlotsGenerator.getNewFigureArrayUsingPSI(som, pian_trials, copy_psi_array[29], mean,
+                                                                      st_dev,
+                                                                      coeff,
+                                                                      alignment=alignment, window=window)
 
         fig, ax = PlotsGenerator.generateGridWithColorSequences(poseta_figures, n_rows=7, n_cols=1)
         plt.suptitle("Stimulus: poseta/geanta (de dama), PSI mean = " + str(round(mean, 3)) + ", st_dev =  " + str(
@@ -820,7 +914,8 @@ class PlotsGenerator:
 
     @staticmethod
     def groupByVisibilityWithPsiUsingBMU(all_trials_data, som, psi_array, path, params, number_of_samples, coeff,
-                                         ssd=False, alignment=Alignment.LEFT, weighted=False, psi_version=1):
+                                         ssd=False, alignment=Alignment.LEFT, weighted=False, psi_version=1,
+                                         window=False):
         v0_trials = all_trials_data[0:30]
         v1_trials = all_trials_data[30:60]
         v2_trials = all_trials_data[60:90]
@@ -837,6 +932,14 @@ class PlotsGenerator:
         v5_trials = PlotsGenerator.sortTrials(v5_trials)
         v6_trials = PlotsGenerator.sortTrials(v6_trials)
 
+        v0_max = len(v0_trials[-1].trial_data)
+        v1_max = len(v1_trials[-1].trial_data)
+        v2_max = len(v2_trials[-1].trial_data)
+        v3_max = len(v3_trials[-1].trial_data)
+        v4_max = len(v4_trials[-1].trial_data)
+        v5_max = len(v5_trials[-1].trial_data)
+        v6_max = len(v6_trials[-1].trial_data)
+
         copy_psi_array = psi_array.copy()
 
         if weighted:
@@ -846,58 +949,162 @@ class PlotsGenerator:
         # threshold = PlotsGenerator.findThresholdForGroupBasedOnPsiArray(copy_psi_array, som)
         mean, st_dev = PlotsGenerator.computeMeanAndStDevForGroup(copy_psi_array, som)
 
-        v0_figures = PlotsGenerator.getNewFigureArrayUsingPSI(som, v0_trials, copy_psi_array[0], mean, st_dev, coeff,
-                                                              alignment=alignment)
-        v1_figures = PlotsGenerator.getNewFigureArrayUsingPSI(som, v1_trials, copy_psi_array[1], mean, st_dev, coeff,
-                                                              alignment=alignment)
-        v2_figures = PlotsGenerator.getNewFigureArrayUsingPSI(som, v2_trials, copy_psi_array[2], mean, st_dev, coeff,
-                                                              alignment=alignment)
-        v3_figures = PlotsGenerator.getNewFigureArrayUsingPSI(som, v3_trials, copy_psi_array[3], mean, st_dev, coeff,
-                                                              alignment=alignment)
-        v4_figures = PlotsGenerator.getNewFigureArrayUsingPSI(som, v4_trials, copy_psi_array[4], mean, st_dev, coeff,
-                                                              alignment=alignment)
-        v5_figures = PlotsGenerator.getNewFigureArrayUsingPSI(som, v5_trials, copy_psi_array[5], mean, st_dev, coeff,
-                                                              alignment=alignment)
-        v6_figures = PlotsGenerator.getNewFigureArrayUsingPSI(som, v6_trials, copy_psi_array[6], mean, st_dev, coeff,
-                                                              alignment=alignment)
+        v0_figures, pattern_indexes_dict_per_trial_v0, psth_dict_v0 = PlotsGenerator.getNewFigureArrayUsingPSI(som,
+                                                                                                               v0_trials,
+                                                                                                               copy_psi_array[
+                                                                                                                   0],
+                                                                                                               mean,
+                                                                                                               st_dev,
+                                                                                                               coeff,
+                                                                                                               alignment=alignment,
+                                                                                                               window=window)
 
-        fig, ax = PlotsGenerator.generateGridWithColorSequences(v0_figures, n_rows=30, n_cols=1)
+        PlotsGenerator.computePatternTriggeredAverage(v0_trials, pattern_indexes_dict_per_trial_v0, 100, "A",
+                                                      22, 6, path + "v0.0_pta_", "Visibility: 0.0")
+
+        if window:
+            PlotsGenerator.computePeriStimulusTimeHistogram(psth_dict_v0, path + "v0.0_psth_",
+                                                            "Visibility: 0.0")
+
+        v1_figures, pattern_indexes_dict_per_trial_v1, psth_dict_v1 = PlotsGenerator.getNewFigureArrayUsingPSI(som,
+                                                                                                               v1_trials,
+                                                                                                               copy_psi_array[
+                                                                                                                   1],
+                                                                                                               mean,
+                                                                                                               st_dev,
+                                                                                                               coeff,
+                                                                                                               alignment=alignment,
+                                                                                                               window=window)
+
+        PlotsGenerator.computePatternTriggeredAverage(v1_trials, pattern_indexes_dict_per_trial_v1, 100, "A",
+                                                      22, 6, path + "v0.05_pta_", "Visibility: 0.05")
+
+        if window:
+            PlotsGenerator.computePeriStimulusTimeHistogram(psth_dict_v1, path + "v0.05_psth_",
+                                                            "Visibility: 0.05")
+
+        v2_figures, pattern_indexes_dict_per_trial_v2, psth_dict_v2 = PlotsGenerator.getNewFigureArrayUsingPSI(som,
+                                                                                                               v2_trials,
+                                                                                                               copy_psi_array[
+                                                                                                                   2],
+                                                                                                               mean,
+                                                                                                               st_dev,
+                                                                                                               coeff,
+                                                                                                               alignment=alignment,
+                                                                                                               window=window)
+
+        PlotsGenerator.computePatternTriggeredAverage(v2_trials, pattern_indexes_dict_per_trial_v2, 100, "A",
+                                                      22, 6, path + "v0.1_pta_", "Visibility: 0.1")
+
+        if window:
+            PlotsGenerator.computePeriStimulusTimeHistogram(psth_dict_v2, path + "v0.1_psth_",
+                                                            "Visibility: 0.1")
+
+        v3_figures, pattern_indexes_dict_per_trial_v3, psth_dict_v3 = PlotsGenerator.getNewFigureArrayUsingPSI(som,
+                                                                                                               v3_trials,
+                                                                                                               copy_psi_array[
+                                                                                                                   3],
+                                                                                                               mean,
+                                                                                                               st_dev,
+                                                                                                               coeff,
+                                                                                                               alignment=alignment,
+                                                                                                               window=window)
+
+        PlotsGenerator.computePatternTriggeredAverage(v3_trials, pattern_indexes_dict_per_trial_v3, 100, "A",
+                                                      22, 6, path + "v0.15_pta_", "Visibility: 0.15")
+
+        if window:
+            PlotsGenerator.computePeriStimulusTimeHistogram(psth_dict_v3, path + "v0.15_psth_",
+                                                            "Visibility: 0.15")
+
+        v4_figures, pattern_indexes_dict_per_trial_v4, psth_dict_v4 = PlotsGenerator.getNewFigureArrayUsingPSI(som,
+                                                                                                               v4_trials,
+                                                                                                               copy_psi_array[
+                                                                                                                   4],
+                                                                                                               mean,
+                                                                                                               st_dev,
+                                                                                                               coeff,
+                                                                                                               alignment=alignment,
+                                                                                                               window=window)
+
+        PlotsGenerator.computePatternTriggeredAverage(v4_trials, pattern_indexes_dict_per_trial_v4, 100, "A",
+                                                      22, 6, path + "v0.2_pta_", "Visibility: 0.2")
+
+        if window:
+            PlotsGenerator.computePeriStimulusTimeHistogram(psth_dict_v4, path + "v0.2_psth_",
+                                                            "Visibility: 0.2")
+
+        v5_figures, pattern_indexes_dict_per_trial_v5, psth_dict_v5 = PlotsGenerator.getNewFigureArrayUsingPSI(som,
+                                                                                                               v5_trials,
+                                                                                                               copy_psi_array[
+                                                                                                                   5],
+                                                                                                               mean,
+                                                                                                               st_dev,
+                                                                                                               coeff,
+                                                                                                               alignment=alignment,
+                                                                                                               window=window)
+
+        PlotsGenerator.computePatternTriggeredAverage(v5_trials, pattern_indexes_dict_per_trial_v5, 100, "A",
+                                                      22, 6, path + "v0.25_pta_", "Visibility: 0.25")
+
+        if window:
+            PlotsGenerator.computePeriStimulusTimeHistogram(psth_dict_v5, path + "v0.25_psth_",
+                                                            "Visibility: 0.25")
+
+        v6_figures, pattern_indexes_dict_per_trial_v6, psth_dict_v6 = PlotsGenerator.getNewFigureArrayUsingPSI(som,
+                                                                                                               v6_trials,
+                                                                                                               copy_psi_array[
+                                                                                                                   6],
+                                                                                                               mean,
+                                                                                                               st_dev,
+                                                                                                               coeff,
+                                                                                                               alignment=alignment,
+                                                                                                               window=window)
+
+        PlotsGenerator.computePatternTriggeredAverage(v6_trials, pattern_indexes_dict_per_trial_v6, 100, "A",
+                                                      22, 6, path + "v0.3_pta_", "Visibility: 0.3")
+
+        if window:
+            PlotsGenerator.computePeriStimulusTimeHistogram(psth_dict_v6, path + "v0.3_psth_",
+                                                            "Visibility: 0.3")
+
+        fig, ax = PlotsGenerator.generateGridWithColorSequences(v0_figures, n_rows=30, n_cols=1, max_trial_len=v0_max)
         plt.suptitle("Stimulus visibility: 0.00, PSI mean = " + str(round(mean, 3)) + ", st_dev =  " + str(
             round(st_dev, 3)) + "\n" + params)
         fig.set_size_inches(6, 4)
         plt.savefig(path + "v0.0_psi" + str(psi_version) + ".png", dpi=300)
 
-        fig, ax = PlotsGenerator.generateGridWithColorSequences(v1_figures, n_rows=30, n_cols=1)
+        fig, ax = PlotsGenerator.generateGridWithColorSequences(v1_figures, n_rows=30, n_cols=1, max_trial_len=v1_max)
         plt.suptitle("Stimulus visibility: 0.05, PSI mean = " + str(round(mean, 3)) + ", st_dev =  " + str(
             round(st_dev, 3)) + "\n" + params)
         fig.set_size_inches(6, 4)
         plt.savefig(path + "v0.05_psi" + str(psi_version) + ".png", dpi=300)
 
-        fig, ax = PlotsGenerator.generateGridWithColorSequences(v2_figures, n_rows=30, n_cols=1)
+        fig, ax = PlotsGenerator.generateGridWithColorSequences(v2_figures, n_rows=30, n_cols=1, max_trial_len=v2_max)
         plt.suptitle("Stimulus visibility: 0.1, PSI mean = " + str(round(mean, 3)) + ", st_dev =  " + str(
             round(st_dev, 3)) + "\n" + params)
         fig.set_size_inches(6, 4)
         plt.savefig(path + "v0.1_psi" + str(psi_version) + ".png", dpi=300)
 
-        fig, ax = PlotsGenerator.generateGridWithColorSequences(v3_figures, n_rows=30, n_cols=1)
+        fig, ax = PlotsGenerator.generateGridWithColorSequences(v3_figures, n_rows=30, n_cols=1, max_trial_len=v3_max)
         plt.suptitle("Stimulus visibility: 0.15, PSI mean = " + str(round(mean, 3)) + ", st_dev =  " + str(
             round(st_dev, 3)) + "\n" + params)
         fig.set_size_inches(6, 4)
         plt.savefig(path + "v0.15_psi" + str(psi_version) + ".png", dpi=300)
 
-        fig, ax = PlotsGenerator.generateGridWithColorSequences(v4_figures, n_rows=30, n_cols=1)
+        fig, ax = PlotsGenerator.generateGridWithColorSequences(v4_figures, n_rows=30, n_cols=1, max_trial_len=v4_max)
         plt.suptitle("Stimulus visibility: 0.2, PSI mean = " + str(round(mean, 3)) + ", st_dev =  " + str(
             round(st_dev, 3)) + "\n" + params)
         fig.set_size_inches(6, 4)
         plt.savefig(path + "v0.2_psi" + str(psi_version) + ".png", dpi=300)
 
-        fig, ax = PlotsGenerator.generateGridWithColorSequences(v5_figures, n_rows=30, n_cols=1)
+        fig, ax = PlotsGenerator.generateGridWithColorSequences(v5_figures, n_rows=30, n_cols=1, max_trial_len=v5_max)
         plt.suptitle("Stimulus visibility: 0.25, PSI mean = " + str(round(mean, 3)) + ", st_dev =  " + str(
             round(st_dev, 3)) + "\n" + params)
         fig.set_size_inches(6, 4)
         plt.savefig(path + "v0.25_psi" + str(psi_version) + ".png", dpi=300)
 
-        fig, ax = PlotsGenerator.generateGridWithColorSequences(v6_figures, n_rows=30, n_cols=1)
+        fig, ax = PlotsGenerator.generateGridWithColorSequences(v6_figures, n_rows=30, n_cols=1, max_trial_len=v6_max)
         plt.suptitle("Stimulus visibility: 0.3, PSI mean = " + str(round(mean, 3)) + ", st_dev =  " + str(
             round(st_dev, 3)) + "\n" + params)
         fig.set_size_inches(6, 4)
@@ -1105,6 +1312,11 @@ class PlotsGenerator:
         something_trials = PlotsGenerator.sortTrials(something_trials)
         identified_trials = PlotsGenerator.sortTrials(identified_trials)
 
+        # get length of max trial
+        nothing_max = len(nothing_trials[-1].trial_data)
+        something_max = len(something_trials[-1].trial_data)
+        identified_max = len(identified_trials[-1].trial_data)
+
         if method == Method.BMU:
             nothing_figures, freq_nothing = PlotsGenerator.getTrialSequencesArrayUsingBMU(nothing_trials, som,
                                                                                           alignment=alignment)
@@ -1125,19 +1337,19 @@ class PlotsGenerator:
                                                                                     alignment=alignment)
 
         fig, ax = PlotsGenerator.generateGridWithColorSequences(nothing_figures, n_rows=len(nothing_figures),
-                                                                n_cols=1)
+                                                                n_cols=1, max_trial_len = nothing_max)
         plt.suptitle("Response: nothing\n" + params)
         fig.set_size_inches(6, 4)
         plt.savefig(path + "response_nothing.png", dpi=300)
 
         fig, ax = PlotsGenerator.generateGridWithColorSequences(something_figures, n_rows=len(something_figures),
-                                                                n_cols=1)
+                                                                n_cols=1, max_trial_len = something_max)
         plt.suptitle("Response: something\n" + params)
         fig.set_size_inches(6, 4)
         plt.savefig(path + "response_something.png", dpi=300)
 
         fig, ax = PlotsGenerator.generateGridWithColorSequences(identified_figures, n_rows=len(identified_figures),
-                                                                n_cols=1)
+                                                                n_cols=1, max_trial_len = identified_max)
         plt.suptitle("Response: what the subject sees (correct + 1 incorrect)\n" + params)
         fig.set_size_inches(6, 4)
         plt.savefig(path + "response_identified.png", dpi=300)
@@ -1547,6 +1759,14 @@ class PlotsGenerator:
         v5_trials = PlotsGenerator.sortTrials(v5_trials)
         v6_trials = PlotsGenerator.sortTrials(v6_trials)
 
+        v0_max = len(v0_trials[-1].trial_data)
+        v1_max = len(v1_trials[-1].trial_data)
+        v2_max = len(v2_trials[-1].trial_data)
+        v3_max = len(v3_trials[-1].trial_data)
+        v4_max = len(v4_trials[-1].trial_data)
+        v5_max = len(v5_trials[-1].trial_data)
+        v6_max = len(v6_trials[-1].trial_data)
+
         if method == Method.BMU:
             v0_figures, freq_v0 = PlotsGenerator.getTrialSequencesArrayUsingBMU(v0_trials, som,
                                                                                 alignment=alignment)
@@ -1578,37 +1798,37 @@ class PlotsGenerator:
             v6_figures = PlotsGenerator.getTrialSequencesArrayUsingClusters(v6_trials, markers_and_colors,
                                                                             samples_with_clusters, alignment=alignment)
 
-        fig, ax = PlotsGenerator.generateGridWithColorSequences(v0_figures, n_rows=30, n_cols=1)
+        fig, ax = PlotsGenerator.generateGridWithColorSequences(v0_figures, n_rows=30, n_cols=1, max_trial_len= v0_max)
         plt.suptitle("Stimulus visibility: 0.00\n" + params)
         fig.set_size_inches(6, 4)
         plt.savefig(path + "v0.0.png", dpi=300)
 
-        fig, ax = PlotsGenerator.generateGridWithColorSequences(v1_figures, n_rows=30, n_cols=1)
+        fig, ax = PlotsGenerator.generateGridWithColorSequences(v1_figures, n_rows=30, n_cols=1, max_trial_len= v1_max)
         plt.suptitle("Stimulus visibility: 0.05\n" + params)
         fig.set_size_inches(6, 4)
         plt.savefig(path + "v0.05.png", dpi=300)
 
-        fig, ax = PlotsGenerator.generateGridWithColorSequences(v2_figures, n_rows=30, n_cols=1)
+        fig, ax = PlotsGenerator.generateGridWithColorSequences(v2_figures, n_rows=30, n_cols=1, max_trial_len= v2_max)
         plt.suptitle("Stimulus visibility: 0.1\n" + params)
         fig.set_size_inches(6, 4)
         plt.savefig(path + "v0.1.png", dpi=300)
 
-        fig, ax = PlotsGenerator.generateGridWithColorSequences(v3_figures, n_rows=30, n_cols=1)
+        fig, ax = PlotsGenerator.generateGridWithColorSequences(v3_figures, n_rows=30, n_cols=1, max_trial_len= v3_max)
         plt.suptitle("Stimulus visibility: 0.15\n" + params)
         fig.set_size_inches(6, 4)
         plt.savefig(path + "v0.15.png", dpi=300)
 
-        fig, ax = PlotsGenerator.generateGridWithColorSequences(v4_figures, n_rows=30, n_cols=1)
+        fig, ax = PlotsGenerator.generateGridWithColorSequences(v4_figures, n_rows=30, n_cols=1, max_trial_len= v4_max)
         plt.suptitle("Stimulus visibility: 0.2\n" + params)
         fig.set_size_inches(6, 4)
         plt.savefig(path + "v0.2.png", dpi=300)
 
-        fig, ax = PlotsGenerator.generateGridWithColorSequences(v5_figures, n_rows=30, n_cols=1)
+        fig, ax = PlotsGenerator.generateGridWithColorSequences(v5_figures, n_rows=30, n_cols=1, max_trial_len= v5_max)
         plt.suptitle("Stimulus visibility: 0.25\n" + params)
         fig.set_size_inches(6, 4)
         plt.savefig(path + "v0.25.png", dpi=300)
 
-        fig, ax = PlotsGenerator.generateGridWithColorSequences(v6_figures, n_rows=30, n_cols=1)
+        fig, ax = PlotsGenerator.generateGridWithColorSequences(v6_figures, n_rows=30, n_cols=1, max_trial_len= v6_max)
         plt.suptitle("Stimulus visibility: 0.3\n" + params)
         fig.set_size_inches(6, 4)
         plt.savefig(path + "v0.3.png", dpi=300)
@@ -1714,25 +1934,40 @@ class PlotsGenerator:
         cmap = plt.matplotlib.colors.ListedColormap(colors)
         fig, ax = plt.subplots(figsize=(4, 3))
         im = ax.imshow([color_indices], cmap=cmap, aspect="auto", extent=(0, width, 0, height))
-        ax.set_xticks([])
         ax.set_yticks([])
         # print('Barcode generated')
         plt.close()
         return fig, ax, color_indices
 
     @staticmethod
-    def generateGridWithColorSequences(figure_data_array, n_rows=2, n_cols=1, width=400, height=100):
+    def generateGridWithColorSequences(figure_data_array, n_rows=2, n_cols=1, width=400, height=100, max_trial_len = 5):
         figure_index = 0
-        fig, axs = plt.subplots(nrows=n_rows, ncols=n_cols, figsize=(4 * n_cols, 3 * n_rows), squeeze=False)
+        fig, axs = plt.subplots(nrows=n_rows, ncols=n_cols, squeeze=False)
         for i in range(n_rows * n_cols):
-            # print('Barcode grid figure index ', figure_index)
             row_idx = i // n_cols
             col_idx = i % n_cols
+            """"
+            if i == (n_rows+1) * n_cols - 1:
+                axs[row_idx, col_idx].set(frame_on=False, xticks=np.arange(0, 4 * n_cols + 2, 1), yticks=[])
+            
+            else:
+            """
             _, ax, color_indices = figure_data_array[figure_index]
             figure_index += 1
             axs[row_idx, col_idx].axis('off')
             axs[row_idx, col_idx].imshow(color_indices.reshape(1, -1), cmap=ax.images[0].cmap, aspect='auto')
+
+        ax = fig.add_subplot(n_rows + 1, n_cols, figure_index + 1)
+        ax.set_xlim(0,max_trial_len)
+        xTicks = np.arange(0, max_trial_len + 1, 200)
+        ax.set(frame_on=False, xticks=xTicks, yticks=[])
+        #xticklabels = [''] * len(xTicks)
+        #xticklabels[::500] = xTicks[::500]
+        #colors = ['white' if i % 500 != 0 else 'black' for i in xTicks]
+        ax.set_xticklabels(xTicks)
+        ax.tick_params(axis='x', which='major', labelsize=5)
         plt.subplots_adjust(hspace=0, wspace=0)
+
         return fig, axs
 
     # Scatter plot -------------------------------------------------------------------------------------------

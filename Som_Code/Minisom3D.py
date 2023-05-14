@@ -162,6 +162,9 @@ class MiniSom3D(MiniSom):
         elif callable(activation_distance):
             self._activation_distance = activation_distance
 
+    def getWeights(self):
+        return self._weights
+
     def _gaussian3D(self, c, sigma):
         """Returns a Gaussian centered in c."""
         d = 2 * sigma * sigma

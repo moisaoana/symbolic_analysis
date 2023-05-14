@@ -36,6 +36,12 @@ print(rank)
 #eegDataProcessor.apply_ica_on_each_trial(rank)
 #eegDataProcessor.reconstruct_trials()
 
+# apply ica - multiply with unmixing matrix
+eegDataProcessor.apply_ica_matlab('./data/unmixing.csv', eegDataProcessor.processed_data)
+eegDataProcessor.reconstruct_trials()
+print(eegDataProcessor.processed_data.shape)
+
+
 size = 3
 no_features = eegDataProcessor.processed_data.shape[1]
 no_iterations = 1
@@ -50,12 +56,12 @@ som = MySom3D(size, size, size, no_features, sigma=sigma, learning_rate=learning
 #som.pca_init(eegDataProcessor.processed_data)
 #som.train(eegDataProcessor.processed_data, no_iterations)
 
-#distance_map_train = som.distance_map().T
-#ReaderUtils.writeDistanceMap(distance_map_train)
+distance_map_train = som.distance_map().T
+ReaderUtils.writeDistanceMap(distance_map_train)
 distance_map = ReaderUtils.readDistanceMap()
 
-#weights_train = som.getWeights()
-#ReaderUtils.writeWeights(weights_train)
+weights_train = som.getWeights()
+ReaderUtils.writeWeights(weights_train)
 som.setWeights(ReaderUtils.readWeights())
 
 # PlotsGenerator.generateScatterPlotForDistanceMapPlotly(size, distance_map)

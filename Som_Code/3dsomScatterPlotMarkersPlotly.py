@@ -1,4 +1,3 @@
-
 from mpl_toolkits.mplot3d import Axes3D
 import numpy as np  # linear algebra
 import pandas as pd  # data processing, CSV file I/O (e.g. pd.read_csv)
@@ -27,7 +26,6 @@ from som_implementation_3D import MySom3D
 from utils import Utils
 
 warnings.filterwarnings('ignore')
-matplotlib.use('Qt5Agg')
 
 ### Read and Analyse Data
 samples = pd.read_csv('./breast_cancer_data.csv')  # returns data frame
@@ -54,8 +52,9 @@ number_features = data.shape[1]
 
 print(size)
 
-# som = Minisom3D.MiniSom3D(size, size, size, number_features, sigma=3.0, learning_rate=0.5)
+#som = Minisom3D.MiniSom3D(size, size, size, number_features, sigma=3.0, learning_rate=0.5)
 som = MySom3D(size, size, size, number_features, sigma=3.0, learning_rate=0.5)
+som.pca_init(data)
 som.train(data, 100)
 
 distanceMap = som.distance_map().T
@@ -93,8 +92,9 @@ trace = go.Scatter3d(
         size=5,
         color=C1,
         opacity=0.8,
-        symbol=M1
+        symbol=M1,
     ),
+    name='hi',
     text=L1,
 )
 
@@ -103,7 +103,8 @@ layout = go.Layout(
         xaxis=dict(title='X'),
         yaxis=dict(title='Y'),
         zaxis=dict(title='Z'),
-    )
+    ),
+    legend=dict(title='Markers')
 )
 
 # Create a figure with the trace and layout, and show the plot

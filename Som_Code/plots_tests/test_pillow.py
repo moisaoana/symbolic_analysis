@@ -1,16 +1,17 @@
+import matplotlib
 import matplotlib.pyplot as plt
 import numpy as np
 
 from tins_dots.Plots_Generator import PlotsGenerator
 
+matplotlib.use('TkAgg')  # Set the backend to TkAgg
 
 def generate_barcode(colors, width=400, height=100):
     color_indices = np.arange(len(colors))
     cmap = plt.matplotlib.colors.ListedColormap(colors)
     fig, ax = plt.subplots(figsize=(4, 3))
     im = ax.imshow([color_indices], cmap=cmap, aspect="auto", extent=(0, width, 0, height))
-    ax.set_xticks([])
-    ax.set_yticks([])
+    ax.xaxis.set_visible(True)
     plt.close()
     return fig, ax, color_indices
 
@@ -22,6 +23,7 @@ def generate_barcode_grid(color_sequences, n_rows=2, n_cols=1, width=400, height
         col_idx = i % n_cols
         colors = color_sequences[i % len(color_sequences)]
         _, ax, color_indices = generate_barcode(colors, width=width, height=height)
+        ax.xaxis.set_visible(True)
         axs[row_idx, col_idx].axis('off')
         axs[row_idx, col_idx].imshow(color_indices.reshape(1, -1), cmap=ax.images[0].cmap, aspect='auto')
     plt.subplots_adjust(hspace=0, wspace=0)
@@ -46,10 +48,11 @@ for seq in color_sequences:
     barcodes_array.append(figure_data_tuple)
 
 
-PlotsGenerator.generateGridWithColorSequences(barcodes_array, n_rows=len(barcodes_array), n_cols=1)
+PlotsGenerator.generateGridWithColorSequences(barcodes_array, n_rows=len(barcodes_array), n_cols=1, max_trial_len=5)
 plt.suptitle("Plot1")
 
-PlotsGenerator.generateGridWithColorSequences(barcodes_array, n_rows=len(barcodes_array), n_cols=1)
+fig, axs = PlotsGenerator.generateGridWithColorSequences(barcodes_array, n_rows=len(barcodes_array), n_cols=1, max_trial_len=5)
 plt.suptitle("Plot2")
+
 
 plt.show()

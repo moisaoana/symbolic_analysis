@@ -1,6 +1,10 @@
+import csv
+
 import numpy as np
 import ast
 import json
+
+import pandas as pd
 
 
 class ReaderUtils:
@@ -91,3 +95,15 @@ class ReaderUtils:
             for row in data:
                 f.write(' '.join([str(elem) for elem in row]))
                 f.write('\n')
+
+    @staticmethod
+    def readUnmixingMatrixFromFile(filename):
+        data = pd.read_csv(filename, header=None)
+        return data.to_numpy()
+
+    @staticmethod
+    def writeEEGDataToFile(filename, data):
+        with open(filename, 'w') as f:
+            for row in data:
+                row_str = ','.join([str(x) for x in row])
+                f.write(row_str + '\n')
