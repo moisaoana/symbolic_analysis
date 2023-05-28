@@ -103,7 +103,7 @@ class RawEEGSignalParser(TinsParser):
 
         return self.data_all_channels.T
 
-    def load_A_channels(self):
+    def load_A_channels(self): #Ileana
         data_all_channels = []
         for chn_id in range(32):
             print(chn_id)
@@ -114,7 +114,7 @@ class RawEEGSignalParser(TinsParser):
 
         return self.data_all_channels
 
-    def load_B_and_D_channels(self):
+    def load_B_and_D_channels(self): #Oana
         data_all_channels = []
 
         for chn_id in range(32, 64):

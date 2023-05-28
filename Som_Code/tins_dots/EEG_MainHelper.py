@@ -1,13 +1,13 @@
 import numpy as np
 
-from tins_dots.EEG_DataProcessor import EEG_Trial
-from tins_dots.Plots_Generator import Alignment, PlotsGenerator, Method
+from Som_Code.tins_dots.EEG_DataProcessor import EEG_Trial
+from Som_Code.tins_dots.Plots_Generator import PlotsGenerator, Alignment, Method
 
 
 class EEG_MainHelper:
 
     @staticmethod
-    def take_minimum_window_from_trials_start(all_trials, trials_lengths):
+    def take_minimum_window_from_trials_start(all_trials, trials_lengths): #Ileana
         new_all_trials = []
         minimum_trial_length = min(trials_lengths)
         for cnt, trial in enumerate(all_trials):
@@ -22,7 +22,7 @@ class EEG_MainHelper:
         return new_all_trials
 
     @staticmethod
-    def take_minimum_window_from_trials_end(all_trials, trials_lengths):
+    def take_minimum_window_from_trials_end(all_trials, trials_lengths): #Oana
         new_all_trials = []
         minimum_trial_length = min(trials_lengths)
         for cnt, trial in enumerate(all_trials):
@@ -280,12 +280,12 @@ class EEG_MainHelper:
     @staticmethod
     def full_pipeline(eegDataProcessor, som, pathLeft, pathRight, pathWindowStart, pathWindowEnd, params, coeff,
                       no_samples):
-        """"
+
         # LEFT, RIGHT -----------------------------------------------
         # lista de liste (lista pt nothing, lista pt smth, lista pt identified), fiecare lista contine freq matrix pt each trial
-
         list_freq_by_response = PlotsGenerator.groupByResponseV2(eegDataProcessor.trials, som, pathLeft, params,
                                                                  alignment=Alignment.LEFT, method=Method.BMU)
+
         PlotsGenerator.groupByResponseV2(eegDataProcessor.trials, som, pathRight, params, alignment=Alignment.RIGHT,
                                          method=Method.BMU)
 
@@ -299,15 +299,14 @@ class EEG_MainHelper:
         PlotsGenerator.groupByVisibilityV2(eegDataProcessor.trials, som, pathRight, params, alignment=Alignment.RIGHT,
                                            method=Method.BMU)
 
+
         EEG_MainHelper.main_with_psi1(list_freq_by_response, list_freq_by_stimulus, list_freq_by_visibility,
                                       som, eegDataProcessor.trials, pathLeft, pathRight, '', params,
                                       no_samples, coeff, weighted=True, window=False)
-        """
-        """"
+
         EEG_MainHelper.main_with_psi2(list_freq_by_response, list_freq_by_stimulus, list_freq_by_visibility, som,
                                       eegDataProcessor.trials, pathLeft, pathRight, '', params, no_samples, coeff,
                                       window=False)
-        """
 
         # WINDOW-----------------
         window_start_trials = EEG_MainHelper.take_minimum_window_from_trials_start(eegDataProcessor.trials,
@@ -318,14 +317,14 @@ class EEG_MainHelper:
                                                                  alignment=Alignment.LEFT, method=Method.BMU)
         list_freq_by_visibility = PlotsGenerator.groupByVisibilityV2(window_start_trials, som, pathWindowStart, params,
                                                                      alignment=Alignment.LEFT, method=Method.BMU)
+
         EEG_MainHelper.main_with_psi1(list_freq_by_response, list_freq_by_stimulus, list_freq_by_visibility,
                                       som, window_start_trials, '', '', pathWindowStart, params,
                                       no_samples, coeff, weighted=True, window=True)
-        """
-        EEG_MainHelper.main_with_psi2(list_freq_by_response, [], [], som,
-                                       window_start_trials, '', '', pathWindowStart, params, no_samples, coeff,
+
+        EEG_MainHelper.main_with_psi2(list_freq_by_response, list_freq_by_stimulus, list_freq_by_visibility, som,
+                                      window_start_trials, '', '', pathWindowStart, params, no_samples, coeff,
                                       window=True)
-        """
 
         window_end_trials = EEG_MainHelper.take_minimum_window_from_trials_end(eegDataProcessor.trials,
                                                                                eegDataProcessor.trials_lengths)
@@ -339,7 +338,6 @@ class EEG_MainHelper:
         EEG_MainHelper.main_with_psi1(list_freq_by_response, list_freq_by_stimulus, list_freq_by_visibility,
                                       som, window_end_trials, '', '', pathWindowEnd, params,
                                       no_samples, coeff, weighted=True, window=True)
-        """
+
         EEG_MainHelper.main_with_psi2(list_freq_by_response, list_freq_by_stimulus, list_freq_by_visibility, som,
                                       window_end_trials, '', '', pathWindowEnd, params, no_samples, coeff, window=True)
-        """

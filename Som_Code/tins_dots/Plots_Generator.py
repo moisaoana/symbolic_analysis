@@ -19,8 +19,7 @@ from reportlab.lib.utils import ImageReader
 from enum import Enum
 
 # matplotlib.use('Qt5Agg')
-from readerUtils import ReaderUtils
-from utils import Utils
+from Som_Code.utils import Utils
 
 matplotlib.use("Agg")
 
@@ -48,8 +47,8 @@ class PlotsGenerator:
     @staticmethod
     def getNothingData(figure_array):
         return [*figure_array[0:61], *figure_array[62:69], *figure_array[70:76], *figure_array[77:90],
-                *figure_array[95:96], *figure_array[104:105], *figure_array[107:108], *figure_array[111:117],
-                *figure_array[120:121]]
+                *figure_array[95:96], *figure_array[104:105], *figure_array[107:108], *figure_array[111:112],
+                *figure_array[114:117],*figure_array[120:121]]
 
     @staticmethod
     def getSomethingData(figure_array):
@@ -237,7 +236,7 @@ class PlotsGenerator:
                 colors_array, _ = Utils.get_colors_array(trial, som)
             else:
                 colors_array, _ = Utils.get_colors_array(trial.trial_data, som)
-            for i, color in enumerate(colors_array):
+            for i, color in enumerate(colors_array):  # amandoua
                 color_PSI = PSI_matrix[int(color[0] * som.getX())][int(color[1] * som.getY())][
                     int(color[2] * som.getZ())]
                 if color_PSI - mean < coeff * st_dev:
@@ -252,7 +251,7 @@ class PlotsGenerator:
                         my_dict[color_tuple] = []
                         my_dict[color_tuple].append(i)
 
-                    # pst
+                    # psth
                     if window:
                         if color_tuple in psth_dictionary:
                             freq_array = psth_dictionary[color_tuple]
@@ -278,7 +277,7 @@ class PlotsGenerator:
         return barcodes_array, pattern_indexes_per_trial, psth_dictionary
 
     @staticmethod
-    def computeWeightedPSI(list_trials, list_psi, number_of_samples):
+    def computeWeightedPSI(list_trials, list_psi, number_of_samples):  # Ileana
         total_samples_category = []
         for list_element in list_trials:
             total_samples_category.append(0)
@@ -325,7 +324,7 @@ class PlotsGenerator:
         return 1.1 * (sum_avg / total_size)
 
     @staticmethod
-    def computeMeanAndStDevForGroup(psi_array, som):
+    def computeMeanAndStDevForGroup(psi_array, som):  # Oana
         # with mean and st dev
 
         sum_avg = 0
@@ -353,6 +352,7 @@ class PlotsGenerator:
     def computePatternTriggeredAverage(group_trials, pattern_indexes_per_trial_group, window_length, channel_type,
                                        channel_number, grid_dimension, path, title):
         pattern_pta_vectors_dictionary = {}
+        pta_condition_dictionary = {}
 
         for cnt, trial in enumerate(group_trials):
             trial_dictionary = pattern_indexes_per_trial_group[cnt]
@@ -361,9 +361,14 @@ class PlotsGenerator:
                                                                  channel_number)
                 if pattern in pattern_pta_vectors_dictionary:
                     pattern_pta_vectors_dictionary[pattern].append(pta_vector)
+                    pta_condition_dictionary[pattern] += pta_vector
                 else:
                     pattern_pta_vectors_dictionary[pattern] = []
                     pattern_pta_vectors_dictionary[pattern].append(pta_vector)
+                    pta_condition_dictionary[pattern] = pta_vector
+
+        for pattern, pta_vectors in pattern_pta_vectors_dictionary.items():
+            np.divide(pta_condition_dictionary[pattern], len(pta_vectors))
 
         for pattern, pta_vectors in pattern_pta_vectors_dictionary.items():
             for cnt, trial in enumerate(group_trials):
@@ -376,16 +381,17 @@ class PlotsGenerator:
             c1 = round(pattern[1], 3)
             c2 = round(pattern[2], 3)
             new_tup = c0, c1, c2
-            PlotsGenerator.plotPTAForPattern(pattern, pta_vectors, grid_dimension,
-                                             path + "pattern" + str(new_tup) + ".png", channel_type, channel_number,
+            PlotsGenerator.plotPTAForPattern(pattern, pta_vectors, grid_dimension, grid_dimension,
+                                             path + "pattern" + str(new_tup) + "_channel" + channel_type + str(channel_number) + ".png", channel_type, channel_number,
                                              window_length, title)
+        return pta_condition_dictionary
 
     @staticmethod
-    def plotPTAForPattern(pattern, pta_vectors, grid_dimension, path, channel_type, channel_number, window_length,
+    def plotPTAForPattern(pattern, pta_vectors, grid_dimension_rows, grid_dimension_cols, path, channel_type, channel_number, window_length,
                           title):
 
         line_color = pattern
-        fig, axs = plt.subplots(grid_dimension, grid_dimension, figsize=(50, 20))
+        fig, axs = plt.subplots(grid_dimension_rows, grid_dimension_cols, figsize=(50, 20))
         axs = axs.ravel()
         for i in range(len(pta_vectors)):
             ax = axs[i]
@@ -417,13 +423,50 @@ class PlotsGenerator:
         return pta_vector / len(list_indexes)
 
     @staticmethod
-    def computePeriStimulusTimeHistogram(psth_dictionary, path, title):
-        for pattern, freq_array in psth_dictionary.items():
-            PlotsGenerator.plotPSTHForPattern(pattern, freq_array, path, title)
+    def plotAveragePTAPerCondition(dictionary_list, path, channel_type, channel_number, window_length, title):
+        distinct_patterns_list = []
+        for dictionary in dictionary_list:
+            for pattern, pta_vector in dictionary.items():
+                if pattern not in distinct_patterns_list:
+                    distinct_patterns_list.append(pattern)
+        for pattern in distinct_patterns_list:
+            pta_vectors_list = []
+            c0 = round(pattern[0], 3)
+            c1 = round(pattern[1], 3)
+            c2 = round(pattern[2], 3)
+            new_tup = c0, c1, c2
+            for dictionary in dictionary_list:
+                if pattern in dictionary:
+                    pta_vectors_list.append(dictionary[pattern])
+                else:
+                    pta_vectors_list.append([])
+            PlotsGenerator.plotPTAForPattern(pattern, pta_vectors_list, 1,  len(dictionary_list),
+                                             path + "pattern" + str(new_tup) + "_channel" + channel_type + str(channel_number) + ".png", channel_type, channel_number,
+                                             window_length, title)
 
     @staticmethod
-    def plotPSTHForPattern(pattern, freq_array, path, title):
+    def computePeriStimulusTimeHistogram(psth_dictionary, path, title):
+        for pattern, freq_array in psth_dictionary.items():
+            PlotsGenerator.plotPSTHForPattern(pattern, freq_array, path, title, window=50)
+
+    @staticmethod
+    def computeFreqArrayWithWindow(freq_array, window):
+        sum_bin = 0
+        new_freq_array = []
+        for cnt, freq in enumerate(freq_array):
+            sum_bin += freq
+            if (cnt+1) % window == 0:
+                new_freq_array.append(sum_bin)
+                sum_bin = 0
+        new_freq_array.append(sum_bin)
+        print(len(new_freq_array))
+        return np.array(new_freq_array)
+
+    @staticmethod
+    def plotPSTHForPattern(pattern, freq_array, path, title, window=None):
         fig = plt.figure(figsize=(50, 20))
+        if window:
+            freq_array = PlotsGenerator.computeFreqArrayWithWindow(freq_array, window)
         pos = range(len(freq_array))
 
         plt.bar(pos, freq_array, color=pattern)
@@ -435,7 +478,7 @@ class PlotsGenerator:
         c2 = round(pattern[2], 3)
         new_tup = c0, c1, c2
 
-        plt.title('PSTH ' + title + ", Pattern: " + str(new_tup), fontsize=36)
+        plt.title('PSTH ' + title + ", Pattern: " + str(new_tup) + ", Window size: "+ str(window), fontsize=36)
         plt.savefig(path + "pattern" + str(new_tup) + ".png", dpi=300)
 
     @staticmethod
@@ -470,15 +513,32 @@ class PlotsGenerator:
                 0], mean,
             st_dev,
             coeff,
-
             alignment=alignment, window=window)
 
-        PlotsGenerator.computePatternTriggeredAverage(nothing_trials, pattern_indexes_dict_per_trial_nothing, 100, "A",
-                                                      22, 10, path + "response_nothing_pta_", "Response: nothing")
-
-        if window:
-            PlotsGenerator.computePeriStimulusTimeHistogram(psth_dict_nothing, path + "response_nothing_psth_",
-                                                            "Response: nothing")
+        if weighted:
+            pta_nothing_dictionary_Achannel = PlotsGenerator.computePatternTriggeredAverage(nothing_trials,
+                                                                                   pattern_indexes_dict_per_trial_nothing,
+                                                                                   100, "A",
+                                                                                   22, 10, path + "response_nothing_pta_",
+                                                                                   "Response: nothing")
+            pta_nothing_dictionary_Bchannel = PlotsGenerator.computePatternTriggeredAverage(nothing_trials,
+                                                                                   pattern_indexes_dict_per_trial_nothing,
+                                                                                   100, "B",
+                                                                                   57, 10, path + "response_nothing_pta_",
+                                                                                   "Response: nothing")
+            pta_nothing_dictionary_Cchannel = PlotsGenerator.computePatternTriggeredAverage(nothing_trials,
+                                                                                   pattern_indexes_dict_per_trial_nothing,
+                                                                                   100, "C",
+                                                                                   80, 10, path + "response_nothing_pta_",
+                                                                                   "Response: nothing")
+            pta_nothing_dictionary_Dchannel = PlotsGenerator.computePatternTriggeredAverage(nothing_trials,
+                                                                                   pattern_indexes_dict_per_trial_nothing,
+                                                                                   100, "D",
+                                                                                   118, 10, path + "response_nothing_pta_",
+                                                                                   "Response: nothing")
+            if window:
+                PlotsGenerator.computePeriStimulusTimeHistogram(psth_dict_nothing, path + "response_nothing_psth_",
+                                                                "Response: nothing")
 
         something_figures, pattern_indexes_dict_per_trial_something, psth_dict_something = PlotsGenerator.getNewFigureArrayUsingPSI(
             som,
@@ -490,12 +550,38 @@ class PlotsGenerator:
             coeff,
             alignment=alignment, window=window)
 
-        PlotsGenerator.computePatternTriggeredAverage(something_trials, pattern_indexes_dict_per_trial_something, 100,
-                                                      "A",
-                                                      22, 10, path + "response_something_pta_", "Response: something")
-        if window:
-            PlotsGenerator.computePeriStimulusTimeHistogram(psth_dict_something, path + "response_something_psth_",
-                                                            "Response: something")
+        if weighted:
+            pta_something_dictionary_Achannel = PlotsGenerator.computePatternTriggeredAverage(something_trials,
+                                                                                     pattern_indexes_dict_per_trial_something,
+                                                                                     100,
+                                                                                     "A",
+                                                                                     22, 10,
+                                                                                     path + "response_something_pta_",
+                                                                                     "Response: something")
+            pta_something_dictionary_Bchannel = PlotsGenerator.computePatternTriggeredAverage(something_trials,
+                                                                                     pattern_indexes_dict_per_trial_something,
+                                                                                     100,
+                                                                                     "B",
+                                                                                     57, 10,
+                                                                                     path + "response_something_pta_",
+                                                                                     "Response: something")
+            pta_something_dictionary_Cchannel = PlotsGenerator.computePatternTriggeredAverage(something_trials,
+                                                                                     pattern_indexes_dict_per_trial_something,
+                                                                                     100,
+                                                                                     "C",
+                                                                                     80, 10,
+                                                                                     path + "response_something_pta_",
+                                                                                     "Response: something")
+            pta_something_dictionary_Dchannel = PlotsGenerator.computePatternTriggeredAverage(something_trials,
+                                                                                     pattern_indexes_dict_per_trial_something,
+                                                                                     100,
+                                                                                     "D",
+                                                                                     118, 10,
+                                                                                     path + "response_something_pta_",
+                                                                                     "Response: something")
+            if window:
+                PlotsGenerator.computePeriStimulusTimeHistogram(psth_dict_something, path + "response_something_psth_",
+                                                                "Response: something")
 
         identified_figures, pattern_indexes_dict_per_trial_identified, psth_dict_identified = PlotsGenerator.getNewFigureArrayUsingPSI(
             som,
@@ -507,15 +593,61 @@ class PlotsGenerator:
             coeff,
             alignment=alignment, window=window)
 
-        PlotsGenerator.computePatternTriggeredAverage(identified_trials, pattern_indexes_dict_per_trial_identified, 100,
-                                                      "A",
-                                                      22, 10, path + "response_identified_pta_", "Response: identified")
+        if weighted:
+            pta_identified_dictionary_Achannel = PlotsGenerator.computePatternTriggeredAverage(identified_trials,
+                                                                                      pattern_indexes_dict_per_trial_identified,
+                                                                                      100,
+                                                                                      "A",
+                                                                                      22, 10,
+                                                                                      path + "response_identified_pta_",
+                                                                                      "Response: identified")
+            pta_identified_dictionary_Bchannel = PlotsGenerator.computePatternTriggeredAverage(identified_trials,
+                                                                                      pattern_indexes_dict_per_trial_identified,
+                                                                                      100,
+                                                                                      "B",
+                                                                                      57, 10,
+                                                                                      path + "response_identified_pta_",
+                                                                                      "Response: identified")
+            pta_identified_dictionary_Cchannel = PlotsGenerator.computePatternTriggeredAverage(identified_trials,
+                                                                                      pattern_indexes_dict_per_trial_identified,
+                                                                                      100,
+                                                                                      "C",
+                                                                                      80, 10,
+                                                                                      path + "response_identified_pta_",
+                                                                                      "Response: identified")
+            pta_identified_dictionary_Dchannel = PlotsGenerator.computePatternTriggeredAverage(identified_trials,
+                                                                                      pattern_indexes_dict_per_trial_identified,
+                                                                                      100,
+                                                                                      "D",
+                                                                                      118, 10,
+                                                                                      path + "response_identified_pta_",
+                                                                                      "Response: identified")
+            if window:
+                PlotsGenerator.computePeriStimulusTimeHistogram(psth_dict_identified, path + "response_identified_psth_",
+                                                                "Response: identified")
+            PlotsGenerator.plotAveragePTAPerCondition(
+                [pta_nothing_dictionary_Achannel, pta_something_dictionary_Achannel, pta_identified_dictionary_Achannel],
+                path + "response_average_pta_", "A",
+                22, 100, "Response Average, ")
 
-        if window:
-            PlotsGenerator.computePeriStimulusTimeHistogram(psth_dict_identified, path + "response_identified_psth_",
-                                                            "Response: identified")
+            PlotsGenerator.plotAveragePTAPerCondition(
+                [pta_nothing_dictionary_Bchannel, pta_something_dictionary_Bchannel, pta_identified_dictionary_Bchannel],
+                path + "response_average_pta_", "B",
+                57, 100, "Response Average, ")
 
-        fig, ax = PlotsGenerator.generateGridWithColorSequences(nothing_figures, n_rows=len(nothing_figures), n_cols=1, max_trial_len=nothing_max)
+            PlotsGenerator.plotAveragePTAPerCondition(
+                [pta_nothing_dictionary_Cchannel, pta_something_dictionary_Cchannel, pta_identified_dictionary_Cchannel],
+                path + "response_average_pta_", "C",
+                80, 100, "Response Average, ")
+
+            PlotsGenerator.plotAveragePTAPerCondition(
+                [pta_nothing_dictionary_Dchannel, pta_something_dictionary_Dchannel, pta_identified_dictionary_Dchannel],
+                path + "response_average_pta_", "D",
+                118, 100, "Response Average, ")
+
+
+        fig, ax = PlotsGenerator.generateGridWithColorSequences(nothing_figures, n_rows=len(nothing_figures), n_cols=1,
+                                                                max_trial_len=nothing_max)
         plt.suptitle("Response: nothing, PSI mean = " + str(round(mean, 3)) + ", st_dev =  " + str(
             round(st_dev, 3)) + "\n" + params)
         fig.set_size_inches(6, 4)
@@ -959,7 +1091,7 @@ class PlotsGenerator:
                                                                                                                alignment=alignment,
                                                                                                                window=window)
 
-        PlotsGenerator.computePatternTriggeredAverage(v0_trials, pattern_indexes_dict_per_trial_v0, 100, "A",
+        v0_dictionary = PlotsGenerator.computePatternTriggeredAverage(v0_trials, pattern_indexes_dict_per_trial_v0, 100, "A",
                                                       22, 6, path + "v0.0_pta_", "Visibility: 0.0")
 
         if window:
@@ -976,7 +1108,7 @@ class PlotsGenerator:
                                                                                                                alignment=alignment,
                                                                                                                window=window)
 
-        PlotsGenerator.computePatternTriggeredAverage(v1_trials, pattern_indexes_dict_per_trial_v1, 100, "A",
+        v1_dictionary = PlotsGenerator.computePatternTriggeredAverage(v1_trials, pattern_indexes_dict_per_trial_v1, 100, "A",
                                                       22, 6, path + "v0.05_pta_", "Visibility: 0.05")
 
         if window:
@@ -993,7 +1125,7 @@ class PlotsGenerator:
                                                                                                                alignment=alignment,
                                                                                                                window=window)
 
-        PlotsGenerator.computePatternTriggeredAverage(v2_trials, pattern_indexes_dict_per_trial_v2, 100, "A",
+        v2_dictionary = PlotsGenerator.computePatternTriggeredAverage(v2_trials, pattern_indexes_dict_per_trial_v2, 100, "A",
                                                       22, 6, path + "v0.1_pta_", "Visibility: 0.1")
 
         if window:
@@ -1010,7 +1142,7 @@ class PlotsGenerator:
                                                                                                                alignment=alignment,
                                                                                                                window=window)
 
-        PlotsGenerator.computePatternTriggeredAverage(v3_trials, pattern_indexes_dict_per_trial_v3, 100, "A",
+        v3_dictionary = PlotsGenerator.computePatternTriggeredAverage(v3_trials, pattern_indexes_dict_per_trial_v3, 100, "A",
                                                       22, 6, path + "v0.15_pta_", "Visibility: 0.15")
 
         if window:
@@ -1027,7 +1159,7 @@ class PlotsGenerator:
                                                                                                                alignment=alignment,
                                                                                                                window=window)
 
-        PlotsGenerator.computePatternTriggeredAverage(v4_trials, pattern_indexes_dict_per_trial_v4, 100, "A",
+        v4_dictionary = PlotsGenerator.computePatternTriggeredAverage(v4_trials, pattern_indexes_dict_per_trial_v4, 100, "A",
                                                       22, 6, path + "v0.2_pta_", "Visibility: 0.2")
 
         if window:
@@ -1044,7 +1176,7 @@ class PlotsGenerator:
                                                                                                                alignment=alignment,
                                                                                                                window=window)
 
-        PlotsGenerator.computePatternTriggeredAverage(v5_trials, pattern_indexes_dict_per_trial_v5, 100, "A",
+        v5_dictionary = PlotsGenerator.computePatternTriggeredAverage(v5_trials, pattern_indexes_dict_per_trial_v5, 100, "A",
                                                       22, 6, path + "v0.25_pta_", "Visibility: 0.25")
 
         if window:
@@ -1061,8 +1193,13 @@ class PlotsGenerator:
                                                                                                                alignment=alignment,
                                                                                                                window=window)
 
-        PlotsGenerator.computePatternTriggeredAverage(v6_trials, pattern_indexes_dict_per_trial_v6, 100, "A",
+        v6_dictionary = PlotsGenerator.computePatternTriggeredAverage(v6_trials, pattern_indexes_dict_per_trial_v6, 100, "A",
                                                       22, 6, path + "v0.3_pta_", "Visibility: 0.3")
+
+        PlotsGenerator.plotAveragePTAPerCondition(
+            [v0_dictionary, v1_dictionary, v2_dictionary, v3_dictionary, v4_dictionary, v5_dictionary, v6_dictionary],
+            path + "visibility_average_pta_", "A",
+            22, 100, "Visibility Average, ")
 
         if window:
             PlotsGenerator.computePeriStimulusTimeHistogram(psth_dict_v6, path + "v0.3_psth_",
@@ -1217,7 +1354,7 @@ class PlotsGenerator:
         return all_color_freq
 
     @staticmethod
-    def computeTotalFrequenciesByGroup(color_freq_list_of_matrices):
+    def computeTotalFrequenciesByGroup(color_freq_list_of_matrices):  # amandoua
         size_tuple = color_freq_list_of_matrices[0].shape
         total_freq_matrix = np.zeros(size_tuple)
         for matrix in color_freq_list_of_matrices:
@@ -1227,11 +1364,11 @@ class PlotsGenerator:
     # Compute PSI ---------------------------------------------------------------------------------------------------
 
     @staticmethod
-    def computePSI(group_total_freq_matrix, total_freq_matrix):
+    def computePSI(group_total_freq_matrix, total_freq_matrix):  # amandoua
         return np.divide(group_total_freq_matrix, total_freq_matrix)
 
     @staticmethod
-    def computePSIByGroup(group_color_freq_array, som):
+    def computePSIByGroup(group_color_freq_array, som):  # Ileana
 
         group_total_freq_matrix_array = []
         group_PSIs_for_all_colors_matrix_array = []
@@ -1259,7 +1396,7 @@ class PlotsGenerator:
         return np.array(group_PSIs_for_all_colors_matrix_array)
 
     @staticmethod
-    def computePSIByGroupMethod2(group_color_freq_array, som):
+    def computePSIByGroupMethod2(group_color_freq_array, som):  # Oana
 
         group_total_freq_matrix_array = []
         group_PSIs_for_all_colors_matrix_array = []
@@ -1287,7 +1424,7 @@ class PlotsGenerator:
     # Show final plots by group without PSI--------------------------------------------------------------------------
 
     @staticmethod
-    def sortTrials(trials):
+    def sortTrials(trials):  # Ileana
         n = len(trials)
 
         for i in range(n):
@@ -1301,7 +1438,7 @@ class PlotsGenerator:
 
     @staticmethod
     def groupByResponseV2(all_trials_data, som, path, params, ssd=False, alignment=Alignment.LEFT, method=Method.BMU,
-                          markers_and_colors=None, samples_with_clusters=None):
+                          markers_and_colors=None, samples_with_clusters=None):  # Ileana
 
         nothing_trials = PlotsGenerator.getNothingData(all_trials_data)
         something_trials = PlotsGenerator.getSomethingData(all_trials_data)
@@ -1337,19 +1474,19 @@ class PlotsGenerator:
                                                                                     alignment=alignment)
 
         fig, ax = PlotsGenerator.generateGridWithColorSequences(nothing_figures, n_rows=len(nothing_figures),
-                                                                n_cols=1, max_trial_len = nothing_max)
+                                                                n_cols=1, max_trial_len=nothing_max)
         plt.suptitle("Response: nothing\n" + params)
         fig.set_size_inches(6, 4)
         plt.savefig(path + "response_nothing.png", dpi=300)
 
         fig, ax = PlotsGenerator.generateGridWithColorSequences(something_figures, n_rows=len(something_figures),
-                                                                n_cols=1, max_trial_len = something_max)
+                                                                n_cols=1, max_trial_len=something_max)
         plt.suptitle("Response: something\n" + params)
         fig.set_size_inches(6, 4)
         plt.savefig(path + "response_something.png", dpi=300)
 
         fig, ax = PlotsGenerator.generateGridWithColorSequences(identified_figures, n_rows=len(identified_figures),
-                                                                n_cols=1, max_trial_len = identified_max)
+                                                                n_cols=1, max_trial_len=identified_max)
         plt.suptitle("Response: what the subject sees (correct + 1 incorrect)\n" + params)
         fig.set_size_inches(6, 4)
         plt.savefig(path + "response_identified.png", dpi=300)
@@ -1361,7 +1498,7 @@ class PlotsGenerator:
 
     @staticmethod
     def groupByStimulusV2(all_trials_data, som, path, params, ssd=False, alignment=Alignment.LEFT, method=Method.BMU,
-                          markers_and_colors=None, samples_with_clusters=None):
+                          markers_and_colors=None, samples_with_clusters=None):  # Ileana
         poseta = PlotsGenerator.getStimulusPosetaData(all_trials_data)
         topor = PlotsGenerator.getStimulusToporData(all_trials_data)
         oala = PlotsGenerator.getStimulusOalaData(all_trials_data)
@@ -1741,7 +1878,7 @@ class PlotsGenerator:
 
     @staticmethod
     def groupByVisibilityV2(all_trials_data, som, path, params, ssd=False, alignment=Alignment.LEFT, method=Method.BMU,
-                            markers_and_colors=None, samples_with_clusters=None):
+                            markers_and_colors=None, samples_with_clusters=None):  # Ileana
         v0_trials = all_trials_data[0:30]
         v1_trials = all_trials_data[30:60]
         v2_trials = all_trials_data[60:90]
@@ -1798,37 +1935,37 @@ class PlotsGenerator:
             v6_figures = PlotsGenerator.getTrialSequencesArrayUsingClusters(v6_trials, markers_and_colors,
                                                                             samples_with_clusters, alignment=alignment)
 
-        fig, ax = PlotsGenerator.generateGridWithColorSequences(v0_figures, n_rows=30, n_cols=1, max_trial_len= v0_max)
+        fig, ax = PlotsGenerator.generateGridWithColorSequences(v0_figures, n_rows=30, n_cols=1, max_trial_len=v0_max)
         plt.suptitle("Stimulus visibility: 0.00\n" + params)
         fig.set_size_inches(6, 4)
         plt.savefig(path + "v0.0.png", dpi=300)
 
-        fig, ax = PlotsGenerator.generateGridWithColorSequences(v1_figures, n_rows=30, n_cols=1, max_trial_len= v1_max)
+        fig, ax = PlotsGenerator.generateGridWithColorSequences(v1_figures, n_rows=30, n_cols=1, max_trial_len=v1_max)
         plt.suptitle("Stimulus visibility: 0.05\n" + params)
         fig.set_size_inches(6, 4)
         plt.savefig(path + "v0.05.png", dpi=300)
 
-        fig, ax = PlotsGenerator.generateGridWithColorSequences(v2_figures, n_rows=30, n_cols=1, max_trial_len= v2_max)
+        fig, ax = PlotsGenerator.generateGridWithColorSequences(v2_figures, n_rows=30, n_cols=1, max_trial_len=v2_max)
         plt.suptitle("Stimulus visibility: 0.1\n" + params)
         fig.set_size_inches(6, 4)
         plt.savefig(path + "v0.1.png", dpi=300)
 
-        fig, ax = PlotsGenerator.generateGridWithColorSequences(v3_figures, n_rows=30, n_cols=1, max_trial_len= v3_max)
+        fig, ax = PlotsGenerator.generateGridWithColorSequences(v3_figures, n_rows=30, n_cols=1, max_trial_len=v3_max)
         plt.suptitle("Stimulus visibility: 0.15\n" + params)
         fig.set_size_inches(6, 4)
         plt.savefig(path + "v0.15.png", dpi=300)
 
-        fig, ax = PlotsGenerator.generateGridWithColorSequences(v4_figures, n_rows=30, n_cols=1, max_trial_len= v4_max)
+        fig, ax = PlotsGenerator.generateGridWithColorSequences(v4_figures, n_rows=30, n_cols=1, max_trial_len=v4_max)
         plt.suptitle("Stimulus visibility: 0.2\n" + params)
         fig.set_size_inches(6, 4)
         plt.savefig(path + "v0.2.png", dpi=300)
 
-        fig, ax = PlotsGenerator.generateGridWithColorSequences(v5_figures, n_rows=30, n_cols=1, max_trial_len= v5_max)
+        fig, ax = PlotsGenerator.generateGridWithColorSequences(v5_figures, n_rows=30, n_cols=1, max_trial_len=v5_max)
         plt.suptitle("Stimulus visibility: 0.25\n" + params)
         fig.set_size_inches(6, 4)
         plt.savefig(path + "v0.25.png", dpi=300)
 
-        fig, ax = PlotsGenerator.generateGridWithColorSequences(v6_figures, n_rows=30, n_cols=1, max_trial_len= v6_max)
+        fig, ax = PlotsGenerator.generateGridWithColorSequences(v6_figures, n_rows=30, n_cols=1, max_trial_len=v6_max)
         plt.suptitle("Stimulus visibility: 0.3\n" + params)
         fig.set_size_inches(6, 4)
         plt.savefig(path + "v0.3.png", dpi=300)
@@ -1842,7 +1979,7 @@ class PlotsGenerator:
     # Helper methods for plots generation -----------------------------------------------------------------------------
 
     @staticmethod
-    def getTrialSequencesArrayUsingBMU(all_trials_data, som, ssd=False, alignment=Alignment.LEFT):
+    def getTrialSequencesArrayUsingBMU(all_trials_data, som, ssd=False, alignment=Alignment.LEFT):  # Ileana
         barcodes_array = []
         all_color_arrays = []
         max_length_color_array = 0
@@ -1897,7 +2034,7 @@ class PlotsGenerator:
 
     @staticmethod
     def getTrialSequencesArrayUsingClusters(all_trials_data, markers_and_colors, samples_with_clusters,
-                                            alignment=Alignment.LEFT):
+                                            alignment=Alignment.LEFT):  # Ileana
         barcodes_array = []
         all_color_arrays = []
         max_length_color_array = 0
@@ -1929,7 +2066,7 @@ class PlotsGenerator:
         return barcodes_array
 
     @staticmethod
-    def generateColorSequenceForTrialMatplotlib(colors, width=400, height=100):
+    def generateColorSequenceForTrialMatplotlib(colors, width=400, height=100):  # Ileana
         color_indices = np.arange(len(colors))
         cmap = plt.matplotlib.colors.ListedColormap(colors)
         fig, ax = plt.subplots(figsize=(4, 3))
@@ -1940,7 +2077,8 @@ class PlotsGenerator:
         return fig, ax, color_indices
 
     @staticmethod
-    def generateGridWithColorSequences(figure_data_array, n_rows=2, n_cols=1, width=400, height=100, max_trial_len = 5):
+    def generateGridWithColorSequences(figure_data_array, n_rows=2, n_cols=1, width=400, height=100,
+                                       max_trial_len=5):  # Ileana
         figure_index = 0
         fig, axs = plt.subplots(nrows=n_rows, ncols=n_cols, squeeze=False)
         for i in range(n_rows * n_cols):
@@ -1958,12 +2096,19 @@ class PlotsGenerator:
             axs[row_idx, col_idx].imshow(color_indices.reshape(1, -1), cmap=ax.images[0].cmap, aspect='auto')
 
         ax = fig.add_subplot(n_rows + 1, n_cols, figure_index + 1)
-        ax.set_xlim(0,max_trial_len)
-        xTicks = np.arange(0, max_trial_len + 1, 200)
+        ax.set_xlim(0, max_trial_len)
+        step = 200
+        if 1600 < max_trial_len < 7800:
+            step = 500
+
+        if max_trial_len >= 7800:
+            step = 1000
+
+        xTicks = np.arange(0, max_trial_len + 1, step)
         ax.set(frame_on=False, xticks=xTicks, yticks=[])
-        #xticklabels = [''] * len(xTicks)
-        #xticklabels[::500] = xTicks[::500]
-        #colors = ['white' if i % 500 != 0 else 'black' for i in xTicks]
+        # xticklabels = [''] * len(xTicks)
+        # xticklabels[::500] = xTicks[::500]
+        # colors = ['white' if i % 500 != 0 else 'black' for i in xTicks]
         ax.set_xticklabels(xTicks)
         ax.tick_params(axis='x', which='major', labelsize=5)
         plt.subplots_adjust(hspace=0, wspace=0)
@@ -2020,16 +2165,16 @@ class PlotsGenerator:
 
     @staticmethod
     def generateScatterPlotForClustersPlotly(som, processed_data):
-        threshold = som.find_threshold(processed_data)
+        threshold = som.find_threshold(processed_data)  # Oana
         print('Max dist ', threshold)
         no_clusters, bmu_array, samples_with_clusters_array = som.find_clusters_with_min_dist(
             processed_data,
-            0.3, threshold)
+            0.3, threshold)  # Oana
         print('No clusters ', no_clusters)
-        samples_with_symbols_array = Utils.assign_symbols(samples_with_clusters_array)
+        samples_with_symbols_array = Utils.assign_symbols(samples_with_clusters_array)  # Oana
         print(samples_with_symbols_array)
 
-        markers_and_colors = Utils.assign_markers_and_colors(no_clusters)
+        markers_and_colors = Utils.assign_markers_and_colors(no_clusters)  # Oana
         print(no_clusters)
         print("-------------------------------------")
 

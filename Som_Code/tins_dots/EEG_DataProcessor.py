@@ -6,7 +6,7 @@ from sklearn.decomposition import PCA
 from mne.preprocessing import ICA
 from sklearn.decomposition import FastICA
 
-from readerUtils import ReaderUtils
+from Som_Code.readerUtils import ReaderUtils
 
 
 class EEG_Trial:
@@ -86,19 +86,19 @@ class EEG_DataProcessor:
 
         return self.processed_data
 
-    def apply_pca(self, no_components):
+    def apply_pca(self, no_components): #Oana
         pca = PCA(n_components=no_components)
         self.processed_data = pca.fit_transform(self.processed_data)
         print(sum(pca.explained_variance_ratio_))
 
-    def reconstruct_trials(self):
+    def reconstruct_trials(self): #Ileana
         start_index = 0
         for cnt, trial in enumerate(self.trials):
             last_index = start_index + self.trials_lengths[cnt]
             trial.trial_data = self.processed_data[start_index:last_index]
             start_index = start_index + self.trials_lengths[cnt]
 
-    def apply_fastica(self, data, n_comp):
+    def apply_fastica(self, data, n_comp): #Oana
         transformer = FastICA(n_comp, whiten='unit-variance', max_iter=100000000)
         s = transformer.fit_transform(data)
         self.processed_data = s
@@ -135,7 +135,7 @@ class EEG_DataProcessor:
         print(new_data.shape)
         ReaderUtils.write_matrix_to_file(unmixing_matrix, "newData.txt")
 
-    def apply_ica_matlab(self, file, all_trials,):
+    def apply_ica_matlab(self, file, all_trials,): #Ileana
         unmixing_matrix = ReaderUtils.readUnmixingMatrixFromFile(file)
         print(all_trials.shape)
         print(unmixing_matrix.shape)

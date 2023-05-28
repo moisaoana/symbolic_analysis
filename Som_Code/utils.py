@@ -11,7 +11,7 @@ class Utils:
     all_colors_rgb = [[1, 0, 0], [1, 0.64, 0], [1, 1, 0], [0, 1, 0], [0, 0, 1], [0.5, 0, 0.5], [0, 0, 0], [1, 0, 1]]
 
     @staticmethod
-    def assign_markers_and_colors(no_clusters):  # for scatter plot
+    def assign_markers_and_colors(no_clusters):  # for scatter plot Oana
         markers_and_colors = []
         for i in range(no_clusters):
             markers_and_colors.append(
@@ -20,7 +20,7 @@ class Utils:
         return markers_and_colors
 
     @staticmethod
-    def assign_symbols(samples_with_clusters):  # for scatter plot
+    def assign_symbols(samples_with_clusters):  # for scatter plot Oana
         samples_with_symbols = []
         for (sample, cluster) in samples_with_clusters:
             samples_with_symbols.append(
@@ -28,7 +28,7 @@ class Utils:
         return samples_with_symbols
 
     @staticmethod
-    def get_colors_array(samples, som):
+    def get_colors_array(samples, som): #Ileana
         colors_array = []
         freq_matrix = np.zeros((som.getX(), som.getY(), som.getZ()))
         for s in samples:
