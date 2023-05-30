@@ -382,7 +382,7 @@ class PlotsGenerator:
             c2 = round(pattern[2], 3)
             new_tup = c0, c1, c2
             PlotsGenerator.plotPTAForPattern(pattern, pta_vectors, grid_dimension, grid_dimension,
-                                             path + "pattern" + str(new_tup) + "_channel" + channel_type + str(channel_number) + ".png", channel_type, channel_number,
+                                             path + "pattern" + str(new_tup) + "_channel" + channel_type + str(channel_number % 32 + 1) + ".png", channel_type, channel_number,
                                              window_length, title)
         return pta_condition_dictionary
 
@@ -405,6 +405,7 @@ class PlotsGenerator:
         plt.suptitle(title + ", Pattern = " + str(new_tup) + ", Channel = " + channel_type + str(
             channel_number % 32 + 1) + ", Window_length = " + str(window_length), fontsize=36)
         plt.savefig(path, dpi=300)
+        plt.close()
 
     @staticmethod
     def computePTAForPattern(trial, list_indexes, window_length, channel):
@@ -441,7 +442,7 @@ class PlotsGenerator:
                 else:
                     pta_vectors_list.append([])
             PlotsGenerator.plotPTAForPattern(pattern, pta_vectors_list, 1,  len(dictionary_list),
-                                             path + "pattern" + str(new_tup) + "_channel" + channel_type + str(channel_number) + ".png", channel_type, channel_number,
+                                             path + "pattern" + str(new_tup) + "_channel" + channel_type + str(channel_number % 32 + 1) + ".png", channel_type, channel_number,
                                              window_length, title)
 
     @staticmethod
@@ -480,6 +481,7 @@ class PlotsGenerator:
 
         plt.title('PSTH ' + title + ", Pattern: " + str(new_tup) + ", Window size: "+ str(window), fontsize=36)
         plt.savefig(path + "pattern" + str(new_tup) + ".png", dpi=300)
+        plt.close()
 
     @staticmethod
     def groupByResponseWithPsiUsingBMU(all_trials_data, som, psi_array, path, params, number_of_samples, coeff,
@@ -628,22 +630,22 @@ class PlotsGenerator:
             PlotsGenerator.plotAveragePTAPerCondition(
                 [pta_nothing_dictionary_Achannel, pta_something_dictionary_Achannel, pta_identified_dictionary_Achannel],
                 path + "response_average_pta_", "A",
-                22, 100, "Response Average, ")
+                22, 100, "Response Average")
 
             PlotsGenerator.plotAveragePTAPerCondition(
                 [pta_nothing_dictionary_Bchannel, pta_something_dictionary_Bchannel, pta_identified_dictionary_Bchannel],
                 path + "response_average_pta_", "B",
-                57, 100, "Response Average, ")
+                57, 100, "Response Average")
 
             PlotsGenerator.plotAveragePTAPerCondition(
                 [pta_nothing_dictionary_Cchannel, pta_something_dictionary_Cchannel, pta_identified_dictionary_Cchannel],
                 path + "response_average_pta_", "C",
-                80, 100, "Response Average, ")
+                80, 100, "Response Average")
 
             PlotsGenerator.plotAveragePTAPerCondition(
                 [pta_nothing_dictionary_Dchannel, pta_something_dictionary_Dchannel, pta_identified_dictionary_Dchannel],
                 path + "response_average_pta_", "D",
-                118, 100, "Response Average, ")
+                118, 100, "Response Average")
 
 
         fig, ax = PlotsGenerator.generateGridWithColorSequences(nothing_figures, n_rows=len(nothing_figures), n_cols=1,
@@ -652,6 +654,7 @@ class PlotsGenerator:
             round(st_dev, 3)) + "\n" + params)
         fig.set_size_inches(6, 4)
         plt.savefig(path + "response_nothing_psi" + str(psi_version) + ".png", dpi=300)
+        plt.close()
 
         fig, ax = PlotsGenerator.generateGridWithColorSequences(something_figures, n_rows=len(something_figures),
                                                                 n_cols=1, max_trial_len=something_max)
@@ -659,6 +662,7 @@ class PlotsGenerator:
             round(st_dev, 3)) + "\n" + params)
         fig.set_size_inches(6, 4)
         plt.savefig(path + "response_something_psi" + str(psi_version) + ".png", dpi=300)
+        plt.close()
 
         fig, ax = PlotsGenerator.generateGridWithColorSequences(identified_figures, n_rows=len(identified_figures),
                                                                 n_cols=1, max_trial_len=identified_max)
@@ -667,6 +671,7 @@ class PlotsGenerator:
                 round(mean, 3)) + ", st_dev =  " + str(round(st_dev, 3)) + "\n" + params)
         fig.set_size_inches(6, 4)
         plt.savefig(path + "response_identified_psi" + str(psi_version) + ".png", dpi=300)
+        plt.close()
         # plt.show()
 
     @staticmethod
@@ -868,180 +873,210 @@ class PlotsGenerator:
             round(st_dev, 3)) + "\n" + params)
         fig.set_size_inches(6, 4)
         plt.savefig(path + "stimulus_poseta_psi" + str(psi_version) + ".png", dpi=300)
+        plt.close()
 
         fig, ax = PlotsGenerator.generateGridWithColorSequences(topor_figures, n_rows=7, n_cols=1)
         plt.suptitle("Stimulus: topor/secure, PSI mean = " + str(round(mean, 3)) + ", st_dev =  " + str(
             round(st_dev, 3)) + "\n" + params)
         fig.set_size_inches(6, 4)
         plt.savefig(path + "stimulus_topor_psi" + str(psi_version) + ".png", dpi=300)
+        plt.close()
 
         fig, ax = PlotsGenerator.generateGridWithColorSequences(oala_figures, n_rows=7, n_cols=1)
         plt.suptitle("Stimulus: oala/cratita, PSI mean = " + str(round(mean, 3)) + ", st_dev =  " + str(
             round(st_dev, 3)) + "\n" + params)
         fig.set_size_inches(6, 4)
         plt.savefig(path + "stimulus_oala_psi" + str(psi_version) + ".png", dpi=300)
+        plt.close()
 
         fig, ax = PlotsGenerator.generateGridWithColorSequences(elicopter_figures, n_rows=7, n_cols=1)
         plt.suptitle("Stimulus: elicopter, PSI mean = " + str(round(mean, 3)) + ", st_dev =  " + str(
             round(st_dev, 3)) + "\n" + params)
         fig.set_size_inches(6, 4)
         plt.savefig(path + "stimulus_elicopter_psi" + str(psi_version) + ".png", dpi=300)
+        plt.close()
 
         fig, ax = PlotsGenerator.generateGridWithColorSequences(urs_figures, n_rows=7, n_cols=1)
         plt.suptitle("Stimulus: urs (polar), PSI mean = " + str(round(mean, 3)) + ", st_dev =  " + str(
             round(st_dev, 3)) + "\n" + params)
         fig.set_size_inches(6, 4)
         plt.savefig(path + "stimulus_urs_psi" + str(psi_version) + ".png", dpi=300)
+        plt.close()
 
         fig, ax = PlotsGenerator.generateGridWithColorSequences(palarie_figures, n_rows=7, n_cols=1)
         plt.suptitle("Stimulus: palarie, PSI mean = " + str(round(mean, 3)) + ", st_dev =  " + str(
             round(st_dev, 3)) + "\n" + params)
         fig.set_size_inches(6, 4)
         plt.savefig(path + "stimulus_palarie_psi" + str(psi_version) + ".png", dpi=300)
+        plt.close()
 
         fig, ax = PlotsGenerator.generateGridWithColorSequences(foarfece_figures, n_rows=7, n_cols=1)
         plt.suptitle("Stimulus: foarfece, PSI mean = " + str(round(mean, 3)) + ", st_dev =  " + str(
             round(st_dev, 3)) + "\n" + params)
         fig.set_size_inches(6, 4)
         plt.savefig(path + "stimulus_foarfece_psi" + str(psi_version) + ".png", dpi=300)
+        plt.close()
 
         fig, ax = PlotsGenerator.generateGridWithColorSequences(banana_figures, n_rows=7, n_cols=1)
         plt.suptitle("Stimulus: banana, PSI mean = " + str(round(mean, 3)) + ", st_dev =  " + str(
             round(st_dev, 3)) + "\n" + params)
         fig.set_size_inches(6, 4)
         plt.savefig(path + "stimulus_banana_psi" + str(psi_version) + ".png", dpi=300)
+        plt.close()
 
         fig, ax = PlotsGenerator.generateGridWithColorSequences(lampa_figures, n_rows=7, n_cols=1)
         plt.suptitle("Stimulus: lampa/veioza, PSI mean = " + str(round(mean, 3)) + ", st_dev =  " + str(
             round(st_dev, 3)) + "\n" + params)
         fig.set_size_inches(6, 4)
         plt.savefig(path + "stimulus_lampa_psi" + str(psi_version) + ".png", dpi=300)
+        plt.close()
 
         fig, ax = PlotsGenerator.generateGridWithColorSequences(chitara_figures, n_rows=7, n_cols=1)
         plt.suptitle("Stimulus: chitara (electrica), PSI mean = " + str(round(mean, 3)) + ", st_dev =  " + str(
             round(st_dev, 3)) + "\n" + params)
         fig.set_size_inches(6, 4)
         plt.savefig(path + "stimulus_chitara_psi" + str(psi_version) + ".png", dpi=300)
+        plt.close()
 
         fig, ax = PlotsGenerator.generateGridWithColorSequences(masina_figures, n_rows=7, n_cols=1)
         plt.suptitle("Stimulus: masina, PSI mean = " + str(round(mean, 3)) + ", st_dev =  " + str(
             round(st_dev, 3)) + "\n" + params)
         fig.set_size_inches(6, 4)
         plt.savefig(path + "stimulus_masina_psi" + str(psi_version) + ".png", dpi=300)
+        plt.close()
 
         fig, ax = PlotsGenerator.generateGridWithColorSequences(vaca_figures, n_rows=7, n_cols=1)
         plt.suptitle("Stimulus: vaca, PSI mean = " + str(round(mean, 3)) + ", st_dev =  " + str(
             round(st_dev, 3)) + "\n" + params)
         fig.set_size_inches(6, 4)
         plt.savefig(path + "stimulus_vaca_psi" + str(psi_version) + ".png", dpi=300)
+        plt.close()
 
         fig, ax = PlotsGenerator.generateGridWithColorSequences(furculita_figures, n_rows=7, n_cols=1)
         plt.suptitle("Stimulus: furculita, PSI mean = " + str(round(mean, 3)) + ", st_dev =  " + str(
             round(st_dev, 3)) + "\n" + params)
         fig.set_size_inches(6, 4)
         plt.savefig(path + "stimulus_furculita_psi" + str(psi_version) + ".png", dpi=300)
+        plt.close()
 
         fig, ax = PlotsGenerator.generateGridWithColorSequences(cerb_figures, n_rows=7, n_cols=1)
         plt.suptitle("Stimulus: cerb, PSI mean = " + str(round(mean, 3)) + ", st_dev =  " + str(
             round(st_dev, 3)) + "\n" + params)
         fig.set_size_inches(6, 4)
         plt.savefig(path + "stimulus_cerb_psi" + str(psi_version) + ".png", dpi=300)
+        plt.close()
 
         fig, ax = PlotsGenerator.generateGridWithColorSequences(pantaloni_figures, n_rows=7, n_cols=1)
         plt.suptitle("Stimulus: pantaloni (scurti), PSI mean = " + str(round(mean, 3)) + ", st_dev =  " + str(
             round(st_dev, 3)) + "\n" + params)
         fig.set_size_inches(6, 4)
         plt.savefig(path + "stimulus_pantaloni_psi" + str(psi_version) + ".png", dpi=300)
+        plt.close()
 
         fig, ax = PlotsGenerator.generateGridWithColorSequences(scaun_figures, n_rows=7, n_cols=1)
         plt.suptitle("Stimulus: scaun, PSI mean = " + str(round(mean, 3)) + ", st_dev =  " + str(
             round(st_dev, 3)) + "\n" + params)
         fig.set_size_inches(6, 4)
         plt.savefig(path + "stimulus_scaun_psi" + str(psi_version) + ".png", dpi=300)
+        plt.close()
 
         fig, ax = PlotsGenerator.generateGridWithColorSequences(peste_figures, n_rows=7, n_cols=1)
         plt.suptitle("Stimulus: peste, PSI mean = " + str(round(mean, 3)) + ", st_dev =  " + str(
             round(st_dev, 3)) + "\n" + params)
         fig.set_size_inches(6, 4)
         plt.savefig(path + "stimulus_peste_psi" + str(psi_version) + ".png", dpi=300)
+        plt.close()
 
         fig, ax = PlotsGenerator.generateGridWithColorSequences(caine_figures, n_rows=7, n_cols=1)
         plt.suptitle("Stimulus: caine/catel, PSI mean = " + str(round(mean, 3)) + ", st_dev =  " + str(
             round(st_dev, 3)) + "\n" + params)
         fig.set_size_inches(6, 4)
         plt.savefig(path + "stimulus_caine_psi" + str(psi_version) + ".png", dpi=300)
+        plt.close()
 
         fig, ax = PlotsGenerator.generateGridWithColorSequences(sticla_figures, n_rows=7, n_cols=1)
         plt.suptitle("Stimulus: sticla, PSI mean = " + str(round(mean, 3)) + ", st_dev =  " + str(
             round(st_dev, 3)) + "\n" + params)
         fig.set_size_inches(6, 4)
         plt.savefig(path + "stimulus_sticla_psi" + str(psi_version) + ".png", dpi=300)
+        plt.close()
 
         fig, ax = PlotsGenerator.generateGridWithColorSequences(pistol_figures, n_rows=7, n_cols=1)
         plt.suptitle("Stimulus: pistol, PSI mean = " + str(round(mean, 3)) + ", st_dev =  " + str(
             round(st_dev, 3)) + "\n" + params)
         fig.set_size_inches(6, 4)
         plt.savefig(path + "stimulus_pistol_psi" + str(psi_version) + ".png", dpi=300)
+        plt.close()
 
         fig, ax = PlotsGenerator.generateGridWithColorSequences(bicicleta_figures, n_rows=7, n_cols=1)
         plt.suptitle("Stimulus: bicicleta, PSI mean = " + str(round(mean, 3)) + ", st_dev =  " + str(
             round(st_dev, 3)) + "\n" + params)
         fig.set_size_inches(6, 4)
         plt.savefig(path + "stimulus_bicicleta_psi" + str(psi_version) + ".png", dpi=300)
+        plt.close()
 
         fig, ax = PlotsGenerator.generateGridWithColorSequences(cal_figures, n_rows=7, n_cols=1)
         plt.suptitle(
             "Stimulus: cal, PSI mean = " + str(round(mean, 3)) + ", st_dev =  " + str(round(st_dev, 3)) + "\n" + params)
         fig.set_size_inches(6, 4)
         plt.savefig(path + "stimulus_cal_psi" + str(psi_version) + ".png", dpi=300)
+        plt.close()
 
         fig, ax = PlotsGenerator.generateGridWithColorSequences(elefant_figures, n_rows=7, n_cols=1)
         plt.suptitle("Stimulus: elefant, PSI mean = " + str(round(mean, 3)) + ", st_dev =  " + str(
             round(st_dev, 3)) + "\n" + params)
         fig.set_size_inches(6, 4)
         plt.savefig(path + "stimulus_elefant_psi" + str(psi_version) + ".png", dpi=300)
+        plt.close()
 
         fig, ax = PlotsGenerator.generateGridWithColorSequences(iepure_figures, n_rows=7, n_cols=1)
         plt.suptitle("Stimulus: iepure, PSI mean = " + str(round(mean, 3)) + ", st_dev =  " + str(
             round(st_dev, 3)) + "\n" + params)
         fig.set_size_inches(6, 4)
         plt.savefig(path + "stimulus_iepure_psi" + str(psi_version) + ".png", dpi=300)
+        plt.close()
 
         fig, ax = PlotsGenerator.generateGridWithColorSequences(pahar_figures, n_rows=7, n_cols=1)
         plt.suptitle("Stimulus: pahar/cupa, PSI mean = " + str(round(mean, 3)) + ", st_dev =  " + str(
             round(st_dev, 3)) + "\n" + params)
         fig.set_size_inches(6, 4)
         plt.savefig(path + "stimulus_cupa_psi" + str(psi_version) + ".png", dpi=300)
+        plt.close()
 
         fig, ax = PlotsGenerator.generateGridWithColorSequences(masa_figures, n_rows=7, n_cols=1)
         plt.suptitle("Stimulus: masa, PSI mean = " + str(round(mean, 3)) + ", st_dev =  " + str(
             round(st_dev, 3)) + "\n" + params)
         fig.set_size_inches(6, 4)
         plt.savefig(path + "stimulus_masa_psi" + str(psi_version) + ".png", dpi=300)
+        plt.close()
 
         fig, ax = PlotsGenerator.generateGridWithColorSequences(umbrela_figures, n_rows=7, n_cols=1)
         plt.suptitle("Stimulus: umbrela, PSI mean = " + str(round(mean, 3)) + ", st_dev =  " + str(
             round(st_dev, 3)) + "\n" + params)
         fig.set_size_inches(6, 4)
         plt.savefig(path + "stimulus_umbrela_psi" + str(psi_version) + ".png", dpi=300)
+        plt.close()
 
         fig, ax = PlotsGenerator.generateGridWithColorSequences(fluture_figures, n_rows=7, n_cols=1)
         plt.suptitle("Stimulus: fluture, PSI mean = " + str(round(mean, 3)) + ", st_dev =  " + str(
             round(st_dev, 3)) + "\n" + params)
         fig.set_size_inches(6, 4)
         plt.savefig(path + "stimulus_fluture_psi" + str(psi_version) + ".png", dpi=300)
+        plt.close()
 
         fig, ax = PlotsGenerator.generateGridWithColorSequences(girafa_figures, n_rows=7, n_cols=1)
         plt.suptitle("Stimulus: girafa, PSI mean = " + str(round(mean, 3)) + ", st_dev =  " + str(
             round(st_dev, 3)) + "\n" + params)
         fig.set_size_inches(6, 4)
         plt.savefig(path + "stimulus_girafa_psi" + str(psi_version) + ".png", dpi=300)
+        plt.close()
 
         fig, ax = PlotsGenerator.generateGridWithColorSequences(pian_figures, n_rows=7, n_cols=1)
         plt.suptitle("Stimulus: pian, PSI mean = " + str(round(mean, 3)) + ", st_dev =  " + str(
             round(st_dev, 3)) + "\n" + params)
         fig.set_size_inches(6, 4)
         plt.savefig(path + "stimulus_pian_psi" + str(psi_version) + ".png", dpi=300)
+        plt.close()
         # plt.show()
 
     @staticmethod
@@ -1090,13 +1125,13 @@ class PlotsGenerator:
                                                                                                                coeff,
                                                                                                                alignment=alignment,
                                                                                                                window=window)
-
-        v0_dictionary = PlotsGenerator.computePatternTriggeredAverage(v0_trials, pattern_indexes_dict_per_trial_v0, 100, "A",
+        if weighted:
+            v0_dictionary = PlotsGenerator.computePatternTriggeredAverage(v0_trials, pattern_indexes_dict_per_trial_v0, 100, "A",
                                                       22, 6, path + "v0.0_pta_", "Visibility: 0.0")
 
-        if window:
-            PlotsGenerator.computePeriStimulusTimeHistogram(psth_dict_v0, path + "v0.0_psth_",
-                                                            "Visibility: 0.0")
+            if window:
+                PlotsGenerator.computePeriStimulusTimeHistogram(psth_dict_v0, path + "v0.0_psth_",
+                                                                "Visibility: 0.0")
 
         v1_figures, pattern_indexes_dict_per_trial_v1, psth_dict_v1 = PlotsGenerator.getNewFigureArrayUsingPSI(som,
                                                                                                                v1_trials,
@@ -1107,13 +1142,13 @@ class PlotsGenerator:
                                                                                                                coeff,
                                                                                                                alignment=alignment,
                                                                                                                window=window)
+        if weighted:
+            v1_dictionary = PlotsGenerator.computePatternTriggeredAverage(v1_trials, pattern_indexes_dict_per_trial_v1, 100, "A",
+                                                          22, 6, path + "v0.05_pta_", "Visibility: 0.05")
 
-        v1_dictionary = PlotsGenerator.computePatternTriggeredAverage(v1_trials, pattern_indexes_dict_per_trial_v1, 100, "A",
-                                                      22, 6, path + "v0.05_pta_", "Visibility: 0.05")
-
-        if window:
-            PlotsGenerator.computePeriStimulusTimeHistogram(psth_dict_v1, path + "v0.05_psth_",
-                                                            "Visibility: 0.05")
+            if window:
+                PlotsGenerator.computePeriStimulusTimeHistogram(psth_dict_v1, path + "v0.05_psth_",
+                                                                "Visibility: 0.05")
 
         v2_figures, pattern_indexes_dict_per_trial_v2, psth_dict_v2 = PlotsGenerator.getNewFigureArrayUsingPSI(som,
                                                                                                                v2_trials,
@@ -1125,12 +1160,13 @@ class PlotsGenerator:
                                                                                                                alignment=alignment,
                                                                                                                window=window)
 
-        v2_dictionary = PlotsGenerator.computePatternTriggeredAverage(v2_trials, pattern_indexes_dict_per_trial_v2, 100, "A",
-                                                      22, 6, path + "v0.1_pta_", "Visibility: 0.1")
+        if weighted:
+            v2_dictionary = PlotsGenerator.computePatternTriggeredAverage(v2_trials, pattern_indexes_dict_per_trial_v2, 100, "A",
+                                                          22, 6, path + "v0.1_pta_", "Visibility: 0.1")
 
-        if window:
-            PlotsGenerator.computePeriStimulusTimeHistogram(psth_dict_v2, path + "v0.1_psth_",
-                                                            "Visibility: 0.1")
+            if window:
+                PlotsGenerator.computePeriStimulusTimeHistogram(psth_dict_v2, path + "v0.1_psth_",
+                                                                "Visibility: 0.1")
 
         v3_figures, pattern_indexes_dict_per_trial_v3, psth_dict_v3 = PlotsGenerator.getNewFigureArrayUsingPSI(som,
                                                                                                                v3_trials,
@@ -1141,13 +1177,13 @@ class PlotsGenerator:
                                                                                                                coeff,
                                                                                                                alignment=alignment,
                                                                                                                window=window)
+        if weighted:
+            v3_dictionary = PlotsGenerator.computePatternTriggeredAverage(v3_trials, pattern_indexes_dict_per_trial_v3, 100, "A",
+                                                          22, 6, path + "v0.15_pta_", "Visibility: 0.15")
 
-        v3_dictionary = PlotsGenerator.computePatternTriggeredAverage(v3_trials, pattern_indexes_dict_per_trial_v3, 100, "A",
-                                                      22, 6, path + "v0.15_pta_", "Visibility: 0.15")
-
-        if window:
-            PlotsGenerator.computePeriStimulusTimeHistogram(psth_dict_v3, path + "v0.15_psth_",
-                                                            "Visibility: 0.15")
+            if window:
+                PlotsGenerator.computePeriStimulusTimeHistogram(psth_dict_v3, path + "v0.15_psth_",
+                                                                "Visibility: 0.15")
 
         v4_figures, pattern_indexes_dict_per_trial_v4, psth_dict_v4 = PlotsGenerator.getNewFigureArrayUsingPSI(som,
                                                                                                                v4_trials,
@@ -1158,13 +1194,13 @@ class PlotsGenerator:
                                                                                                                coeff,
                                                                                                                alignment=alignment,
                                                                                                                window=window)
+        if weighted:
+            v4_dictionary = PlotsGenerator.computePatternTriggeredAverage(v4_trials, pattern_indexes_dict_per_trial_v4, 100, "A",
+                                                          22, 6, path + "v0.2_pta_", "Visibility: 0.2")
 
-        v4_dictionary = PlotsGenerator.computePatternTriggeredAverage(v4_trials, pattern_indexes_dict_per_trial_v4, 100, "A",
-                                                      22, 6, path + "v0.2_pta_", "Visibility: 0.2")
-
-        if window:
-            PlotsGenerator.computePeriStimulusTimeHistogram(psth_dict_v4, path + "v0.2_psth_",
-                                                            "Visibility: 0.2")
+            if window:
+                PlotsGenerator.computePeriStimulusTimeHistogram(psth_dict_v4, path + "v0.2_psth_",
+                                                                "Visibility: 0.2")
 
         v5_figures, pattern_indexes_dict_per_trial_v5, psth_dict_v5 = PlotsGenerator.getNewFigureArrayUsingPSI(som,
                                                                                                                v5_trials,
@@ -1175,13 +1211,13 @@ class PlotsGenerator:
                                                                                                                coeff,
                                                                                                                alignment=alignment,
                                                                                                                window=window)
+        if weighted:
+            v5_dictionary = PlotsGenerator.computePatternTriggeredAverage(v5_trials, pattern_indexes_dict_per_trial_v5, 100, "A",
+                                                          22, 6, path + "v0.25_pta_", "Visibility: 0.25")
 
-        v5_dictionary = PlotsGenerator.computePatternTriggeredAverage(v5_trials, pattern_indexes_dict_per_trial_v5, 100, "A",
-                                                      22, 6, path + "v0.25_pta_", "Visibility: 0.25")
-
-        if window:
-            PlotsGenerator.computePeriStimulusTimeHistogram(psth_dict_v5, path + "v0.25_psth_",
-                                                            "Visibility: 0.25")
+            if window:
+                PlotsGenerator.computePeriStimulusTimeHistogram(psth_dict_v5, path + "v0.25_psth_",
+                                                                "Visibility: 0.25")
 
         v6_figures, pattern_indexes_dict_per_trial_v6, psth_dict_v6 = PlotsGenerator.getNewFigureArrayUsingPSI(som,
                                                                                                                v6_trials,
@@ -1192,60 +1228,68 @@ class PlotsGenerator:
                                                                                                                coeff,
                                                                                                                alignment=alignment,
                                                                                                                window=window)
+        if weighted:
+            v6_dictionary = PlotsGenerator.computePatternTriggeredAverage(v6_trials, pattern_indexes_dict_per_trial_v6, 100, "A",
+                                                          22, 6, path + "v0.3_pta_", "Visibility: 0.3")
+            if window:
+                PlotsGenerator.computePeriStimulusTimeHistogram(psth_dict_v6, path + "v0.3_psth_",
+                                                                "Visibility: 0.3")
 
-        v6_dictionary = PlotsGenerator.computePatternTriggeredAverage(v6_trials, pattern_indexes_dict_per_trial_v6, 100, "A",
-                                                      22, 6, path + "v0.3_pta_", "Visibility: 0.3")
+            PlotsGenerator.plotAveragePTAPerCondition(
+                [v0_dictionary, v1_dictionary, v2_dictionary, v3_dictionary, v4_dictionary, v5_dictionary, v6_dictionary],
+                path + "visibility_average_pta_", "A",
+                22, 100, "Visibility Average")
 
-        PlotsGenerator.plotAveragePTAPerCondition(
-            [v0_dictionary, v1_dictionary, v2_dictionary, v3_dictionary, v4_dictionary, v5_dictionary, v6_dictionary],
-            path + "visibility_average_pta_", "A",
-            22, 100, "Visibility Average, ")
 
-        if window:
-            PlotsGenerator.computePeriStimulusTimeHistogram(psth_dict_v6, path + "v0.3_psth_",
-                                                            "Visibility: 0.3")
 
         fig, ax = PlotsGenerator.generateGridWithColorSequences(v0_figures, n_rows=30, n_cols=1, max_trial_len=v0_max)
         plt.suptitle("Stimulus visibility: 0.00, PSI mean = " + str(round(mean, 3)) + ", st_dev =  " + str(
             round(st_dev, 3)) + "\n" + params)
         fig.set_size_inches(6, 4)
         plt.savefig(path + "v0.0_psi" + str(psi_version) + ".png", dpi=300)
+        plt.close()
 
         fig, ax = PlotsGenerator.generateGridWithColorSequences(v1_figures, n_rows=30, n_cols=1, max_trial_len=v1_max)
         plt.suptitle("Stimulus visibility: 0.05, PSI mean = " + str(round(mean, 3)) + ", st_dev =  " + str(
             round(st_dev, 3)) + "\n" + params)
         fig.set_size_inches(6, 4)
         plt.savefig(path + "v0.05_psi" + str(psi_version) + ".png", dpi=300)
+        plt.close()
 
         fig, ax = PlotsGenerator.generateGridWithColorSequences(v2_figures, n_rows=30, n_cols=1, max_trial_len=v2_max)
         plt.suptitle("Stimulus visibility: 0.1, PSI mean = " + str(round(mean, 3)) + ", st_dev =  " + str(
             round(st_dev, 3)) + "\n" + params)
         fig.set_size_inches(6, 4)
         plt.savefig(path + "v0.1_psi" + str(psi_version) + ".png", dpi=300)
+        plt.close()
 
         fig, ax = PlotsGenerator.generateGridWithColorSequences(v3_figures, n_rows=30, n_cols=1, max_trial_len=v3_max)
         plt.suptitle("Stimulus visibility: 0.15, PSI mean = " + str(round(mean, 3)) + ", st_dev =  " + str(
             round(st_dev, 3)) + "\n" + params)
         fig.set_size_inches(6, 4)
         plt.savefig(path + "v0.15_psi" + str(psi_version) + ".png", dpi=300)
+        plt.close()
 
         fig, ax = PlotsGenerator.generateGridWithColorSequences(v4_figures, n_rows=30, n_cols=1, max_trial_len=v4_max)
         plt.suptitle("Stimulus visibility: 0.2, PSI mean = " + str(round(mean, 3)) + ", st_dev =  " + str(
             round(st_dev, 3)) + "\n" + params)
         fig.set_size_inches(6, 4)
         plt.savefig(path + "v0.2_psi" + str(psi_version) + ".png", dpi=300)
+        plt.close()
 
         fig, ax = PlotsGenerator.generateGridWithColorSequences(v5_figures, n_rows=30, n_cols=1, max_trial_len=v5_max)
         plt.suptitle("Stimulus visibility: 0.25, PSI mean = " + str(round(mean, 3)) + ", st_dev =  " + str(
             round(st_dev, 3)) + "\n" + params)
         fig.set_size_inches(6, 4)
         plt.savefig(path + "v0.25_psi" + str(psi_version) + ".png", dpi=300)
+        plt.close()
 
         fig, ax = PlotsGenerator.generateGridWithColorSequences(v6_figures, n_rows=30, n_cols=1, max_trial_len=v6_max)
         plt.suptitle("Stimulus visibility: 0.3, PSI mean = " + str(round(mean, 3)) + ", st_dev =  " + str(
             round(st_dev, 3)) + "\n" + params)
         fig.set_size_inches(6, 4)
         plt.savefig(path + "v0.3_psi" + str(psi_version) + ".png", dpi=300)
+        plt.close()
         # plt.show()
 
     # compute color frequencies ---------------------------------------------------------------------------------------
@@ -1478,18 +1522,21 @@ class PlotsGenerator:
         plt.suptitle("Response: nothing\n" + params)
         fig.set_size_inches(6, 4)
         plt.savefig(path + "response_nothing.png", dpi=300)
+        plt.close()
 
         fig, ax = PlotsGenerator.generateGridWithColorSequences(something_figures, n_rows=len(something_figures),
                                                                 n_cols=1, max_trial_len=something_max)
         plt.suptitle("Response: something\n" + params)
         fig.set_size_inches(6, 4)
         plt.savefig(path + "response_something.png", dpi=300)
+        plt.close()
 
         fig, ax = PlotsGenerator.generateGridWithColorSequences(identified_figures, n_rows=len(identified_figures),
                                                                 n_cols=1, max_trial_len=identified_max)
         plt.suptitle("Response: what the subject sees (correct + 1 incorrect)\n" + params)
         fig.set_size_inches(6, 4)
         plt.savefig(path + "response_identified.png", dpi=300)
+        plt.close()
         # plt.show()
 
         if method == Method.BMU:
@@ -1718,151 +1765,181 @@ class PlotsGenerator:
         plt.suptitle("Stimulus: poseta/geanta (de dama)\n" + params)
         fig.set_size_inches(6, 4)
         plt.savefig(path + "stimulus_poseta.png", dpi=300)
+        plt.close()
 
         fig, ax = PlotsGenerator.generateGridWithColorSequences(topor_figures, n_rows=7, n_cols=1)
         plt.suptitle("Stimulus: topor/secure\n" + params)
         fig.set_size_inches(6, 4)
         plt.savefig(path + "stimulus_topor.png", dpi=300)
+        plt.close()
 
         fig, ax = PlotsGenerator.generateGridWithColorSequences(oala_figures, n_rows=7, n_cols=1)
         plt.suptitle("Stimulus: oala/cratita\n" + params)
         fig.set_size_inches(6, 4)
         plt.savefig(path + "stimulus_oala.png", dpi=300)
+        plt.close()
 
         fig, ax = PlotsGenerator.generateGridWithColorSequences(elicopter_figures, n_rows=7, n_cols=1)
         plt.suptitle("Stimulus: elicopter\n" + params)
         fig.set_size_inches(6, 4)
         plt.savefig(path + "stimulus_elicopter.png", dpi=300)
+        plt.close()
 
         fig, ax = PlotsGenerator.generateGridWithColorSequences(urs_figures, n_rows=7, n_cols=1)
         plt.suptitle("Stimulus: urs (polar)\n" + params)
         fig.set_size_inches(6, 4)
         plt.savefig(path + "stimulus_urs.png", dpi=300)
+        plt.close()
 
         fig, ax = PlotsGenerator.generateGridWithColorSequences(palarie_figures, n_rows=7, n_cols=1)
         plt.suptitle("Stimulus: palarie\n" + params)
         fig.set_size_inches(6, 4)
         plt.savefig(path + "stimulus_palarie.png", dpi=300)
+        plt.close()
 
         fig, ax = PlotsGenerator.generateGridWithColorSequences(foarfece_figures, n_rows=7, n_cols=1)
         plt.suptitle("Stimulus: foarfece\n" + params)
         fig.set_size_inches(6, 4)
         plt.savefig(path + "stimulus_foarfece.png", dpi=300)
+        plt.close()
 
         fig, ax = PlotsGenerator.generateGridWithColorSequences(banana_figures, n_rows=7, n_cols=1)
         plt.suptitle("Stimulus: banana\n" + params)
         fig.set_size_inches(6, 4)
         plt.savefig(path + "stimulus_banana.png", dpi=300)
+        plt.close()
 
         fig, ax = PlotsGenerator.generateGridWithColorSequences(lampa_figures, n_rows=7, n_cols=1)
         plt.suptitle("Stimulus: lampa/veioza\n" + params)
         fig.set_size_inches(6, 4)
         plt.savefig(path + "stimulus_lampa.png", dpi=300)
+        plt.close()
 
         fig, ax = PlotsGenerator.generateGridWithColorSequences(chitara_figures, n_rows=7, n_cols=1)
         plt.suptitle("Stimulus: chitara (electrica)\n" + params)
         fig.set_size_inches(6, 4)
         plt.savefig(path + "stimulus_chitara.png", dpi=300)
+        plt.close()
 
         fig, ax = PlotsGenerator.generateGridWithColorSequences(masina_figures, n_rows=7, n_cols=1)
         plt.suptitle("Stimulus: masina\n" + params)
         fig.set_size_inches(6, 4)
         plt.savefig(path + "stimulus_masina.png", dpi=300)
+        plt.close()
 
         fig, ax = PlotsGenerator.generateGridWithColorSequences(vaca_figures, n_rows=7, n_cols=1)
         plt.suptitle("Stimulus: vaca\n" + params)
         fig.set_size_inches(6, 4)
         plt.savefig(path + "stimulus_vaca.png", dpi=300)
+        plt.close()
 
         fig, ax = PlotsGenerator.generateGridWithColorSequences(furculita_figures, n_rows=7, n_cols=1)
         plt.suptitle("Stimulus: furculita\n" + params)
         fig.set_size_inches(6, 4)
         plt.savefig(path + "stimulus_furculita.png", dpi=300)
+        plt.close()
 
         fig, ax = PlotsGenerator.generateGridWithColorSequences(cerb_figures, n_rows=7, n_cols=1)
         plt.suptitle("Stimulus: cerb\n" + params)
         fig.set_size_inches(6, 4)
         plt.savefig(path + "stimulus_cerb.png", dpi=300)
+        plt.close()
 
         fig, ax = PlotsGenerator.generateGridWithColorSequences(pantaloni_figures, n_rows=7, n_cols=1)
         plt.suptitle("Stimulus: pantaloni (scurti)\n" + params)
         fig.set_size_inches(6, 4)
         plt.savefig(path + "stimulus_pantaloni.png", dpi=300)
+        plt.close()
 
         fig, ax = PlotsGenerator.generateGridWithColorSequences(scaun_figures, n_rows=7, n_cols=1)
         plt.suptitle("Stimulus: scaun\n" + params)
         fig.set_size_inches(6, 4)
         plt.savefig(path + "stimulus_scaun.png", dpi=300)
+        plt.close()
 
         fig, ax = PlotsGenerator.generateGridWithColorSequences(peste_figures, n_rows=7, n_cols=1)
         plt.suptitle("Stimulus: peste\n" + params)
         fig.set_size_inches(6, 4)
         plt.savefig(path + "stimulus_peste.png", dpi=300)
+        plt.close()
 
         fig, ax = PlotsGenerator.generateGridWithColorSequences(caine_figures, n_rows=7, n_cols=1)
         plt.suptitle("Stimulus: caine/catel\n" + params)
         fig.set_size_inches(6, 4)
         plt.savefig(path + "stimulus_caine.png", dpi=300)
+        plt.close()
 
         fig, ax = PlotsGenerator.generateGridWithColorSequences(sticla_figures, n_rows=7, n_cols=1)
         plt.suptitle("Stimulus: sticla\n" + params)
         fig.set_size_inches(6, 4)
         plt.savefig(path + "stimulus_sticla.png", dpi=300)
+        plt.close()
 
         fig, ax = PlotsGenerator.generateGridWithColorSequences(pistol_figures, n_rows=7, n_cols=1)
         plt.suptitle("Stimulus: pistol\n" + params)
         fig.set_size_inches(6, 4)
         plt.savefig(path + "stimulus_pistol.png", dpi=300)
+        plt.close()
 
         fig, ax = PlotsGenerator.generateGridWithColorSequences(bicicleta_figures, n_rows=7, n_cols=1)
         plt.suptitle("Stimulus: bicicleta\n" + params)
         fig.set_size_inches(6, 4)
         plt.savefig(path + "stimulus_bicicleta.png", dpi=300)
+        plt.close()
 
         fig, ax = PlotsGenerator.generateGridWithColorSequences(cal_figures, n_rows=7, n_cols=1)
         plt.suptitle("Stimulus: cal\n" + params)
         fig.set_size_inches(6, 4)
         plt.savefig(path + "stimulus_cal.png", dpi=300)
+        plt.close()
 
         fig, ax = PlotsGenerator.generateGridWithColorSequences(elefant_figures, n_rows=7, n_cols=1)
         plt.suptitle("Stimulus: elefant\n" + params)
         fig.set_size_inches(6, 4)
         plt.savefig(path + "stimulus_elefant.png", dpi=300)
+        plt.close()
 
         fig, ax = PlotsGenerator.generateGridWithColorSequences(iepure_figures, n_rows=7, n_cols=1)
         plt.suptitle("Stimulus: iepure\n" + params)
         fig.set_size_inches(6, 4)
         plt.savefig(path + "stimulus_iepure.png", dpi=300)
+        plt.close()
 
         fig, ax = PlotsGenerator.generateGridWithColorSequences(pahar_figures, n_rows=7, n_cols=1)
         plt.suptitle("Stimulus: pahar/cupa\n" + params)
         fig.set_size_inches(6, 4)
         plt.savefig(path + "stimulus_cupa.png", dpi=300)
+        plt.close()
 
         fig, ax = PlotsGenerator.generateGridWithColorSequences(masa_figures, n_rows=7, n_cols=1)
         plt.suptitle("Stimulus: masa\n" + params)
         fig.set_size_inches(6, 4)
         plt.savefig(path + "stimulus_masa.png", dpi=300)
+        plt.close()
 
         fig, ax = PlotsGenerator.generateGridWithColorSequences(umbrela_figures, n_rows=7, n_cols=1)
         plt.suptitle("Stimulus: umbrela\n" + params)
         fig.set_size_inches(6, 4)
         plt.savefig(path + "stimulus_umbrela.png", dpi=300)
+        plt.close()
 
         fig, ax = PlotsGenerator.generateGridWithColorSequences(fluture_figures, n_rows=7, n_cols=1)
         plt.suptitle("Stimulus: fluture\n" + params)
         fig.set_size_inches(6, 4)
         plt.savefig(path + "stimulus_fluture.png", dpi=300)
+        plt.close()
 
         fig, ax = PlotsGenerator.generateGridWithColorSequences(girafa_figures, n_rows=7, n_cols=1)
         plt.suptitle("Stimulus: girafa\n" + params)
         fig.set_size_inches(6, 4)
         plt.savefig(path + "stimulus_girafa.png", dpi=300)
+        plt.close()
 
         fig, ax = PlotsGenerator.generateGridWithColorSequences(pian_figures, n_rows=7, n_cols=1)
         plt.suptitle("Stimulus: pian\n" + params)
         fig.set_size_inches(6, 4)
         plt.savefig(path + "stimulus_pian.png", dpi=300)
+        plt.close()
         # plt.show()
 
         if method == Method.BMU:
@@ -1939,36 +2016,43 @@ class PlotsGenerator:
         plt.suptitle("Stimulus visibility: 0.00\n" + params)
         fig.set_size_inches(6, 4)
         plt.savefig(path + "v0.0.png", dpi=300)
+        plt.close()
 
         fig, ax = PlotsGenerator.generateGridWithColorSequences(v1_figures, n_rows=30, n_cols=1, max_trial_len=v1_max)
         plt.suptitle("Stimulus visibility: 0.05\n" + params)
         fig.set_size_inches(6, 4)
         plt.savefig(path + "v0.05.png", dpi=300)
+        plt.close()
 
         fig, ax = PlotsGenerator.generateGridWithColorSequences(v2_figures, n_rows=30, n_cols=1, max_trial_len=v2_max)
         plt.suptitle("Stimulus visibility: 0.1\n" + params)
         fig.set_size_inches(6, 4)
         plt.savefig(path + "v0.1.png", dpi=300)
+        plt.close()
 
         fig, ax = PlotsGenerator.generateGridWithColorSequences(v3_figures, n_rows=30, n_cols=1, max_trial_len=v3_max)
         plt.suptitle("Stimulus visibility: 0.15\n" + params)
         fig.set_size_inches(6, 4)
         plt.savefig(path + "v0.15.png", dpi=300)
+        plt.close()
 
         fig, ax = PlotsGenerator.generateGridWithColorSequences(v4_figures, n_rows=30, n_cols=1, max_trial_len=v4_max)
         plt.suptitle("Stimulus visibility: 0.2\n" + params)
         fig.set_size_inches(6, 4)
         plt.savefig(path + "v0.2.png", dpi=300)
+        plt.close()
 
         fig, ax = PlotsGenerator.generateGridWithColorSequences(v5_figures, n_rows=30, n_cols=1, max_trial_len=v5_max)
         plt.suptitle("Stimulus visibility: 0.25\n" + params)
         fig.set_size_inches(6, 4)
         plt.savefig(path + "v0.25.png", dpi=300)
+        plt.close()
 
         fig, ax = PlotsGenerator.generateGridWithColorSequences(v6_figures, n_rows=30, n_cols=1, max_trial_len=v6_max)
         plt.suptitle("Stimulus visibility: 0.3\n" + params)
         fig.set_size_inches(6, 4)
         plt.savefig(path + "v0.3.png", dpi=300)
+        plt.close()
         # plt.show()
 
         if method == Method.BMU:
